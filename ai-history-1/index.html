@@ -1076,29 +1076,43 @@ document.querySelectorAll(".slide.tl").forEach(sl=>{
 
 /* ---------- neurons ---------- */
 (() => {
-  const cv=$("neuro"); let W,H,N=[],E=[],P=[],stim=0;
+  // 4 layers (2-3-3-2). a pulse adds to the target's charge; enough charge arriving close together makes it fire,
+  // which sends pulses on to the next layer. charge leaks away slowly, and a neuron rests briefly after firing.
+  const cv=$("neuro"); let W,H,N=[],E=[],P=[],stim=0, last=0;
+  const LEAK=.00028, REST=450, TRAVEL=[750,1050];
   function build(){
-    W=cv.offsetWidth; H=cv.offsetHeight; N=[]; E=[]; P=[];
-    const cols=4;
-    for(let c=0;c<cols;c++){ const rows=c===0||c===cols-1?2:3;
-      for(let r=0;r<rows;r++){ const n={x:W*(.13+c*.25)+rnd(-20,20), y:H*((r+1)/(rows+1))+rnd(-30,30), v:0, g:0, col:c, den:[]};
-        for(let d=0;d<6;d++){ const a=rnd(0,Math.PI*2); let px=n.x, py=n.y; const seg=[]; for(let s=0;s<4;s++){ px+=Math.cos(a+rnd(-.5,.5))*rnd(10,16); py+=Math.sin(a+rnd(-.5,.5))*rnd(10,16); seg.push([px,py]); } n.den.push(seg); }
-        N.push(n); } }
-    N.forEach(a=>{ const next=N.filter(b=>b.col===a.col+1); next.forEach(b=>{ if(Math.random()<.75) E.push({a,b,cx:(a.x+b.x)/2+rnd(-40,40),cy:(a.y+b.y)/2+rnd(-60,60)}); }); });
+    W=cv.offsetWidth; H=cv.offsetHeight; N=[]; E=[]; P=[]; cv._fires=[0,0,0,0];
+    const sizes=[2,3,3,2];
+    sizes.forEach((rows,c)=>{ for(let r=0;r<rows;r++){
+      const n={x:W*(.13+c*.25)+rnd(-20,20), y:H*((r+1)/(rows+1))+rnd(-30,30), v:0, g:0, col:c, den:[], rest:0, ins:0};
+      for(let d=0;d<6;d++){ const a=rnd(0,Math.PI*2); let px=n.x, py=n.y; const seg=[]; for(let k=0;k<4;k++){ px+=Math.cos(a+rnd(-.5,.5))*rnd(10,16); py+=Math.sin(a+rnd(-.5,.5))*rnd(10,16); seg.push([px,py]); } n.den.push(seg); }
+      N.push(n); } });
+    const link=(a,b)=>{ if(!E.some(e=>e.a===a&&e.b===b)){ E.push({a,b,cx:(a.x+b.x)/2+rnd(-40,40),cy:(a.y+b.y)/2+rnd(-60,60),ms:rnd(...TRAVEL)}); b.ins++; } };
+    for(let c=0;c<3;c++){
+      const A_=N.filter(n=>n.col===c), B_=N.filter(n=>n.col===c+1);
+      A_.forEach(a=>B_.forEach(b=>{ if(Math.random()<.7) link(a,b); }));
+      B_.forEach(b=>{ while(b.ins<2) link(pick(A_),b); });                    // every neuron listens to at least 2
+      A_.forEach(a=>{ if(!E.some(e=>e.a===a)) link(a,pick(B_)); });           // and talks to at least 1
+    }
+    E.forEach(e=>e.w=1.35/e.b.ins);                                           // ~3/4 of a neuron's inputs make it fire
   }
   const bez=(e,t)=>{ const u=1-t; return [u*u*e.a.x+2*u*t*e.cx+t*t*e.b.x, u*u*e.a.y+2*u*t*e.cy+t*t*e.b.y]; };
-  function fire(n){ n.g=1; n.v=0; E.filter(e=>e.a===n).forEach(e=>P.push({e,t:0})); }
+  function fire(n){ n.g=1; n.v=0; n.rest=REST; cv._fires[n.col]++; E.filter(e=>e.a===n).forEach(e=>P.push({e,t:0})); }
   A.neurons={
-    enter(){ build(); stim=0; },
+    enter(){ build(); stim=300; last=-1; },
     tick(dt){
       const x=ctxOf(cv); x.fillStyle="#0d0d0f"; x.fillRect(0,0,W,H);
-      stim-=dt; if(stim<=0){ stim=rnd(500,1100); fire(pick(N.filter(n=>n.col===0))); }
+      // the inputs: both input neurons usually fire close together, sometimes only one does
+      stim-=dt; if(stim<=0){ stim=rnd(1400,2300); const ins=N.filter(n=>n.col===0); const first=pick(ins); fire(first);
+        if(Math.random()<.8){ const other=ins.find(n=>n!==first); setTimeout(()=>{ if(other) fire(other); },rnd(80,350)); } }
       for(const e of E){ x.strokeStyle="rgba(106,184,255,.22)"; x.lineWidth=2.5; x.beginPath(); x.moveTo(e.a.x,e.a.y); x.quadraticCurveTo(e.cx,e.cy,e.b.x,e.b.y); x.stroke(); }
-      P=P.filter(p=>{ p.t+=dt/900; if(p.t>=1){ p.e.b.v+=.55; if(p.e.b.v>=.99) fire(p.e.b); return false; }
+      const arrived=[];   // fire after the sweep, so new pulses aren't dropped by the filter
+      P=P.filter(p=>{ p.t+=dt/p.e.ms; if(p.t>=1){ const b=p.e.b; if(b.rest<=0){ b.v+=p.e.w; if(b.v>=1&&!arrived.includes(b)) arrived.push(b); } return false; }
         for(let k=0;k<6;k++){ const [px,py]=bez(p.e,Math.max(0,p.t-k*.025)); x.fillStyle=`rgba(255,194,14,${1-k/6})`; x.beginPath(); x.arc(px,py,4.5-k*.5,0,7); x.fill(); }
         return true; });
+      arrived.forEach(fire);
       for(const n of N){
-        n.v=Math.max(0,n.v-dt*.00035); n.g*=.93;
+        n.v=Math.max(0,n.v-dt*LEAK); n.g*=.93; n.rest-=dt;
         x.strokeStyle=`rgba(243,241,234,${.25+n.g*.5})`; x.lineWidth=2;
         n.den.forEach(seg=>{ x.beginPath(); x.moveTo(n.x,n.y); seg.forEach(([a,b])=>x.lineTo(a,b)); x.stroke(); });
         if(n.g>.05){ const rg=x.createRadialGradient(n.x,n.y,0,n.x,n.y,50); rg.addColorStop(0,`rgba(255,194,14,${n.g*.7})`); rg.addColorStop(1,"rgba(255,194,14,0)"); x.fillStyle=rg; x.beginPath(); x.arc(n.x,n.y,50,0,7); x.fill(); }
