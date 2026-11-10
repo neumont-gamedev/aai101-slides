@@ -395,11 +395,10 @@
     <div class="two">
       <div class="stack">
         <h2 class="rise" style="--i:0"><span class="n">GEORGE BOOLE · 1815–1864</span>Thought as algebra</h2>
-        <p class="rise" style="--i:1">In <i class="t">The Laws of Thought</i> (1854), Boole turned logic into math. Every statement is <b>true (1)</b> or <b>false (0)</b>, combined with three operators:</p>
+        <p class="rise" style="--i:1">In <i class="t">The Laws of Thought</i> (1854), Boole turned logic into math. Every statement is <b>true (1)</b> or <b>false (0)</b>, combined with operators like <b>AND</b> and <b>OR</b>:</p>
         <div class="gates rise" style="--i:2">
           <div class="gate card" id="gAND"><div class="op">A AND B</div><div class="bulb">0</div><div class="ex">both must be true</div></div>
           <div class="gate card" id="gOR"><div class="op">A OR B</div><div class="bulb">0</div><div class="ex">at least one is true</div></div>
-          <div class="gate card" id="gNOT"><div class="op">NOT A</div><div class="bulb">1</div><div class="ex">flips the value</div></div>
         </div>
       </div>
       <div class="stack">
@@ -408,7 +407,7 @@
           <div class="switch card" id="swB"><span class="lbl">B · “I’m outside”</span><div class="tog"></div><span class="val">0</span></div>
         </div>
         <div class="card rise" style="--i:3;padding:10px 20px">
-          <table class="tt" id="tt"><tr><th>A</th><th>B</th><th>A AND B</th><th>A OR B</th><th>NOT A</th></tr></table>
+          <table class="tt" id="tt"><tr><th>A</th><th>B</th><th>A AND B</th><th>A OR B</th></tr></table>
         </div>
         <p class="rise muted" style="--i:4;font-size:20px">Click A and B. <span class="mono y">raining AND outside</span> → you get wet.</p>
       </div>
@@ -814,10 +813,10 @@ const A={};
 /* ---------- 5 boole ---------- */
 (() => {
   const sa=$("swA"), sb=$("swB"), tt=$("tt"); let a=0,b=0, auto=true, t=0, k=0;
-  const rows=[[0,0],[0,1],[1,0],[1,1]].map(([x,y])=>{ const r=document.createElement("tr"); r.innerHTML=[x,y,x&y,x|y,1-x].map(v=>`<td class="${v?"one":""}">${v}</td>`).join(""); tt.appendChild(r); return r; });
+  const rows=[[0,0],[0,1],[1,0],[1,1]].map(([x,y])=>{ const r=document.createElement("tr"); r.innerHTML=[x,y,x&y,x|y].map(v=>`<td class="${v?"one":""}">${v}</td>`).join(""); tt.appendChild(r); return r; });
   function render(){
     sa.classList.toggle("on",!!a); sb.classList.toggle("on",!!b); sa.querySelector(".val").textContent=a; sb.querySelector(".val").textContent=b;
-    const g=[["gAND",a&b],["gOR",a|b],["gNOT",1-a]];
+    const g=[["gAND",a&b],["gOR",a|b]];
     g.forEach(([id,v])=>{ $(id).classList.toggle("on",!!v); $(id).querySelector(".bulb").textContent=v; });
     rows.forEach((r,i)=>r.classList.toggle("hi", i===a*2+b));
   }

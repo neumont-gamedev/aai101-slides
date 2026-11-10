@@ -88,10 +88,10 @@ const A={};
 /* ---------- 5 boole ---------- */
 (() => {
   const sa=$("swA"), sb=$("swB"), tt=$("tt"); let a=0,b=0, auto=true, t=0, k=0;
-  const rows=[[0,0],[0,1],[1,0],[1,1]].map(([x,y])=>{ const r=document.createElement("tr"); r.innerHTML=[x,y,x&y,x|y,1-x].map(v=>`<td class="${v?"one":""}">${v}</td>`).join(""); tt.appendChild(r); return r; });
+  const rows=[[0,0],[0,1],[1,0],[1,1]].map(([x,y])=>{ const r=document.createElement("tr"); r.innerHTML=[x,y,x&y,x|y].map(v=>`<td class="${v?"one":""}">${v}</td>`).join(""); tt.appendChild(r); return r; });
   function render(){
     sa.classList.toggle("on",!!a); sb.classList.toggle("on",!!b); sa.querySelector(".val").textContent=a; sb.querySelector(".val").textContent=b;
-    const g=[["gAND",a&b],["gOR",a|b],["gNOT",1-a]];
+    const g=[["gAND",a&b],["gOR",a|b]];
     g.forEach(([id,v])=>{ $(id).classList.toggle("on",!!v); $(id).querySelector(".bulb").textContent=v; });
     rows.forEach((r,i)=>r.classList.toggle("hi", i===a*2+b));
   }
