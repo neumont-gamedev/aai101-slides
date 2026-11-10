@@ -282,6 +282,20 @@
   .ev .av{width:40px;height:40px;border-radius:50%;object-fit:cover;filter:grayscale(1);border:2px solid var(--line);flex:none}
   .ev .yrow{display:flex;align-items:center;gap:10px}
   .ev.now .av{border-color:var(--y)}
+  /* automaton exhibit */
+  .amHead{position:absolute;left:14px;right:14px;top:14px;display:flex;align-items:center;gap:12px;z-index:2}
+  .amTitle{flex:1;text-align:center}
+  .amName{font-size:22px;font-weight:700}
+  .amNote{font-size:15px;color:var(--mute);margin-top:2px;line-height:1.35}
+  .amArr{width:44px;height:44px;border-radius:50%;border:1px solid var(--line);background:var(--panel2);color:var(--ink);font-size:26px;line-height:1;cursor:pointer;flex:none}
+  .amArr:hover{border-color:var(--y);color:var(--y)}
+  .amCtl{position:absolute;left:14px;right:14px;bottom:14px;display:flex;align-items:center;gap:14px;z-index:2}
+  .amCtl .btn{font-size:16px;padding:8px 16px;min-width:108px}
+  .amHint{font-size:15px;color:var(--mute);flex:1}
+  .amDots{display:flex;gap:6px}
+  .amDots i{width:8px;height:8px;border-radius:50%;background:#3a3a42}
+  .amDots i.on{background:var(--y)}
+  #gears .crank{cursor:grab} #gears .crank:active{cursor:grabbing}
 </style>
 </head>
 <body>
@@ -421,7 +435,11 @@
         <p class="rise" style="--i:2">A <b>self-operating machine</b> that follows a fixed sequence of operations or responds to preset instructions.</p>
         <p class="rise muted" style="--i:3">For centuries: mechanical puppets of people and animals, built to impress and entertain.</p>
       </div>
-      <div class="stage-box rise" style="--i:2"><svg id="gears" viewBox="0 0 640 620"></svg><div class="cap">no mind, just a sequence of moves</div></div>
+      <div class="stage-box rise" style="--i:2" id="amBox">
+        <svg id="gears" viewBox="0 0 640 620"></svg>
+        <div class="amHead"><button class="amArr" id="amPrev" aria-label="Previous automaton">‹</button><div class="amTitle"><div class="amName" id="amName"></div><div class="amNote" id="amNote"></div></div><button class="amArr" id="amNext" aria-label="Next automaton">›</button></div>
+        <div class="amCtl"><button class="btn on" id="amAuto">❚❚ Pause</button><span class="amHint">or drag the <b class="y">yellow handle</b> to turn the crank</span><span class="amDots" id="amDots"></span></div>
+      </div>
     </div>
   </section>
 
@@ -928,7 +946,7 @@ const A={};
   };
 })();
 
-/* ---------- 8 automaton: gears + bird ---------- */
+/* ---------- 8 automaton: three machines, auto or hand-cranked ---------- */
 (() => {
   const svg=$("gears");
   function gearPath(n,ro,ri,rh){
@@ -937,30 +955,120 @@ const A={};
       pts.forEach(([ang,r],k)=>d+=(i===0&&k===0?"M":"L")+(Math.cos(ang)*r).toFixed(1)+" "+(Math.sin(ang)*r).toFixed(1)+" "); }
     d+="Z M"+rh+" 0 A"+rh+" "+rh+" 0 1 0 "+(-rh)+" 0 A"+rh+" "+rh+" 0 1 0 "+rh+" 0Z"; return d;
   }
-  svg.innerHTML=`<style>.gr{fill:#2a2a30;stroke:${Y};stroke-width:2.5;fill-rule:evenodd}</style>`;
-  const G=[{cx:230,cy:400,n:18,ro:132,ri:116,rh:22},{cx:416,cy:420,n:10,ro:74,ri:58,rh:14},{cx:500,cy:300,n:8,ro:60,ri:46,rh:12}];
-  G.forEach(g=>{ g.el=svgEl("g",{},svg); svgEl("path",{d:gearPath(g.n,g.ro,g.ri,g.rh),class:"gr"},g.el);
-    for(let k=0;k<4;k++) svgEl("line",{x1:0,y1:0,x2:Math.cos(k*Math.PI/2)*(g.ri-6),y2:Math.sin(k*Math.PI/2)*(g.ri-6),stroke:Y,"stroke-width":2,opacity:.4},g.el); });
-  const rod=svgEl("line",{stroke:INK,"stroke-width":5,"stroke-linecap":"round"},svg);
-  const pin=svgEl("circle",{r:9,fill:INK},svg);
-  svgEl("rect",{x:110,y:180,width:260,height:12,rx:4,fill:"#3a3a42"},svg);
-  const bird=svgEl("g",{},svg);
-  svgEl("ellipse",{cx:220,cy:140,rx:62,ry:36,fill:Y},bird);
-  svgEl("path",{d:"M160 130 L118 112 L132 146Z",fill:"#d9a20a"},bird);
-  svgEl("line",{x1:212,y1:174,x2:212,y2:182,stroke:INK,"stroke-width":4},bird); svgEl("line",{x1:232,y1:174,x2:232,y2:182,stroke:INK,"stroke-width":4},bird);
-  const head=svgEl("g",{},bird);
-  svgEl("circle",{cx:292,cy:112,r:26,fill:Y},head); svgEl("circle",{cx:300,cy:106,r:5,fill:"#121214"},head);
-  svgEl("path",{d:"M314 108 L346 116 L314 124Z",fill:"#ff8a1f"},head);
-  let a=0;
-  A.automaton={ enter(){}, tick(dt){
-    a+=dt*.0011;
-    const r=[a,-a*18/10+Math.PI/10,a*18/8+Math.PI/8];
-    G.forEach((g,i)=>g.el.setAttribute("transform",`translate(${g.cx} ${g.cy}) rotate(${r[i]*180/Math.PI})`));
-    const px=230+Math.cos(a)*78, py=400+Math.sin(a)*78; pin.setAttribute("cx",px); pin.setAttribute("cy",py);
-    rod.setAttribute("x1",px); rod.setAttribute("y1",py); rod.setAttribute("x2",276); rod.setAttribute("y2",186+Math.sin(a)*14);
-    const peck=Math.max(0,Math.sin(a))*38;
-    head.setAttribute("transform",`rotate(${peck} 270 128)`);
-  } };
+  svg.innerHTML=`<style>.gr{fill:#2a2a30;stroke:${Y};stroke-width:2.5;fill-rule:evenodd}.rod{stroke:${INK};stroke-width:5;stroke-linecap:round}.pin{fill:${INK}}</style>`;
+  const D={x:170,y:440};                                   // drive gear (the crank turns this one)
+  const gear=(parent,n,ro,ri,rh)=>{ const g=svgEl("g",{},parent); svgEl("path",{d:gearPath(n,ro,ri,rh),class:"gr"},g);
+    for(let k=0;k<4;k++) svgEl("line",{x1:0,y1:0,x2:Math.cos(k*Math.PI/2)*(ri-6),y2:Math.sin(k*Math.PI/2)*(ri-6),stroke:Y,"stroke-width":2,opacity:.4},g); return g; };
+  const place=(g,x,y,ang)=>g.setAttribute("transform",`translate(${x} ${y}) rotate(${ang*180/Math.PI})`);
+
+  // --- machine 1: pecking bird (cam + follower) ---
+  const m1=svgEl("g",{},svg);
+  const b1g2=gear(m1,10,62,48,13);
+  svgEl("rect",{x:300,y:262,width:270,height:12,rx:4,fill:"#3a3a42"},m1);
+  const b1rod=svgEl("line",{class:"rod"},m1), b1pin=svgEl("circle",{r:8,class:"pin"},m1);
+  const bird=svgEl("g",{},m1);
+  svgEl("ellipse",{cx:420,cy:222,rx:62,ry:36,fill:Y},bird);
+  svgEl("path",{d:"M360 212 L318 194 L332 228Z",fill:"#d9a20a"},bird);
+  svgEl("line",{x1:412,y1:256,x2:412,y2:263,stroke:INK,"stroke-width":4},bird); svgEl("line",{x1:432,y1:256,x2:432,y2:263,stroke:INK,"stroke-width":4},bird);
+  const b1head=svgEl("g",{},bird);
+  svgEl("circle",{cx:492,cy:194,r:26,fill:Y},b1head); svgEl("circle",{cx:500,cy:188,r:5,fill:"#121214"},b1head);
+  svgEl("path",{d:"M514 190 L546 198 L514 206Z",fill:"#ff8a1f"},b1head);
+  const seeds=[530,548,560].map(x=>svgEl("circle",{cx:x,cy:258,r:3.5,fill:"#c9a06a"},m1));
+
+  // --- machine 2: drawing machine (two wheels, two arms, one pen) ---
+  const m2=svgEl("g",{},svg);
+  svgEl("rect",{x:110,y:90,width:420,height:215,rx:6,fill:"#e9e4d6",opacity:.95},m2);
+  const ink=svgEl("polyline",{fill:"none",stroke:"#1d1d24","stroke-width":1.6,"stroke-linejoin":"round",opacity:.9},m2);
+  const idl=gear(m2,6,40,28,9), whB=gear(m2,13,80,66,16);
+  const armA=svgEl("line",{class:"rod","stroke-width":4},m2), armB=svgEl("line",{class:"rod","stroke-width":4},m2);
+  const pinA=svgEl("circle",{r:7,class:"pin"},m2), pinB=svgEl("circle",{r:7,class:"pin"},m2);
+  const pen=svgEl("circle",{r:7,fill:RED,stroke:"#121214","stroke-width":2},m2);
+  const IDL={x:298,y:440}, WB={x:406,y:440}, L=280;
+  let trail=[];
+
+  // --- machine 3: digesting duck ---
+  const m3=svgEl("g",{},svg);
+  const d3g2=gear(m3,10,62,48,13);
+  svgEl("rect",{x:300,y:300,width:290,height:14,rx:4,fill:"#3a3a42"},m3);
+  const plate=svgEl("ellipse",{cx:545,cy:298,rx:34,ry:6,fill:"#55534d"},m3);
+  const d3rod=svgEl("line",{class:"rod"},m3), d3pin=svgEl("circle",{r:8,class:"pin"},m3);
+  const duck=svgEl("g",{},m3);
+  svgEl("path",{d:"M380 240 C380 205 420 190 470 198 C505 203 525 222 522 246 C518 272 480 282 430 280 C400 279 380 266 380 240Z",fill:"#e8e2d0"},duck);
+  svgEl("line",{x1:430,y1:280,x2:426,y2:300,stroke:"#ff8a1f","stroke-width":5},duck); svgEl("line",{x1:460,y1:280,x2:462,y2:300,stroke:"#ff8a1f","stroke-width":5},duck);
+  const neck=svgEl("g",{},duck);
+  svgEl("path",{d:"M392 232 C380 210 372 180 372 160",stroke:"#e8e2d0","stroke-width":22,fill:"none","stroke-linecap":"round"},neck);
+  svgEl("circle",{cx:368,cy:152,r:24,fill:"#e8e2d0"},neck); svgEl("circle",{cx:360,cy:146,r:4.5,fill:"#121214"},neck);
+  svgEl("path",{d:"M348 154 L318 160 L348 166Z",fill:"#ff8a1f"},neck);
+  const wing=svgEl("path",{d:"M420 222 C450 200 500 205 520 228 C495 236 450 240 420 222Z",fill:"#cfc7b0",stroke:"#121214","stroke-width":1.5},duck);
+  let pellets=[], lastTurn=0;
+
+  // --- shared drive gear + crank handle ---
+  const drive=gear(svg,16,100,84,18);
+  const crankArm=svgEl("line",{stroke:Y,"stroke-width":6,"stroke-linecap":"round"},svg);
+  const crank=svgEl("g",{class:"crank"},svg);
+  svgEl("circle",{r:26,fill:"rgba(255,194,14,.18)"},crank); svgEl("circle",{r:15,fill:Y,stroke:"#121214","stroke-width":3},crank);
+
+  const M=[
+    {g:m1,name:"Pecking bird",note:"A cam turns the crank’s rotation into a peck.",speed:.0011},
+    {g:m2,name:"Drawing machine",note:"Inspired by Jaquet-Droz’s Writer (1770s): two turning wheels guide one pen.",speed:.0024},
+    {g:m3,name:"Digesting Duck",note:"Vaucanson, 1739: it flapped, ate, and appeared to digest. (The digestion was faked.)",speed:.0013},
+  ];
+  let mi=0, a=0, auto=true, drag=null;
+  const btn=$("amAuto"), dots=$("amDots");
+  dots.innerHTML=M.map(()=>"<i></i>").join("");
+  function show(i){ mi=(i+M.length)%M.length; M.forEach((m,k)=>m.g.style.display=k===mi?"":"none"); $("amName").textContent=`${mi+1} / ${M.length} · ${M[mi].name}`; $("amNote").textContent=M[mi].note;
+    [...dots.children].forEach((d,k)=>d.classList.toggle("on",k===mi)); trail=[]; ink.setAttribute("points",""); pellets.forEach(p=>p.el.remove()); pellets=[]; lastTurn=Math.floor(a/(Math.PI*2)); }
+  function setAuto(v){ auto=v; btn.textContent=v?"❚❚ Pause":"▶ Auto"; btn.classList.toggle("on",v); }
+  $("amPrev").onclick=()=>show(mi-1); $("amNext").onclick=()=>show(mi+1); btn.onclick=()=>setAuto(!auto);
+  // drag the crank: turn the drive gear by the change in angle around its center
+  const toSvg=e=>{ const p=svg.createSVGPoint(); p.x=e.clientX; p.y=e.clientY; return p.matrixTransform(svg.getScreenCTM().inverse()); };
+  const angAt=e=>{ const p=toSvg(e); return Math.atan2(p.y-D.y,p.x-D.x); };
+  const startDrag=e=>{ e.preventDefault(); setAuto(false); drag=angAt(e); svg.setPointerCapture(e.pointerId); };
+  crank.addEventListener("pointerdown",startDrag); drive.addEventListener("pointerdown",startDrag); drive.style.cursor="grab";
+  svg.addEventListener("pointermove",e=>{ if(drag===null) return; const n=angAt(e); let d=n-drag; if(d>Math.PI) d-=2*Math.PI; if(d<-Math.PI) d+=2*Math.PI; a+=d; drag=n; });
+  const end=()=>drag=null; svg.addEventListener("pointerup",end); svg.addEventListener("pointercancel",end);
+
+  function circleX(p1,p2,r){ // upper intersection of two circles of radius r
+    const dx=p2.x-p1.x, dy=p2.y-p1.y, d=Math.hypot(dx,dy), h=Math.sqrt(Math.max(0,r*r-d*d/4)), mx=(p1.x+p2.x)/2, my=(p1.y+p2.y)/2;
+    return {x:mx+dy/d*h, y:my-dx/d*h};
+  }
+  function render(){
+    place(drive,D.x,D.y,a);
+    const hx=D.x+Math.cos(a)*74, hy=D.y+Math.sin(a)*74;
+    crankArm.setAttribute("x1",D.x); crankArm.setAttribute("y1",D.y); crankArm.setAttribute("x2",hx); crankArm.setAttribute("y2",hy);
+    crank.setAttribute("transform",`translate(${hx} ${hy})`);
+    if(mi===0){
+      const g2=-a*16/10+Math.PI/10; place(b1g2,318,440,g2);
+      const px=318+Math.cos(g2)*40, py=440+Math.sin(g2)*40; b1pin.setAttribute("cx",px); b1pin.setAttribute("cy",py);
+      b1rod.setAttribute("x1",px); b1rod.setAttribute("y1",py); b1rod.setAttribute("x2",470); b1rod.setAttribute("y2",274+Math.sin(g2)*10);
+      const peck=Math.max(0,Math.sin(g2))*38; b1head.setAttribute("transform",`rotate(${peck} 470 210)`);
+      seeds.forEach((sd,k)=>sd.style.opacity=peck>30&&k===((Math.floor(-a*16/10/(2*Math.PI))%3+3)%3)?.25:1);
+    } else if(mi===1){
+      const ai=-a*16/6, bi=a*16/13; place(idl,IDL.x,IDL.y,ai); place(whB,WB.x,WB.y,bi);
+      const pA={x:D.x+Math.cos(a+Math.PI)*62,y:D.y+Math.sin(a+Math.PI)*62}, pB={x:WB.x+Math.cos(bi)*52,y:WB.y+Math.sin(bi)*52};
+      const P=circleX(pA,pB,L);
+      [[pinA,pA],[pinB,pB]].forEach(([el,p])=>{ el.setAttribute("cx",p.x); el.setAttribute("cy",p.y); });
+      [[armA,pA],[armB,pB]].forEach(([el,p])=>{ el.setAttribute("x1",p.x); el.setAttribute("y1",p.y); el.setAttribute("x2",P.x); el.setAttribute("y2",P.y); });
+      pen.setAttribute("cx",P.x); pen.setAttribute("cy",P.y);
+      const last=trail[trail.length-1]; if(!last||Math.hypot(last[0]-P.x,last[1]-P.y)>1.2){ trail.push([P.x.toFixed(1),P.y.toFixed(1)]); if(trail.length>6000) trail.splice(0,trail.length-6000); ink.setAttribute("points",trail.join(" ")); }
+    } else {
+      const g2=-a*16/10+Math.PI/10; place(d3g2,318,440,g2);
+      const px=318+Math.cos(g2)*40, py=440+Math.sin(g2)*40; d3pin.setAttribute("cx",px); d3pin.setAttribute("cy",py);
+      d3rod.setAttribute("x1",px); d3rod.setAttribute("y1",py); d3rod.setAttribute("x2",452); d3rod.setAttribute("y2",300);
+      wing.setAttribute("transform",`rotate(${-12-22*Math.sin(g2)} 425 222)`);
+      neck.setAttribute("transform",`translate(0 ${10*Math.sin(2*g2)}) rotate(${6*Math.sin(2*g2)} 392 232)`);
+      const turn=Math.floor(a/(Math.PI*2)); if(turn>lastTurn && pellets.length<6){ pellets.push({el:svgEl("circle",{cx:516,cy:258,r:6,fill:"#8a6b45"},m3),y:258,v:0,x:516}); } lastTurn=turn;
+    }
+  }
+  A.automaton={
+    enter(){ setAuto(true); show(mi); },
+    tick(dt){
+      if(auto) a+=dt*M[mi].speed;
+      if(mi===2) pellets.forEach(p=>{ if(p.y<292){ p.v+=dt*.002; p.y=Math.min(292,p.y+p.v*dt); p.x+= (545-p.x)*Math.min(1,dt*.004); p.el.setAttribute("cy",p.y); p.el.setAttribute("cx",p.x); } });
+      render();
+    }
+  };
+  show(0);
 })();
 
 /* ---------- 9 gulliver ---------- */

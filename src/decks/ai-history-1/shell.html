@@ -281,6 +281,20 @@
   .ev .av{width:40px;height:40px;border-radius:50%;object-fit:cover;filter:grayscale(1);border:2px solid var(--line);flex:none}
   .ev .yrow{display:flex;align-items:center;gap:10px}
   .ev.now .av{border-color:var(--y)}
+  /* automaton exhibit */
+  .amHead{position:absolute;left:14px;right:14px;top:14px;display:flex;align-items:center;gap:12px;z-index:2}
+  .amTitle{flex:1;text-align:center}
+  .amName{font-size:22px;font-weight:700}
+  .amNote{font-size:15px;color:var(--mute);margin-top:2px;line-height:1.35}
+  .amArr{width:44px;height:44px;border-radius:50%;border:1px solid var(--line);background:var(--panel2);color:var(--ink);font-size:26px;line-height:1;cursor:pointer;flex:none}
+  .amArr:hover{border-color:var(--y);color:var(--y)}
+  .amCtl{position:absolute;left:14px;right:14px;bottom:14px;display:flex;align-items:center;gap:14px;z-index:2}
+  .amCtl .btn{font-size:16px;padding:8px 16px;min-width:108px}
+  .amHint{font-size:15px;color:var(--mute);flex:1}
+  .amDots{display:flex;gap:6px}
+  .amDots i{width:8px;height:8px;border-radius:50%;background:#3a3a42}
+  .amDots i.on{background:var(--y)}
+  #gears .crank{cursor:grab} #gears .crank:active{cursor:grabbing}
 </style>
 </head>
 <body>
@@ -420,7 +434,11 @@
         <p class="rise" style="--i:2">A <b>self-operating machine</b> that follows a fixed sequence of operations or responds to preset instructions.</p>
         <p class="rise muted" style="--i:3">For centuries: mechanical puppets of people and animals, built to impress and entertain.</p>
       </div>
-      <div class="stage-box rise" style="--i:2"><svg id="gears" viewBox="0 0 640 620"></svg><div class="cap">no mind, just a sequence of moves</div></div>
+      <div class="stage-box rise" style="--i:2" id="amBox">
+        <svg id="gears" viewBox="0 0 640 620"></svg>
+        <div class="amHead"><button class="amArr" id="amPrev" aria-label="Previous automaton">‹</button><div class="amTitle"><div class="amName" id="amName"></div><div class="amNote" id="amNote"></div></div><button class="amArr" id="amNext" aria-label="Next automaton">›</button></div>
+        <div class="amCtl"><button class="btn on" id="amAuto">❚❚ Pause</button><span class="amHint">or drag the <b class="y">yellow handle</b> to turn the crank</span><span class="amDots" id="amDots"></span></div>
+      </div>
     </div>
   </section>
 
