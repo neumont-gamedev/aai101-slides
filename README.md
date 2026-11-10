@@ -52,4 +52,7 @@ To add a deck, put its source in `src/decks/<slug>/`, add a builder function and
 in `src/build.py`, and rebuild. Each deck's `<slug>` is also its key in Firestore, so decks never
 interfere with each other.
 
+`src/library/` holds slides saved for future decks (e.g. the activation-functions graph), with notes
+on how to drop them in. The build ignores it.
+
 To update the bundled Firebase SDK: `cd src && npm install && npm run vendor`.
