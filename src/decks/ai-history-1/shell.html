@@ -326,6 +326,17 @@
   .meter .res{font-family:var(--mono);font-size:26px;font-weight:600;text-align:center;padding:12px 0;border-radius:12px;background:#2a2a30;color:#77746d;transition:all .3s}
   .meter .res.on{background:var(--y);color:var(--bg);box-shadow:0 0 30px rgba(255,194,14,.5)}
   .meter .res.stay{background:rgba(255,90,78,.16);color:var(--red);box-shadow:inset 0 0 0 1px rgba(255,90,78,.5)}
+  /* diagnosis demo */
+  .askcard .qn{display:flex;justify-content:space-between;align-items:center;width:100%}
+  .askcard .qdots{display:flex;gap:7px}.askcard .qdots i{width:10px;height:10px;border-radius:50%;background:#3a3a42}.askcard .qdots i.on{background:var(--y)}.askcard .qdots i.done{background:var(--green)}
+  .askcard .qhint{font-size:18px;color:var(--mute);margin-top:-12px}
+  .dx{display:flex;flex-direction:column;gap:12px;width:100%}
+  .dx .row{display:grid;grid-template-columns:110px 1fr 56px;gap:14px;align-items:center;font-family:var(--mono);font-size:17px}
+  .dx .bar{height:14px;border-radius:7px;background:#2a2a30;overflow:hidden}
+  .dx .bar i{display:block;height:100%;width:0;border-radius:7px;background:rgba(255,194,14,.45);transition:width .9s cubic-bezier(.2,.7,.2,1)}
+  .dx .row.top .bar i{background:var(--y)} .dx .row.top{color:var(--ink);font-weight:600} .dx .row:not(.top){color:var(--mute)}
+  .dx .row span:last-child{text-align:right}
+  .trail div.why{color:var(--mute);font-size:15px;padding-left:24px}
 </style>
 </head>
 <body>
@@ -651,9 +662,10 @@
   <section class="slide" data-id="sick">
     <div class="two">
       <div class="stack">
-        <h2 class="rise" style="--i:0"><span class="n">YOUR TURN</span>Build an expert system</h2>
-        <p class="rise" style="--i:1">A tiny rule base for one decision: <b>should you come to class?</b> Answer the questions, then add your own rules.</p>
+        <h2 class="rise" style="--i:0"><span class="n">YOUR TURN · EXPERT SYSTEM</span>Cold, flu, or allergies?</h2>
+        <p class="rise" style="--i:1">Answer five questions. Like MYCIN, the system weighs each answer as evidence and reaches a diagnosis with a <b>confidence level</b>.</p>
         <div class="trail rise" style="--i:2" id="sickTrail"></div>
+        <p class="rise muted" style="--i:3;font-size:15px">A classroom demo of how expert systems reason, not medical advice.</p>
       </div>
       <div class="askcard card rise" style="--i:2" id="sickCard"></div>
     </div>

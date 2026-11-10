@@ -686,25 +686,55 @@ document.querySelectorAll(".slide.tl").forEach(sl=>{
     const e=route[i], L=e.getTotalLength(), pt=e.getPointAtLength(ease(p)*L); dot.setAttribute("cx",pt.x); dot.setAttribute("cy",pt.y); dot.style.opacity=tt>route.length*per?0:1; } };
 })();
 
-/* ---------- are you sick ---------- */
+/* ---------- cold, flu, or allergies: a tiny MYCIN-style expert system ---------- */
 (() => {
   const card=$("sickCard"), trail=$("sickTrail");
-  const T={
-    q0:{q:"Are you sick?",k:"sick",yes:"q1",no:"a0"},
-    q1:{q:"Do you have a fever?",k:"fever",yes:"a1",no:"q2"},
-    q2:{q:"Are you coughing or sneezing a lot?",k:"contagious",yes:"a2",no:"a3"},
-    a0:{a:"Come to class!"}, a1:{a:"Stay home and rest. Email your instructor."}, a2:{a:"Stay home so you don’t spread it."}, a3:{a:"Come to class, but take it easy."},
-  };
-  let path=[];
-  function show(id){
-    const n=T[id];
-    trail.innerHTML=path.map((p,i)=>`<div>${i?"AND":"IF&nbsp;"} ${p.k} = <b>${p.v}</b></div>`).join("")+(n.a?`<div>THEN <b>${n.a}</b></div>`:"");
-    if(n.a){ card.innerHTML=`<div class="eyebrow">Conclusion</div><div class="ans flip">${n.a}</div><button class="btn" id="sickRe">Start over ↺</button>`; $("sickRe").onclick=()=>{ path=[]; show("q0"); }; return; }
-    card.innerHTML=`<div class="eyebrow">Question ${path.length+1}</div><div class="qq flip">${n.q}</div><div class="yesno"><button class="btn b-yes">YES</button><button class="btn b-no">NO</button></div>`;
-    card.querySelector(".b-yes").onclick=()=>{ path.push({k:n.k,v:"YES"}); show(n.yes); };
-    card.querySelector(".b-no").onclick=()=>{ path.push({k:n.k,v:"NO"}); show(n.no); };
+  // knowledge base: each answer adds evidence for (+) or against (−) each condition
+  const Q=[
+    {k:"fever",      q:"Do you have a fever?",               hint:"A temperature above normal",
+     yes:{flu:3.5,cold:0,allergies:-4},  no:{flu:-1.5,cold:.5,allergies:.5}},
+    {k:"body_aches", q:"Does your body ache?",               hint:"Sore muscles, achy all over",
+     yes:{flu:2,cold:.5,allergies:-1},   no:{flu:-1,cold:0,allergies:.5}},
+    {k:"itchy_eyes", q:"Are your eyes itchy or watery?",      hint:"",
+     yes:{allergies:3,cold:-.5,flu:-1},  no:{allergies:-1.5,cold:.5,flu:0}},
+    {k:"sudden",     q:"Did it come on suddenly?",            hint:"Fine one hour, sick the next",
+     yes:{flu:2,allergies:.5,cold:-1},   no:{cold:1,flu:-1.5,allergies:0}},
+    {k:"sneezing",   q:"Are you sneezing a lot?",             hint:"",
+     yes:{cold:1.5,allergies:1.5,flu:-.5}, no:{flu:.5,cold:-.5,allergies:-1}},
+  ];
+  const NAMES={cold:"Cold",flu:"Flu",allergies:"Allergies"};
+  let ans=[];
+  const dots=()=>`<span class="qdots">${Q.map((_,i)=>`<i class="${i<ans.length?"done":i===ans.length?"on":""}"></i>`).join("")}</span>`;
+  function diagnose(){
+    const sc={cold:0,flu:0,allergies:0};
+    ans.forEach((v,i)=>{ const ev=Q[i][v?"yes":"no"]; for(const c in ev) sc[c]+=ev[c]; });
+    const ex=Object.fromEntries(Object.entries(sc).map(([c,v])=>[c,Math.exp(v*.45)])), tot=Object.values(ex).reduce((a,b)=>a+b,0);
+    const conf=Object.entries(ex).map(([c,v])=>[c,v/tot]).sort((p,q)=>q[1]-p[1]);
+    const none=ans.every(v=>!v);
+    return {conf,none};
   }
-  A.sick={ enter(){ path=[]; show("q0"); } };
+  function render(){
+    // the rule trail on the left
+    let t=ans.map((v,i)=>`<div>${i?"AND":"IF&nbsp;"} ${Q[i].k} = <b>${v?"YES":"NO"}</b></div>`).join("");
+    if(ans.length===Q.length){
+      const {conf,none}=diagnose(), [top,p]=conf[0];
+      t+= none?`<div>THEN <b>none of these</b></div>`:`<div>THEN <b>${NAMES[top].toUpperCase()}</b> (confidence ${p.toFixed(2)})</div>`;
+      trail.innerHTML=t;
+      card.innerHTML=`<div class="qn"><div class="eyebrow">Diagnosis</div>${dots()}</div>`+
+        (none?`<div class="ans flip">Probably none of these. Maybe you’re just tired!</div>`:`<div class="ans flip">Most likely: ${NAMES[top]}</div>`)+
+        `<div class="dx">${conf.map(([c,v],i)=>`<div class="row ${i===0&&!none?"top":""}"><span>${NAMES[c]}</span><span class="bar"><i data-w="${(v*100).toFixed(0)}"></i></span><span>${(v*100).toFixed(0)}%</span></div>`).join("")}</div>`+
+        `<button class="btn" id="sickRe">Start over ↺</button>`;
+      requestAnimationFrame(()=>requestAnimationFrame(()=>card.querySelectorAll(".bar i").forEach(i=>i.style.width=i.dataset.w+"%")));
+      $("sickRe").onclick=()=>{ ans=[]; render(); };
+      return;
+    }
+    trail.innerHTML=t||`<div class="muted">rules will appear here as you answer…</div>`;
+    const q=Q[ans.length];
+    card.innerHTML=`<div class="qn"><div class="eyebrow">Question ${ans.length+1} of ${Q.length}</div>${dots()}</div><div class="qq flip">${q.q}</div>${q.hint?`<div class="qhint">${q.hint}</div>`:""}<div class="yesno"><button class="btn b-yes">YES</button><button class="btn b-no">NO</button></div>`;
+    card.querySelector(".b-yes").onclick=()=>{ ans.push(1); render(); };
+    card.querySelector(".b-no").onclick=()=>{ ans.push(0); render(); };
+  }
+  A.sick={ enter(){ ans=[]; render(); } };
 })();
 
 /* ---------- pong ---------- */
