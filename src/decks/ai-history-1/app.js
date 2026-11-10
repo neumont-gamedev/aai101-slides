@@ -60,19 +60,26 @@ const A={};
   const M=$("eM"), H=$("eH"), S=$("eS"), Ml=$("eMl"), Hl=$("eHl");
   const circ=(el,r)=>{ const L=2*Math.PI*r; el.style.strokeDasharray=L; return L; };
   const LM=circ(M,245), LH=circ(H,140);
-  let t=0;
+  // click-through build: 0 = nothing, 1 = premise 1, 2 = premise 2, 3 = therefore
+  const cap=$("eulerCap"), slide=svg.closest(".slide");
+  const HINTS=["click to show premise 1","click to show premise 2","click for the conclusion","the classic example, drawn as sets"];
+  let stage=0, since=[0,0,0,0], now=0;
+  function setStage(n,instant){ stage=Math.max(0,Math.min(3,n)); for(let k=1;k<=3;k++) since[k]=k<=stage?(instant?-1e9:(since[k]>-1e8&&k<stage?since[k]:now)):Infinity; cap.textContent=HINTS[stage]; }
+  slide.addEventListener("click",e=>{ if(e.target.closest("a,button")) return; if(stage<3) setStage(stage+1); });
   A.aristotle={
-    enter(){ t=0; },
+    enter(dir){ now=0; setStage(dir<0?3:0,true); },
+    step(){ if(stage>=3) return false; setStage(stage+1); return true; },
+    back(){ if(stage<=0) return false; setStage(stage-1,true); return true; },
     tick(dt){
-      t=(t+dt)%11000; const s=t/1000;
-      const pm=ease((s-.6)/1.2), ph=ease((s-1.8)/1.1), ps=ease((s-3.6)/.9), pc=s>5.6?1:0;
+      now+=dt;
+      const el=k=>(now-since[k])/1000;               // seconds since stage k began (negative = not yet)
+      const pm=ease(el(1)/1.1), ph=ease((el(1)-.7)/1.0), ps=ease(el(2)/.9), pc=stage>=3;
       M.style.strokeDashoffset=LM*(1-pm); M.style.fillOpacity=pm; Ml.style.opacity=pm;
       H.style.strokeDashoffset=LH*(1-ph); H.style.fillOpacity=ph; Hl.style.opacity=ph;
       S.style.opacity=ps; S.style.transform=`translateY(${(1-ps)*-360}px)`;
-      const pulse = pc ? (1+Math.sin((s-5.6)*4)*.5) : 0;
-      M.setAttribute("stroke-width", 3+pulse*3); M.setAttribute("fill", `rgba(106,184,255,${.06+pulse*.06})`);
-      lines[0].classList.toggle("on", s>.6 && s<10.5); lines[1].classList.toggle("on", s>3.6 && s<10.5); lines[2].classList.toggle("on", s>5.6 && s<10.5);
-      const fade=s>10.5?1-ease((s-10.5)/.5):1; svg.style.opacity=fade;
+      const pulse = pc ? Math.max(0,1-Math.max(0,el(3))/1.6)*(.5+.5*Math.sin(el(3)*7)) : 0;  // a few pulses, then settles
+      M.setAttribute("stroke-width", 3+(pc?2:0)+pulse*3); M.setAttribute("fill", `rgba(106,184,255,${.06+(pc?.05:0)+pulse*.06})`);
+      lines.forEach((l,i)=>l.classList.toggle("on", stage>i));
     }
   };
 })();
@@ -293,6 +300,7 @@ const A={};
 })();
 
 /* ---------- timeline ---------- */
+const AVATARS={"1950":"{{IMG:turing.jpg}}","1956":"{{IMG:mccarthy.jpg}}","1957":"{{IMG:rosenblatt.jpg}}"};
 const EVENTS=[
   ["1950","Alan Turing publishes “Computing Machinery and Intelligence” and proposes the Turing Test."],
   ["1956","John McCarthy coins “Artificial Intelligence” at the Dartmouth Conference. AI becomes a field."],
@@ -314,7 +322,7 @@ document.querySelectorAll(".slide.tl").forEach(sl=>{
     const e=document.createElement("div");
     e.className="ev "+(i%2?"dn":"up")+" "+(i<k?"done":i===k?"now new":"future")+(i===4&&i<=k?" winter":"");
     e.style.left=xp(i)+"%"; e.style.top="0"; e.style.height="100%";
-    e.innerHTML=`<div class="stem"></div><div class="dot"></div><div class="box"><div class="yr">${yr}</div><div class="tx">${tx}</div></div>`;
+    e.innerHTML=`<div class="stem"></div><div class="dot"></div><div class="box"><div class="yrow">${AVATARS[yr]?`<img class="av" src="${AVATARS[yr]}" alt="">`:""}<div class="yr">${yr}</div></div><div class="tx">${tx}</div></div>`;
     wrap.appendChild(e);
   });
   sl.appendChild(wrap);
@@ -710,10 +718,11 @@ function go(i,fromHash){
   i=Math.max(0,Math.min(slides.length-1,i));
   const capS=liveCap(); if(i>capS){ if(cur>=capS) toast("Waiting for your instructor…"); i=capS; }
   if(i===cur) return;
+  const dir=i>cur?1:-1;
   if(cur>=0) slides[cur].classList.remove("active");
   cur=i; const s=slides[cur]; s.classList.add("active");
   s.querySelectorAll("canvas").forEach(fitCanvas);
-  const a=A[s.dataset.id]; if(a&&a.enter) a.enter();
+  const a=A[s.dataset.id]; if(a&&a.enter) a.enter(dir);
   countEl.textContent=`${cur+1} / ${slides.length}`; prog.style.width=((cur+1)/slides.length*100)+"%";
   if(!fromHash){ try{ history.replaceState(null,"","#s"+(cur+1)); }catch(e){} }
   if(Live.role==="presenter"&&Live.locked) pushLive();
@@ -721,19 +730,21 @@ function go(i,fromHash){
 }
 function fromHash(){ const m=/^#s(\d+)$/.exec(location.hash); go(m?+m[1]-1:0,true); }
 addEventListener("hashchange",fromHash);
-$("prev").onclick=()=>go(cur-1); $("next").onclick=()=>go(cur+1);
+function advance(){ const a=A[slides[cur].dataset.id]; if(a&&a.step&&a.step()) return; go(cur+1); }
+function retreat(){ const a=A[slides[cur].dataset.id]; if(a&&a.back&&a.back()) return; go(cur-1); }
+$("prev").onclick=retreat; $("next").onclick=advance;
 function toggleFS(){ try{ if(document.fullscreenElement) document.exitFullscreen(); else document.documentElement.requestFullscreen().catch(()=>{}); }catch(e){} }
 $("fs").onclick=toggleFS;
 addEventListener("keydown",e=>{
   if(e.target.tagName==="INPUT") return;
   const k=e.key;
-  if(["ArrowRight","PageDown"].includes(k)||(k===" "&&e.target.tagName!=="BUTTON")){ go(cur+1); e.preventDefault(); }
-  else if(["ArrowLeft","PageUp"].includes(k)){ go(cur-1); e.preventDefault(); }
+  if(["ArrowRight","PageDown"].includes(k)||(k===" "&&e.target.tagName!=="BUTTON")){ advance(); e.preventDefault(); }
+  else if(["ArrowLeft","PageUp"].includes(k)){ retreat(); e.preventDefault(); }
   else if(k==="Home") go(0); else if(k==="End") go(slides.length-1);
   else if(k==="f"||k==="F") toggleFS();
 });
 let sx=null; stage.addEventListener("touchstart",e=>{ if(e.target.closest("input,button,.cell,.switch,.fact,svg")) return; sx=e.touches[0].clientX; },{passive:true});
-stage.addEventListener("touchend",e=>{ if(sx===null) return; const dx=e.changedTouches[0].clientX-sx; if(Math.abs(dx)>60) go(cur+(dx<0?1:-1)); sx=null; });
+stage.addEventListener("touchend",e=>{ if(sx===null) return; const dx=e.changedTouches[0].clientX-sx; if(Math.abs(dx)>60) (dx<0?advance:retreat)(); sx=null; });
 addEventListener("resize",fitStage);
 fitStage(); fromHash(); claudeAdapter();
 let last=performance.now();

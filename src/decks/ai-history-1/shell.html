@@ -265,6 +265,22 @@
   .nbtn:disabled{opacity:.25;cursor:not-allowed;border-color:var(--line);color:var(--ink)}
   #toast{position:absolute;left:50%;bottom:76px;z-index:20;transform:translate(-50%,16px);opacity:0;pointer-events:none;background:var(--panel2);border:1px solid var(--y);color:var(--ink);font-size:20px;padding:12px 22px;border-radius:12px;transition:opacity .3s,transform .3s;box-shadow:0 12px 40px rgba(0,0,0,.5)}
   #toast.on{opacity:1;transform:translate(-50%,0)}
+  /* portraits */
+  .who{display:flex;gap:20px;align-items:center}
+  .ph{position:relative;flex:none;width:104px;height:130px;border-radius:12px;overflow:hidden;border:1px solid var(--line);background:#222}
+  .ph img{width:100%;height:100%;object-fit:cover;display:block;filter:grayscale(1) contrast(1.06) brightness(.96)}
+  .ph::after{content:"";position:absolute;inset:0;background:var(--y);mix-blend-mode:color;opacity:.16;pointer-events:none}
+  .who .nm{font-size:25px;font-weight:700;line-height:1.15}
+  .who .dt{font-family:var(--mono);font-size:16px;color:var(--y);margin-top:4px}
+  .who .rl{font-size:17px;color:var(--mute);margin-top:6px;line-height:1.35}
+  .who.tall .ph{width:200px;height:250px}
+  .photo{position:relative;border-radius:14px;overflow:hidden;border:1px solid var(--line)}
+  .photo img{width:100%;height:210px;object-fit:cover;object-position:center 30%;display:block;filter:grayscale(1) contrast(1.05)}
+  .photo::after{content:"";position:absolute;inset:0;background:var(--y);mix-blend-mode:color;opacity:.14;pointer-events:none}
+  .photo figcaption{position:absolute;left:12px;bottom:10px;font-family:var(--mono);font-size:14px;color:var(--ink);background:rgba(13,13,15,.8);padding:4px 9px;border-radius:7px;z-index:1}
+  .ev .av{width:40px;height:40px;border-radius:50%;object-fit:cover;filter:grayscale(1);border:2px solid var(--line);flex:none}
+  .ev .yrow{display:flex;align-items:center;gap:10px}
+  .ev.now .av{border-color:var(--y)}
 </style>
 </head>
 <body>
@@ -296,7 +312,7 @@
   </section>
 
   <!-- 3 aristotle -->
-  <section class="slide" data-id="aristotle">
+  <section class="slide" data-id="aristotle" style="cursor:pointer">
     <div class="two">
       <div class="stack">
         <h2 class="rise" style="--i:0"><span class="n">ARISTOTLE · 384–322 BC</span>Reasoning with rules</h2>
@@ -308,7 +324,7 @@
           <div class="l"><span class="k">THEREFORE</span><span><span class="term tC">Socrates</span> is <span class="term tB">mortal</span>.</span></div>
         </div>
       </div>
-      <div class="stage-box rise" style="--i:2"><svg id="euler" viewBox="0 0 640 620"></svg><div class="cap">the classic example, drawn as sets</div></div>
+      <div class="stage-box rise" style="--i:2"><svg id="euler" viewBox="0 0 640 620"></svg><div class="cap" id="eulerCap">click to show premise 1</div></div>
     </div>
   </section>
 
@@ -436,6 +452,7 @@
   <section class="slide" data-id="turing">
     <div class="two">
       <div class="stack">
+        <div class="who rise" style="--i:0"><div class="ph"><img src="{{IMG:turing.jpg}}" alt="Alan Turing"></div><div><div class="nm">Alan Turing</div><div class="dt">1912–1954</div><div class="rl">Mathematician, codebreaker, computer science pioneer</div></div></div>
         <h2 class="rise" style="--i:0"><span class="n">1950 · ALAN TURING</span>The Turing Test</h2>
         <p class="rise" style="--i:1">“Can machines think?” In <i class="t">Computing Machinery and Intelligence</i>, Turing swapped that question for a game:</p>
         <ol class="num rise" style="--i:2">
@@ -460,9 +477,10 @@
 
   <!-- dartmouth -->
   <section class="slide" data-id="dartmouth">
+    <div style="position:absolute;right:110px;top:100px;width:330px"><div class="who rise tall" style="--i:1;flex-direction:column;align-items:flex-start;gap:14px"><div class="ph"><img src="{{IMG:mccarthy.jpg}}" alt="John McCarthy"></div><div><div class="nm">John McCarthy</div><div class="dt">1927–2011</div><div class="rl">Coined the term “artificial intelligence”</div></div></div></div>
     <h2 class="rise" style="--i:0"><span class="n">1956 · DARTMOUTH COLLEGE</span>The birth of a field</h2>
-    <p class="rise" style="--i:1;margin-top:20px;max-width:1150px">A summer research project organized by <b>John McCarthy</b>, then a math professor at Dartmouth. His proposal coined the term <b class="y">artificial intelligence</b> and rested on one conjecture:</p>
-    <div class="quote rise" style="--i:2;margin-top:34px;max-width:1300px"><span id="dq"></span><span class="caret"></span></div>
+    <p class="rise" style="--i:1;margin-top:20px;max-width:960px">A summer research project organized by <b>John McCarthy</b>, then a math professor at Dartmouth. His proposal coined the term <b class="y">artificial intelligence</b> and rested on one conjecture:</p>
+    <div class="quote rise" style="--i:2;margin-top:34px;max-width:1000px"><span id="dq"></span><span class="caret"></span></div>
     <div class="rise" style="--i:3;margin-top:24px"><div class="eyebrow" style="font-size:15px;margin-bottom:12px">Signed by</div>
       <div class="signers"><span class="signer">J. McCarthy</span><span class="signer">M. L. Minsky</span><span class="signer">N. Rochester</span><span class="signer hl">C. E. Shannon</span></div></div>
   </section>
@@ -492,6 +510,7 @@
   <section class="slide" data-id="perceptron">
     <div class="two">
       <div class="stack">
+        <div class="who rise" style="--i:0"><div class="ph"><img src="{{IMG:rosenblatt.jpg}}" alt="Frank Rosenblatt"></div><div><div class="nm">Frank Rosenblatt</div><div class="dt">1928–1971</div><div class="rl">Psychologist and AI researcher, Cornell</div></div></div>
         <h2 class="rise" style="--i:0"><span class="n">1957 · FRANK ROSENBLATT</span>The Perceptron</h2>
         <p class="rise" style="--i:1">The simplest neural network: one artificial neuron that makes a <b>yes / no</b> (1 / 0) decision.</p>
         <ul class="bul rise" style="--i:2">
@@ -664,6 +683,7 @@
           <li>A huge library of <b>chess knowledge</b></li>
           <li>Custom hardware evaluating <b>millions of positions per second</b></li>
         </ul>
+        <figure class="photo rise" style="--i:3"><img src="{{IMG:kasparov-deep-blue.jpg}}" alt="Garry Kasparov at the board against Deep Blue, 1997"><figcaption>Kasparov vs. Deep Blue, 1997</figcaption></figure>
       </div>
       <div class="stage-box rise" style="--i:2"><canvas id="chess"></canvas><div class="cap" id="chessCap">positions evaluated: 0</div></div>
     </div>

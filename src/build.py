@@ -2,6 +2,7 @@
 
 each deck in DECKS becomes <slug>/index.html, plus the landing page index.html.
 to add a deck: put its source in src/decks/<slug>/, write a builder function, add a line to DECKS.
+images: put them in src/decks/<slug>/img/ and reference them as {{IMG:name.jpg}} in the deck source.
 """
 import base64, os, re, shutil
 
@@ -38,9 +39,11 @@ def to_web(html, slug):
 def main():
     cards = []
     for slug, build, num, title, blurb in DECKS:
-        html = build()
+        html = re.sub(r"\{\{IMG:([^}]+)\}\}", r"img/\1", build())  # images load as files from <slug>/img/
         assert "/*LIVE_CORE*/" not in html and "{{" not in html, f"{slug}: unfilled placeholder"
         os.makedirs(f"{OUT}/{slug}", exist_ok=True)
+        if os.path.isdir(f"{SRC}/decks/{slug}/img"):
+            shutil.copytree(f"{SRC}/decks/{slug}/img", f"{OUT}/{slug}/img", dirs_exist_ok=True)
         open(f"{OUT}/{slug}/index.html", "w", encoding="utf-8").write(to_web(html, slug))
         cards.append(f'    <a class="deck" href="{slug}/"><span class="n">{num}</span><h2>{title}</h2><p>{blurb}</p><span class="go">Open slides →</span></a>')
         print("built", slug)
