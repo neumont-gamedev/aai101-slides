@@ -337,6 +337,24 @@
   .dx .row.top .bar i{background:var(--y)} .dx .row.top{color:var(--ink);font-weight:600} .dx .row:not(.top){color:var(--mute)}
   .dx .row span:last-child{text-align:right}
   .trail div.why{color:var(--mute);font-size:15px;padding-left:24px}
+  /* valid or invalid game */
+  .vqHead{display:flex;align-items:center;gap:16px}
+  .vqHead #vqScore{margin-left:auto;font-size:17px;color:var(--mute)}
+  .vqDots{display:flex;gap:7px}.vqDots i{width:10px;height:10px;border-radius:50%;background:#3a3a42}.vqDots i.on{background:var(--y)}.vqDots i.ok{background:var(--green)}.vqDots i.no{background:var(--red)}
+  .vqAct{display:flex;flex-direction:column;gap:14px;min-height:150px}
+  .vqBtns{display:flex;gap:16px}
+  .vqBtns .btn{font-size:22px;padding:12px 30px;border-radius:999px}
+  .vqFb{display:flex;flex-direction:column;gap:10px}
+  .vqFb .top{display:flex;gap:12px;align-items:center;flex-wrap:wrap}
+  .vqFb .tag{font-size:17px;padding:6px 12px}
+  .vqFb .fm{font-family:var(--mono);font-size:19px;color:var(--ink)}
+  .vqFb .why{font-size:20px;line-height:1.45;color:#d6d3cb}
+  .trapCard{position:relative;transition:opacity .4s,border-color .4s}
+  .trapCard.locked{opacity:.35}
+  .trapCard.locked .form{filter:blur(5px)}
+  .trapCard.fresh{border-color:var(--red);box-shadow:0 0 0 4px rgba(255,90,78,.12)}
+  .trapLock{position:absolute;right:20px;top:22px;font-family:var(--mono);font-size:13px;color:var(--mute)}
+  .trapCard:not(.locked) .trapLock{display:none}
 </style>
 </head>
 <body>
@@ -386,26 +404,32 @@
 
   <!-- 4 form -->
   <section class="slide" data-id="form">
-    <h2 class="rise" style="--i:0"><span class="n">ARISTOTLE · THE BIG IDEA</span>Valid by <span class="y">form</span>, not by meaning</h2>
-    <div class="two" style="height:auto;margin-top:46px;align-items:start">
-      <div class="stack">
-        <div class="card rise" style="--i:1;padding:30px 34px">
-          <div class="syl" id="sylB">
-            <div class="l on"><span class="k">PREMISE 1</span><span id="fb1"></span></div>
-            <div class="l on"><span class="k">PREMISE 2</span><span id="fb2"></span></div>
+    <h2 class="rise" style="--i:0"><span class="n">ARISTOTLE · YOUR TURN</span>Valid or <span class="y">invalid</span>?</h2>
+    <p class="rise" style="--i:1;margin-top:14px;max-width:1150px">An argument is <b>valid</b> if the conclusion <i class="t">must</i> follow from the premises. Judge the <b>form</b>, not whether you agree with it.</p>
+    <div class="two" style="height:auto;margin-top:30px;align-items:start;grid-template-columns:1.15fr .85fr;gap:48px">
+      <div class="stack" style="gap:18px">
+        <div class="card rise" style="--i:2;padding:24px 30px">
+          <div class="vqHead"><span class="eyebrow" style="font-size:15px" id="vqNum"></span><span class="vqDots" id="vqDots"></span><span class="mono" id="vqScore"></span></div>
+          <div class="syl" id="vqSyl" style="margin-top:16px;font-size:31px">
+            <div class="l on"><span class="k">PREMISE 1</span><span id="vq1"></span></div>
+            <div class="l on"><span class="k">PREMISE 2</span><span id="vq2"></span></div>
             <hr>
-            <div class="l on"><span class="k">THEREFORE</span><span id="fb3"></span></div>
+            <div class="l on"><span class="k">THEREFORE</span><span id="vq3"></span></div>
           </div>
         </div>
-        <div class="verdict rise" style="--i:2" id="fverdict"></div>
-        <div class="rise" style="--i:3;display:flex;gap:12px"><button class="btn" id="fnext">Swap the words ↻</button></div>
+        <div class="vqAct rise" style="--i:3" id="vqAct"></div>
       </div>
-      <div class="stack">
-        <div class="card rise" style="--i:2;padding:26px 30px">
-          <div class="eyebrow" style="font-size:16px;margin-bottom:14px">The pattern never changes</div>
-          <div class="form"><span>All <span class="term tA">A</span> are <span class="term tB">B</span></span><span><span class="term tC">C</span> is an <span class="term tA">A</span></span><span>∴ <span class="term tC">C</span> is <span class="term tB">B</span></span></div>
+      <div class="stack" style="gap:18px">
+        <div class="card rise" style="--i:2;padding:22px 26px">
+          <div class="eyebrow" style="font-size:15px;margin-bottom:12px;color:var(--green)">✓ A valid pattern</div>
+          <div class="form"><span>All <span class="term tA">A</span> are <span class="term tB">B</span></span><span><span class="term tC">C</span> is <span class="term tA">A</span></span><span>∴ <span class="term tC">C</span> is <span class="term tB">B</span></span></div>
         </div>
-        <div class="callout rise" style="--i:3">You can check this pattern <b>without understanding the words</b>. If reasoning is just following rules, then a machine could do it. That idea is the seed of AI.</div>
+        <div class="card trapCard rise" style="--i:3;padding:22px 26px" id="vqTrap">
+          <div class="eyebrow" style="font-size:15px;margin-bottom:12px;color:var(--red)">✗ The common trap</div>
+          <div class="form"><span>All <span class="term tA">A</span> are <span class="term tB">B</span></span><span><span class="term tC">C</span> is <span class="term tB">B</span></span><span>∴ <span class="term tC">C</span> is <span class="term tA">A</span></span></div>
+          <div class="trapLock">unlocks when you find one</div>
+        </div>
+        <div class="callout rise" style="--i:4">You can check the form <b>without understanding the words</b>. If reasoning is just following rules, a machine could do it. That idea is the seed of AI.</div>
       </div>
     </div>
   </section>
