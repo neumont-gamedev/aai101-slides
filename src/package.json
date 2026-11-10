@@ -1,0 +1,9 @@
+{
+  "name": "aai101-slides-build",
+  "private": true,
+  "description": "only needed to rebuild vendor/firebase.js",
+  "scripts": {
+    "vendor": "esbuild firebase-entry.js --bundle --format=esm --minify --outfile=../vendor/firebase.js"
+  },
+  "devDependencies": { "esbuild": "^0.28.2", "firebase": "13.2.0" }
+}

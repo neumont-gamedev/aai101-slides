@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>AAI101 · Introduction to Artificial Intelligence</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;700&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+<style>
+  :root{--bg:#121214;--panel:#1c1c20;--line:#2e2e35;--ink:#f3f1ea;--mute:#9b988f;--y:#ffc20e;
+    --sans:"Space Grotesk",system-ui,-apple-system,"Segoe UI",sans-serif;--mono:"JetBrains Mono",ui-monospace,Consolas,monospace}
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{background:var(--bg);color:var(--ink);font-family:var(--sans);min-height:100vh}
+  canvas{position:fixed;inset:0;width:100%;height:100%;opacity:.2;z-index:0}
+  header,main,footer{position:relative;z-index:1;max-width:1100px;margin:0 auto;padding:0 32px}
+  header{display:flex;justify-content:space-between;align-items:center;padding-top:28px}
+  header img{height:40px}
+  .tag{font-family:var(--mono);font-size:14px;letter-spacing:.14em;color:var(--mute);text-transform:uppercase}
+  .tag b{color:var(--y);font-weight:600}
+  h1{font-size:clamp(44px,7vw,84px);line-height:1;letter-spacing:-.03em;margin:80px 0 18px}
+  h1 span{color:var(--y)}
+  .lede{font-size:21px;color:#c9c6be;max-width:720px;line-height:1.5}
+  .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:20px;margin:56px 0 80px}
+  a.deck{display:flex;flex-direction:column;gap:10px;padding:26px;border-radius:18px;background:rgba(28,28,32,.9);border:1px solid var(--line);color:inherit;text-decoration:none;transition:border-color .2s,transform .2s}
+  a.deck:hover{border-color:var(--y);transform:translateY(-3px)}
+  .deck .n{font-family:var(--mono);font-size:14px;color:var(--y);letter-spacing:.1em}
+  .deck h2{font-size:28px}
+  .deck p{color:var(--mute);font-size:17px;line-height:1.45}
+  .deck .go{margin-top:auto;font-family:var(--mono);font-size:14px;color:var(--ink)}
+  footer{color:var(--mute);font-size:14px;padding-bottom:40px;font-family:var(--mono)}
+</style>
+</head>
+<body>
+<canvas id="bg"></canvas>
+<header><div class="tag"><b>AAI101</b> · slides</div><img src="{{LOGO}}" alt="Neumont University"></header>
+<main>
+  <h1>Introduction to<br><span>Artificial Intelligence</span></h1>
+  <p class="lede">Interactive slides for AAI101. During class, your instructor may lock the slides so everyone follows along together.</p>
+  <div class="grid">
+{{DECKS}}
+  </div>
+</main>
+<footer>Use ← → to move between slides · F for fullscreen</footer>
+<script>
+// faint game-of-life background
+(() => {
+  const cv=document.getElementById("bg"), x=cv.getContext("2d"); let W,H,cs=14,c,n,cols,rows,t=0;
+  function size(){ W=cv.width=innerWidth; H=cv.height=innerHeight; cols=Math.ceil(W/cs); rows=Math.ceil(H/cs); c=new Uint8Array(cols*rows).map(()=>Math.random()<.18); n=new Uint8Array(cols*rows); }
+  function step(){ for(let y=0;y<rows;y++) for(let i=0;i<cols;i++){ let s=0; for(let dy=-1;dy<=1;dy++) for(let dx=-1;dx<=1;dx++) if(dx||dy) s+=c[((y+dy+rows)%rows)*cols+(i+dx+cols)%cols]; const k=y*cols+i; n[k]=c[k]?(s===2||s===3):(s===3); } [c,n]=[n,c]; }
+  function draw(now){ if(now-t>140){ t=now; step(); x.clearRect(0,0,W,H); x.fillStyle="#ffc20e"; for(let k=0;k<c.length;k++) if(c[k]) x.fillRect((k%cols)*cs+2,((k/cols)|0)*cs+2,cs-4,cs-4); } requestAnimationFrame(draw); }
+  addEventListener("resize",size); size(); requestAnimationFrame(draw);
+})();
+</script>
+</body>
+</html>

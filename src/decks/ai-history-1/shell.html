@@ -1,0 +1,681 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>AAI101 · AI History · Part 1</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;700&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#121214; --panel:#1c1c20; --panel2:#24242a; --line:#2e2e35;
+    --ink:#f3f1ea; --mute:#9b988f; --y:#ffc20e; --amber:#ff8a1f; --red:#ff5a4e; --green:#5fd68a; --blue:#6ab8ff;
+    --sans:"Space Grotesk",system-ui,-apple-system,"Segoe UI",sans-serif;
+    --mono:"JetBrains Mono",ui-monospace,Consolas,monospace;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  html,body{height:100%;background:#000;overflow:hidden;color:var(--ink);font-family:var(--sans)}
+  #stage{position:absolute;left:50%;top:50%;width:1600px;height:900px;background:var(--bg);overflow:hidden}
+
+  .slide{position:absolute;inset:0;padding:100px 110px 90px;opacity:0;visibility:hidden;transform:scale(1.015);
+    transition:opacity .6s ease,transform .8s cubic-bezier(.2,.7,.2,1),visibility 0s .6s}
+  .slide.active{opacity:1;visibility:visible;transform:none;transition:opacity .6s ease,transform .8s cubic-bezier(.2,.7,.2,1),visibility 0s}
+  .rise{opacity:0;transform:translateY(26px);transition:opacity .7s ease,transform .8s cubic-bezier(.2,.7,.2,1)}
+  .slide.active .rise{opacity:1;transform:none;transition-delay:calc(var(--i,0) * 110ms + 150ms)}
+
+  .bg{position:absolute;inset:0;width:100%;height:100%;display:block}
+  .vignette{position:absolute;inset:0;background:radial-gradient(ellipse at center,rgba(18,18,20,.5) 0%,rgba(18,18,20,.88) 60%,var(--bg) 100%);pointer-events:none}
+  .content{position:relative;z-index:1;height:100%}
+  .center{display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center}
+
+  .eyebrow{font-family:var(--mono);font-size:20px;letter-spacing:.18em;text-transform:uppercase;color:var(--y)}
+  h1{font-size:118px;line-height:.98;font-weight:700;letter-spacing:-.03em;margin:22px 0 34px}
+  h1 span,h2 span.y{color:var(--y)}
+  h2{font-size:56px;font-weight:700;letter-spacing:-.02em;line-height:1.06}
+  h2 .n{font-family:var(--mono);font-size:21px;color:var(--y);font-weight:600;display:block;letter-spacing:.12em;margin-bottom:12px}
+  .lede{font-size:31px;line-height:1.4;color:#d6d3cb;max-width:1100px}
+  p{font-size:25px;line-height:1.45;color:#d6d3cb}
+  b,strong{color:var(--ink)}
+  i.t{font-style:italic;color:var(--ink)}
+  .y{color:var(--y)} .mono{font-family:var(--mono)} .muted{color:var(--mute)}
+  .card{background:var(--panel);border:1px solid var(--line);border-radius:18px}
+
+  .bul{list-style:none;display:flex;flex-direction:column;gap:14px;margin-top:6px}
+  .bul li{font-size:24px;line-height:1.4;color:#d6d3cb;position:relative;padding-left:26px}
+  .bul li::before{content:"";position:absolute;left:0;top:.5em;width:11px;height:11px;background:var(--y);border-radius:3px}
+  .num{list-style:none;counter-reset:n;display:flex;flex-direction:column;gap:14px}
+  .num li{counter-increment:n;font-size:24px;line-height:1.4;color:#d6d3cb;position:relative;padding-left:44px}
+  .num li::before{content:counter(n);position:absolute;left:0;top:.18em;font-family:var(--mono);font-size:16px;line-height:1.4;color:var(--bg);background:var(--y);border-radius:6px;padding:0 9px}
+
+  .two{display:grid;grid-template-columns:1fr 1fr;gap:64px;height:100%;align-items:center}
+  .two.wide-r{grid-template-columns:.85fr 1.15fr}
+  .stack{display:flex;flex-direction:column;gap:26px}
+  .stage-box{position:relative;height:620px;border-radius:20px;overflow:hidden;border:1px solid var(--line);background:#0d0d0f}
+  .stage-box canvas,.stage-box svg{position:absolute;inset:0;width:100%;height:100%}
+  .cap{position:absolute;left:18px;bottom:14px;font-family:var(--mono);font-size:15px;color:var(--mute);background:rgba(13,13,15,.8);padding:6px 10px;border-radius:8px;z-index:2}
+  .callout{border-left:4px solid var(--y);padding:14px 20px;background:rgba(255,194,14,.07);border-radius:0 12px 12px 0;font-size:22px;line-height:1.45;color:#e5e2da}
+  .linkchip{display:inline-flex;align-items:center;gap:10px;font-family:var(--mono);font-size:17px;color:var(--ink);border:1px solid var(--line);background:var(--panel);border-radius:999px;padding:8px 16px;text-decoration:none;width:max-content}
+  .linkchip:hover{border-color:var(--y);color:var(--y)}
+  .linkchip::before{content:"↗";color:var(--y)}
+  .btn{background:var(--panel2);border:1px solid var(--line);color:var(--ink);font:500 19px var(--sans);padding:10px 20px;border-radius:10px;cursor:pointer}
+  .btn:hover{border-color:var(--y);color:var(--y)}
+  .btn.on{background:var(--y);color:var(--bg);border-color:var(--y)}
+  .tag{display:inline-block;font-family:var(--mono);font-size:15px;padding:4px 10px;border-radius:6px;font-weight:600;letter-spacing:.04em}
+  .t-red{background:rgba(255,90,78,.15);color:var(--red)} .t-green{background:rgba(95,214,138,.15);color:var(--green)} .t-blue{background:rgba(106,184,255,.15);color:var(--blue)} .t-y{background:rgba(255,194,14,.15);color:var(--y)}
+
+  /* chrome */
+  #chrome{position:absolute;left:0;right:0;bottom:0;height:56px;display:flex;align-items:center;gap:18px;padding:0 32px;z-index:10;font-family:var(--mono);font-size:16px;color:var(--mute);pointer-events:none}
+  #chrome button{pointer-events:auto}
+  #chrome .sp{flex:1}
+  #brand{position:absolute;left:32px;top:28px;z-index:10;font-family:var(--mono);font-size:15px;letter-spacing:.14em;color:var(--mute);text-transform:uppercase}
+  #brand b{color:var(--y);font-weight:600}
+  #logo{position:absolute;right:32px;top:22px;height:44px;z-index:10;pointer-events:none;filter:drop-shadow(0 2px 8px rgba(0,0,0,.5))}
+  #progress{position:absolute;left:0;bottom:0;height:4px;background:var(--y);transition:width .5s cubic-bezier(.2,.7,.2,1);z-index:11}
+  .nbtn{background:transparent;border:1px solid var(--line);color:var(--ink);font:inherit;width:40px;height:34px;border-radius:8px;cursor:pointer}
+  .nbtn:hover{border-color:var(--y);color:var(--y)}
+
+  /* question */
+  .qimg{height:640px;border-radius:20px;overflow:hidden;border:1px solid var(--line);position:relative}
+  .qimg img{width:100%;height:100%;object-fit:cover;transform:scale(1.08);transition:transform 14s ease-out}
+  .slide.active .qimg img{transform:scale(1)}
+  .bigq{font-size:68px;line-height:1.08;font-weight:700;letter-spacing:-.02em}
+  .bigq span{color:var(--y)}
+
+  /* syllogism */
+  .syl{display:flex;flex-direction:column;gap:18px;font-size:34px;font-weight:500}
+  .syl .l{display:flex;gap:18px;align-items:baseline;opacity:.15;transition:opacity .5s}
+  .syl .l.on{opacity:1}
+  .syl .k{font-family:var(--mono);font-size:16px;color:var(--mute);width:110px;flex:none;letter-spacing:.06em}
+  .syl hr{border:none;border-top:2px solid var(--line);margin:2px 0 2px 128px}
+  .term{display:inline-block;border-radius:8px;padding:0 8px;margin:0 -2px}
+  .tA{background:rgba(255,194,14,.16);color:var(--y)} .tB{background:rgba(106,184,255,.16);color:var(--blue)} .tC{background:rgba(95,214,138,.16);color:var(--green)}
+  .flip{animation:flip .55s cubic-bezier(.2,.7,.2,1)}
+  @keyframes flip{0%{transform:rotateX(90deg);opacity:0}100%{transform:none;opacity:1}}
+  .form{font-family:var(--mono);font-size:22px;color:var(--mute);display:flex;gap:26px;flex-wrap:wrap}
+  .verdict{display:flex;gap:12px;align-items:center;min-height:40px}
+  .verdict .tag{font-size:18px;padding:7px 14px}
+
+  /* boole */
+  .sw{display:flex;gap:26px}
+  .switch{flex:1;padding:20px;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:14px;user-select:none}
+  .switch .lbl{font-family:var(--mono);font-size:18px;color:var(--mute)}
+  .switch .tog{width:96px;height:52px;border-radius:30px;background:#2a2a30;position:relative;transition:background .3s}
+  .switch .tog::after{content:"";position:absolute;left:6px;top:6px;width:40px;height:40px;border-radius:50%;background:#77746d;transition:transform .35s cubic-bezier(.3,1.4,.5,1),background .3s}
+  .switch.on .tog{background:rgba(255,194,14,.3)} .switch.on .tog::after{transform:translateX(44px);background:var(--y)}
+  .switch .val{font-family:var(--mono);font-size:44px;font-weight:600}
+  .switch.on .val{color:var(--y)}
+  .gates{display:flex;gap:18px}
+  .gate{flex:1;padding:18px;display:flex;flex-direction:column;align-items:center;gap:10px}
+  .gate .op{font-family:var(--mono);font-size:20px;font-weight:600;letter-spacing:.08em}
+  .gate .bulb{width:58px;height:58px;border-radius:50%;background:#2a2a30;transition:background .3s,box-shadow .3s;display:grid;place-items:center;font-family:var(--mono);font-size:26px;font-weight:600;color:#77746d}
+  .gate.on .bulb{background:var(--y);color:var(--bg);box-shadow:0 0 34px rgba(255,194,14,.65)}
+  .gate .ex{font-size:16px;color:var(--mute);text-align:center;line-height:1.35}
+  table.tt{border-collapse:collapse;font-family:var(--mono);font-size:21px;width:100%}
+  table.tt th,table.tt td{padding:9px 14px;text-align:center;border-bottom:1px solid var(--line)}
+  table.tt th{color:var(--mute);font-weight:400;font-size:16px;letter-spacing:.06em}
+  table.tt tr.hi td{background:rgba(255,194,14,.12);color:var(--y)}
+  table.tt td.one{color:var(--ink)} table.tt tr.hi td.one{color:var(--y);font-weight:600}
+
+  /* timeline */
+  .tlwrap{position:absolute;left:90px;right:90px;top:250px;height:520px}
+  .tlaxis{position:absolute;left:0;right:0;top:50%;height:3px;background:var(--line);border-radius:2px}
+  .tlfill{position:absolute;left:0;top:50%;height:3px;background:linear-gradient(90deg,var(--amber),var(--y));border-radius:2px;width:0;transition:width 1.2s cubic-bezier(.4,0,.2,1) .2s}
+  .tlarrow{position:absolute;right:-6px;top:calc(50% - 7px);width:0;height:0;border-left:14px solid var(--line);border-top:8px solid transparent;border-bottom:8px solid transparent}
+  .ev{position:absolute;width:300px;transform:translateX(-50%)}
+  .ev .dot{position:absolute;left:50%;width:22px;height:22px;margin-left:-11px;border-radius:50%;background:var(--bg);border:3px solid var(--mute)}
+  .ev .stem{position:absolute;left:50%;width:2px;margin-left:-1px;background:var(--line)}
+  .ev .box{position:absolute;left:0;right:0;padding:16px 18px;border-radius:14px;background:var(--panel);border:1px solid var(--line)}
+  .ev .yr{font-family:var(--mono);font-size:22px;color:var(--y);font-weight:600}
+  .ev .tx{font-size:18px;line-height:1.4;color:#c9c6be;margin-top:6px}
+  .ev.up .box{bottom:calc(260px + 46px)} .ev.up .stem{bottom:260px;height:46px} .ev.up .dot{top:249px}
+  .ev.dn .box{top:calc(260px + 46px)} .ev.dn .stem{top:260px;height:46px} .ev.dn .dot{top:249px}
+  .ev.done .dot{border-color:var(--y);background:var(--y)}
+  .ev.done{opacity:.55}
+  .ev.now{opacity:1}
+  .ev.now .box{border-color:var(--y);box-shadow:0 0 0 4px rgba(255,194,14,.1),0 20px 50px rgba(0,0,0,.5)}
+  .ev.now .dot{box-shadow:0 0 0 8px rgba(255,194,14,.18)}
+  .ev.now .tx{color:var(--ink)}
+  .ev.new{opacity:0;transform:translateX(-50%) translateY(20px);transition:opacity .7s ease .9s,transform .8s cubic-bezier(.2,.7,.2,1) .9s}
+  .slide.active .ev.new{opacity:1;transform:translateX(-50%)}
+  .ev.future{opacity:.12}
+  .ev.future .box{background:transparent;border-style:dashed}
+  .ev.future .tx,.ev.future .yr{visibility:hidden}
+  .ev.winter .box{border-color:var(--blue);box-shadow:0 0 0 4px rgba(106,184,255,.12)} .ev.winter .yr{color:var(--blue)} .ev.winter .dot{background:var(--blue);border-color:var(--blue)}
+
+  /* turing */
+  .chat{position:absolute;inset:0;display:grid;grid-template-columns:1fr 1fr;grid-template-rows:minmax(0,1fr) auto;gap:16px;padding:22px}
+  .room{min-height:0;border-radius:14px;background:#151518;border:1px solid var(--line);display:flex;flex-direction:column;overflow:hidden}
+  .room .hd{font-family:var(--mono);font-size:16px;padding:10px 14px;border-bottom:1px solid var(--line);color:var(--mute);display:flex;justify-content:space-between}
+  .room .hd b{color:var(--ink)}
+  .room .msgs{flex:1;min-height:0;overflow:hidden;padding:14px;display:flex;flex-direction:column;gap:10px;justify-content:flex-end}
+  .msg{max-width:88%;padding:10px 14px;border-radius:14px;font-size:18px;line-height:1.35;animation:pop .35s cubic-bezier(.2,.7,.2,1)}
+  .msg.j{align-self:flex-end;background:var(--y);color:var(--bg);border-bottom-right-radius:4px}
+  .msg.a{align-self:flex-start;background:#2a2a31;border-bottom-left-radius:4px}
+  .msg.typing{color:var(--mute);font-family:var(--mono)}
+  @keyframes pop{from{opacity:0;transform:translateY(10px) scale(.96)}to{opacity:1;transform:none}}
+  .judge{grid-column:1 / span 2;display:flex;gap:14px;align-items:center;justify-content:center;font-size:20px;padding-top:6px}
+  .reveal{font-family:var(--mono);font-size:15px;padding:3px 9px;border-radius:6px}
+
+  /* dartmouth */
+  .quote{font-size:40px;line-height:1.35;font-weight:500;color:var(--ink);min-height:220px}
+  .quote::before{content:"“";color:var(--y)}
+  .quote .caret{display:inline-block;width:3px;height:1em;background:var(--y);vertical-align:-4px;margin-left:3px;animation:blink 1s steps(1) infinite}
+  @keyframes blink{50%{opacity:0}}
+  .signers{display:flex;gap:14px;flex-wrap:wrap;margin-top:8px}
+  .signer{font-family:var(--mono);font-size:18px;padding:10px 16px;border-radius:10px;background:var(--panel);border:1px solid var(--line)}
+  .signer.hl{border-color:var(--y);color:var(--y);position:relative}
+  .signer.hl::after{content:"← Boole → circuits, 1937";position:absolute;left:calc(100% + 12px);top:50%;transform:translateY(-50%);white-space:nowrap;font-size:15px;color:var(--mute)}
+
+  /* perceptron */
+  .pgrid{display:grid;grid-template-columns:1fr;gap:12px}
+  .pin{display:grid;grid-template-columns:190px 64px 1fr 84px;gap:14px;align-items:center;padding:12px 16px}
+  .pin .nm{font-size:20px}
+  .pin .x{font-family:var(--mono);font-size:20px;text-align:center;border-radius:8px;padding:6px 0;cursor:pointer;border:1px solid var(--line);background:#2a2a30;user-select:none}
+  .pin .x.on{background:var(--y);color:var(--bg);border-color:var(--y)}
+  .pin .w{font-family:var(--mono);font-size:18px;color:var(--y);text-align:right;white-space:nowrap}
+  input[type=range]{accent-color:var(--y);width:100%}
+  .pout{display:flex;align-items:center;gap:22px;padding:18px 20px}
+  .pout .sum{font-family:var(--mono);font-size:20px;color:var(--mute);flex:1;line-height:1.5}
+  .pout .sum b{color:var(--ink)}
+  .pout .res{font-family:var(--mono);font-size:26px;font-weight:600;padding:12px 22px;border-radius:12px;background:#2a2a30;color:#77746d;transition:all .3s}
+  .pout .res.on{background:var(--y);color:var(--bg);box-shadow:0 0 30px rgba(255,194,14,.5)}
+  .eq{font-family:var(--mono);font-size:20px;color:var(--mute)}
+  .eq b{color:var(--y);font-weight:600}
+
+  .seg{display:flex;gap:10px;flex-wrap:wrap}
+
+  /* eliza */
+  .term{font-family:var(--mono)}
+  .eterm{position:absolute;inset:0;display:flex;flex-direction:column;padding:22px 24px;font-family:var(--mono);font-size:19px;line-height:1.55}
+  .eterm .log{flex:1;overflow:hidden;display:flex;flex-direction:column;justify-content:flex-end;gap:4px}
+  .eterm .e{color:var(--y)} .eterm .u{color:var(--ink)}
+  .eterm form{display:flex;gap:10px;border-top:1px solid var(--line);padding-top:14px;margin-top:10px}
+  .eterm input{flex:1;background:transparent;border:none;outline:none;color:var(--ink);font:inherit}
+  .eterm .pr{color:var(--y)}
+
+  /* expert systems */
+  .pipe{display:grid;grid-template-columns:1fr 60px 1fr 60px 1fr;align-items:stretch;margin-top:44px}
+  .stg{padding:26px;display:flex;flex-direction:column;gap:14px;position:relative}
+  .stg .ic{width:60px;height:60px;border-radius:14px;background:rgba(255,194,14,.12);display:grid;place-items:center;font-family:var(--mono);font-size:24px;color:var(--y);font-weight:600}
+  .stg h3{font-size:28px}
+  .stg p{font-size:20px;color:#c9c6be}
+  .stg .rules{font-family:var(--mono);font-size:15px;color:var(--y);height:96px;overflow:hidden;position:relative;background:#141417;border-radius:10px;padding:8px 12px;line-height:1.6}
+  .stg .rules div{white-space:nowrap}
+  .stg .rules .in{will-change:transform}
+  .flow{display:flex;align-items:center;padding:0 6px}
+  .flow svg{width:100%;height:40px;overflow:visible}
+  .flow .fl{stroke:rgba(255,194,14,.55);stroke-width:3;stroke-dasharray:4 6;animation:fl2 .6s linear infinite}
+  .flow .fd{fill:#ffc20e;animation:fd 1.4s ease-in-out infinite}
+  @keyframes fl2{to{stroke-dashoffset:-10}}
+  @keyframes fd{0%{transform:translateX(0);opacity:0}20%{opacity:1}80%{opacity:1}100%{transform:translateX(40px);opacity:0}}
+  .es2{display:grid;grid-template-columns:1fr 1fr;gap:30px;margin-top:40px}
+  .sys{padding:28px;display:grid;grid-template-columns:1fr 250px;gap:24px}
+  .sys h3{font-size:36px;margin-bottom:4px}
+  .sys .when{font-family:var(--mono);font-size:17px;color:var(--y);margin-bottom:14px}
+  .sys canvas{width:250px;height:250px;align-self:center}
+  .sys .bul li{font-size:20px}
+
+  /* decision tree */
+  .dt svg{width:100%;height:100%}
+  .facts{display:flex;flex-direction:column;gap:12px}
+  .fact{display:flex;justify-content:space-between;align-items:center;padding:14px 18px;cursor:pointer;user-select:none}
+  .fact span{font-size:21px}
+  .yn{font-family:var(--mono);font-size:17px;font-weight:600;padding:5px 12px;border-radius:7px;min-width:58px;text-align:center}
+  .yn.yes{background:rgba(95,214,138,.16);color:var(--green)} .yn.no{background:rgba(255,90,78,.14);color:var(--red)}
+
+  /* sick */
+  .askcard{padding:40px;display:flex;flex-direction:column;gap:28px;align-items:flex-start;min-height:330px}
+  .askcard .qq{font-size:46px;font-weight:700;line-height:1.15}
+  .askcard .ans{font-size:40px;font-weight:700;color:var(--y);line-height:1.2}
+  .yesno{display:flex;gap:18px}
+  .yesno .btn{font-size:24px;padding:14px 34px;border-radius:999px}
+  .b-yes{background:rgba(95,214,138,.15);border-color:rgba(95,214,138,.5);color:var(--green)}
+  .b-no{background:rgba(255,90,78,.13);border-color:rgba(255,90,78,.5);color:var(--red)}
+  .trail{font-family:var(--mono);font-size:18px;color:var(--mute);display:flex;flex-direction:column;gap:8px;margin-top:22px}
+  .trail div b{color:var(--y);font-weight:600}
+
+  /* ttt */
+  .ttt{display:grid;grid-template-columns:repeat(3,170px);grid-template-rows:repeat(3,170px);gap:12px}
+  .cell{border-radius:16px;background:var(--panel);border:1px solid var(--line);display:grid;place-items:center;cursor:pointer;transition:border-color .2s,background .2s}
+  .cell:hover{border-color:var(--y)}
+  .cell.win{background:rgba(255,194,14,.14);border-color:var(--y)}
+  .cell svg{width:100px;height:100px}
+  .cell svg *{fill:none;stroke-width:12;stroke-linecap:round}
+  .cell .X *{stroke:var(--y);stroke-dasharray:120;stroke-dashoffset:120;animation:draw .35s ease forwards}
+  .cell .X line:nth-child(2){animation-delay:.15s}
+  .cell .O circle{stroke:var(--blue);stroke-dasharray:260;stroke-dashoffset:260;animation:draw .45s ease forwards}
+  @keyframes draw{to{stroke-dashoffset:0}}
+  .score{display:flex;gap:16px}
+  .score div{padding:16px 22px;text-align:center;min-width:120px}
+  .score b{display:block;font-family:var(--mono);font-size:40px;color:var(--y)}
+  .score span{font-family:var(--mono);font-size:15px;color:var(--mute);letter-spacing:.06em}
+  .status{font-size:30px;font-weight:600;min-height:44px}
+  /* live class sync */
+  #livewrap{position:absolute;left:32px;bottom:11px;z-index:12;display:flex;gap:12px;align-items:center;font-family:var(--mono);font-size:15px}
+  #livebar,#liveauth{display:flex;gap:12px;align-items:center}
+  #liveauth:empty,#livebar:empty{display:none}
+  .lv{display:inline-flex;align-items:center;gap:9px;background:var(--panel);border:1px solid var(--line);color:var(--mute);border-radius:999px;padding:6px 14px;font:inherit}
+  button.lv{cursor:pointer} button.lv:hover{border-color:var(--y)}
+  .lv.on{border-color:var(--y);color:var(--y)}
+  .lv .dot{width:9px;height:9px;border-radius:50%;background:#55534d}
+  .lv.on .dot{background:var(--red);box-shadow:0 0 0 0 rgba(255,90,78,.6);animation:lvp 1.6s infinite}
+  @keyframes lvp{70%{box-shadow:0 0 0 8px rgba(255,90,78,0)}100%{box-shadow:0 0 0 0 rgba(255,90,78,0)}}
+  .lvc{color:var(--mute)}
+  .nbtn:disabled{opacity:.25;cursor:not-allowed;border-color:var(--line);color:var(--ink)}
+  #toast{position:absolute;left:50%;bottom:76px;z-index:20;transform:translate(-50%,16px);opacity:0;pointer-events:none;background:var(--panel2);border:1px solid var(--y);color:var(--ink);font-size:20px;padding:12px 22px;border-radius:12px;transition:opacity .3s,transform .3s;box-shadow:0 12px 40px rgba(0,0,0,.5)}
+  #toast.on{opacity:1;transform:translate(-50%,0)}
+</style>
+</head>
+<body>
+<div id="stage">
+  <img id="logo" src="{{LOGO}}" alt="Neumont University">
+  <div id="brand"><b>AAI101</b> &nbsp;·&nbsp; AI History · Part 1</div>
+
+  <!-- 1 title -->
+  <section class="slide" data-id="title">
+    <canvas class="bg" id="bgNet"></canvas>
+    <div class="vignette"></div>
+    <div class="content center">
+      <div class="eyebrow rise" style="--i:0">AAI101 · AI History · Part 1</div>
+      <h1 class="rise" style="--i:1">Introduction to<br><span>Artificial Intelligence</span></h1>
+      <p class="lede rise" style="--i:2">Where AI came from: ancient logic and myths, the first neural networks, chatbots, expert systems and chess machines.</p>
+    </div>
+  </section>
+
+  <!-- 2 question -->
+  <section class="slide" data-id="question">
+    <div class="two">
+      <div class="qimg rise" style="--i:0"><img src="{{COVER}}" alt="A human head and a machine head facing each other, linked by circuitry"></div>
+      <div class="stack">
+        <div class="eyebrow rise" style="--i:1">The big question</div>
+        <div class="bigq rise" style="--i:2">Can human thought be replicated by <span>logic</span> and <span>rules</span>?</div>
+        <p class="rise muted" style="--i:3">People have been asking this for over 2,000 years.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- 3 aristotle -->
+  <section class="slide" data-id="aristotle">
+    <div class="two">
+      <div class="stack">
+        <h2 class="rise" style="--i:0"><span class="n">ARISTOTLE · 384–322 BC</span>Reasoning with rules</h2>
+        <p class="rise" style="--i:1">Aristotle tried to capture <b>correct thinking</b> as a set of rules. His key tool was the <b>syllogism</b>: two premises that force a conclusion.</p>
+        <div class="syl rise" style="--i:2" id="sylA">
+          <div class="l"><span class="k">PREMISE 1</span><span>All <span class="term tA">humans</span> are <span class="term tB">mortal</span>.</span></div>
+          <div class="l"><span class="k">PREMISE 2</span><span><span class="term tC">Socrates</span> is <span class="term tA">a human</span>.</span></div>
+          <hr>
+          <div class="l"><span class="k">THEREFORE</span><span><span class="term tC">Socrates</span> is <span class="term tB">mortal</span>.</span></div>
+        </div>
+      </div>
+      <div class="stage-box rise" style="--i:2"><svg id="euler" viewBox="0 0 640 620"></svg><div class="cap">the classic example, drawn as sets</div></div>
+    </div>
+  </section>
+
+  <!-- 4 form -->
+  <section class="slide" data-id="form">
+    <h2 class="rise" style="--i:0"><span class="n">ARISTOTLE · THE BIG IDEA</span>Valid by <span class="y">form</span>, not by meaning</h2>
+    <div class="two" style="height:auto;margin-top:46px;align-items:start">
+      <div class="stack">
+        <div class="card rise" style="--i:1;padding:30px 34px">
+          <div class="syl" id="sylB">
+            <div class="l on"><span class="k">PREMISE 1</span><span id="fb1"></span></div>
+            <div class="l on"><span class="k">PREMISE 2</span><span id="fb2"></span></div>
+            <hr>
+            <div class="l on"><span class="k">THEREFORE</span><span id="fb3"></span></div>
+          </div>
+        </div>
+        <div class="verdict rise" style="--i:2" id="fverdict"></div>
+        <div class="rise" style="--i:3;display:flex;gap:12px"><button class="btn" id="fnext">Swap the words ↻</button></div>
+      </div>
+      <div class="stack">
+        <div class="card rise" style="--i:2;padding:26px 30px">
+          <div class="eyebrow" style="font-size:16px;margin-bottom:14px">The pattern never changes</div>
+          <div class="form"><span>All <span class="term tA">A</span> are <span class="term tB">B</span></span><span><span class="term tC">C</span> is an <span class="term tA">A</span></span><span>∴ <span class="term tC">C</span> is <span class="term tB">B</span></span></div>
+        </div>
+        <div class="callout rise" style="--i:3">You can check this pattern <b>without understanding the words</b>. If reasoning is just following rules, then a machine could do it. That idea is the seed of AI.</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 5 boole -->
+  <section class="slide" data-id="boole">
+    <div class="two">
+      <div class="stack">
+        <h2 class="rise" style="--i:0"><span class="n">GEORGE BOOLE · 1815–1864</span>Thought as algebra</h2>
+        <p class="rise" style="--i:1">In <i class="t">The Laws of Thought</i> (1854), Boole turned logic into math. Every statement is <b>true (1)</b> or <b>false (0)</b>, combined with three operators:</p>
+        <div class="gates rise" style="--i:2">
+          <div class="gate card" id="gAND"><div class="op">A AND B</div><div class="bulb">0</div><div class="ex">both must be true</div></div>
+          <div class="gate card" id="gOR"><div class="op">A OR B</div><div class="bulb">0</div><div class="ex">at least one is true</div></div>
+          <div class="gate card" id="gNOT"><div class="op">NOT A</div><div class="bulb">1</div><div class="ex">flips the value</div></div>
+        </div>
+      </div>
+      <div class="stack">
+        <div class="sw rise" style="--i:2">
+          <div class="switch card" id="swA"><span class="lbl">A · “it’s raining”</span><div class="tog"></div><span class="val">0</span></div>
+          <div class="switch card" id="swB"><span class="lbl">B · “I’m outside”</span><div class="tog"></div><span class="val">0</span></div>
+        </div>
+        <div class="card rise" style="--i:3;padding:10px 20px">
+          <table class="tt" id="tt"><tr><th>A</th><th>B</th><th>A AND B</th><th>A OR B</th><th>NOT A</th></tr></table>
+        </div>
+        <p class="rise muted" style="--i:4;font-size:20px">Click A and B. <span class="mono y">raining AND outside</span> → you get wet.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- 6 shannon -->
+  <section class="slide" data-id="shannon">
+    <div class="two wide-r">
+      <div class="stack">
+        <h2 class="rise" style="--i:0"><span class="n">1937 · CLAUDE SHANNON</span>From logic to circuits</h2>
+        <p class="rise" style="--i:1">Shannon showed that Boole’s algebra describes <b>electrical switches</b>: on = 1, off = 0.</p>
+        <ul class="bul rise" style="--i:2">
+          <li>Switches in a row (series) = <b class="y">AND</b></li>
+          <li>Switches side by side (parallel) = <b class="y">OR</b></li>
+        </ul>
+        <div class="callout rise" style="--i:3">Every digital computer, and every AI running on one, is built from Boole’s logic.</div>
+      </div>
+      <div class="stage-box rise" style="--i:2"><svg id="circ" viewBox="0 0 760 620"></svg><div class="cap">click the switches</div></div>
+    </div>
+  </section>
+
+  <!-- 7 talos -->
+  <section class="slide" data-id="talos">
+    <div class="two wide-r">
+      <div class="stack">
+        <h2 class="rise" style="--i:0"><span class="n">GREEK MYTH · C. 700 BC</span>Talos, the bronze guardian</h2>
+        <p class="rise" style="--i:1">First described by the poet Hesiod: one of the earliest ideas of a <b>robot</b>.</p>
+        <ul class="bul rise" style="--i:2">
+          <li>A giant bronze man built by <b>Hephaestus</b>, god of invention</li>
+          <li>Commissioned by <b>Zeus</b> to protect Crete</li>
+          <li>Circled the island 3 times a day, hurling boulders at enemy ships</li>
+        </ul>
+      </div>
+      <div class="stage-box rise" style="--i:2"><canvas id="talos"></canvas><div class="cap" id="talosCap">patrol lap 1 of 3</div></div>
+    </div>
+  </section>
+
+  <!-- 8 automaton -->
+  <section class="slide" data-id="automaton">
+    <div class="two">
+      <div class="stack">
+        <h2 class="rise" style="--i:0"><span class="n">DEFINITION</span>Automaton</h2>
+        <p class="rise" style="--i:1">From the Greek <b class="y">αὐτόματον</b>: “acting of one’s own will.”</p>
+        <p class="rise" style="--i:2">A <b>self-operating machine</b> that follows a fixed sequence of operations or responds to preset instructions.</p>
+        <p class="rise muted" style="--i:3">For centuries: mechanical puppets of people and animals, built to impress and entertain.</p>
+      </div>
+      <div class="stage-box rise" style="--i:2"><svg id="gears" viewBox="0 0 640 620"></svg><div class="cap">no mind, just a sequence of moves</div></div>
+    </div>
+  </section>
+
+  <!-- 9 gulliver -->
+  <section class="slide" data-id="gulliver">
+    <div class="two wide-r">
+      <div class="stack">
+        <h2 class="rise" style="--i:0"><span class="n">1726 · GULLIVER’S TRAVELS</span>The Lagado word machine</h2>
+        <p class="rise" style="--i:1">In Jonathan Swift’s satire, scholars at the Academy of Lagado use a machine to “write”:</p>
+        <ol class="num rise" style="--i:2">
+          <li>A wooden frame holds word tiles on wires</li>
+          <li>Students turn cranks to shuffle the words</li>
+          <li>Scholars copy down any phrase that seems to mean something as “knowledge”</li>
+        </ol>
+        <div class="callout rise" style="--i:3">Written as a joke, yet surprisingly close to a machine that generates ideas.</div>
+      </div>
+      <div class="stack rise" style="--i:2">
+        <div class="card" style="padding:22px"><div id="lagado" style="display:grid;grid-template-columns:repeat(7,1fr);gap:8px"></div></div>
+        <div style="display:flex;gap:16px;align-items:center"><button class="btn on" id="crank">Turn the cranks ⟳</button><span class="mono muted" style="font-size:16px" id="lagCount">0 turns</span></div>
+        <div class="card" style="padding:16px 20px;min-height:120px"><div class="eyebrow" style="font-size:14px;margin-bottom:8px">“Knowledge” recorded</div><div id="lagFound" class="mono" style="font-size:18px;line-height:1.6;color:var(--ink)"></div></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- TIMELINE 1950 -->
+  <section class="slide tl" data-id="tl-1" data-upto="0"></section>
+
+  <!-- turing -->
+  <section class="slide" data-id="turing">
+    <div class="two">
+      <div class="stack">
+        <h2 class="rise" style="--i:0"><span class="n">1950 · ALAN TURING</span>The Turing Test</h2>
+        <p class="rise" style="--i:1">“Can machines think?” In <i class="t">Computing Machinery and Intelligence</i>, Turing swapped that question for a game:</p>
+        <ol class="num rise" style="--i:2">
+          <li>A judge chats by text with two hidden players</li>
+          <li>One is a human, one is a machine</li>
+          <li>If the judge can’t tell which is which, the machine passes</li>
+        </ol>
+        <a class="linkchip rise" style="--i:3" href="https://humanornot.so/" target="_blank" rel="noopener">Try it: humanornot.so</a>
+      </div>
+      <div class="stage-box rise" style="--i:2">
+        <div class="chat">
+          <div class="room"><div class="hd"><b>Player A</b><span class="reveal" id="revA">?</span></div><div class="msgs" id="mA"></div></div>
+          <div class="room"><div class="hd"><b>Player B</b><span class="reveal" id="revB">?</span></div><div class="msgs" id="mB"></div></div>
+          <div class="judge"><span class="muted">Which one is the machine?</span><button class="btn" data-guess="A">A</button><button class="btn" data-guess="B">B</button></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- TIMELINE 1956 -->
+  <section class="slide tl" data-id="tl-2" data-upto="1"></section>
+
+  <!-- dartmouth -->
+  <section class="slide" data-id="dartmouth">
+    <h2 class="rise" style="--i:0"><span class="n">1956 · DARTMOUTH COLLEGE</span>The birth of a field</h2>
+    <p class="rise" style="--i:1;margin-top:20px;max-width:1150px">A summer research project organized by <b>John McCarthy</b>, then a math professor at Dartmouth. His proposal coined the term <b class="y">artificial intelligence</b> and rested on one conjecture:</p>
+    <div class="quote rise" style="--i:2;margin-top:34px;max-width:1300px"><span id="dq"></span><span class="caret"></span></div>
+    <div class="rise" style="--i:3;margin-top:24px"><div class="eyebrow" style="font-size:15px;margin-bottom:12px">Signed by</div>
+      <div class="signers"><span class="signer">J. McCarthy</span><span class="signer">M. L. Minsky</span><span class="signer">N. Rochester</span><span class="signer hl">C. E. Shannon</span></div></div>
+  </section>
+
+  <!-- TIMELINE 1957 -->
+  <section class="slide tl" data-id="tl-3" data-upto="2"></section>
+
+  <!-- neurons -->
+  <section class="slide" data-id="neurons">
+    <div class="two wide-r">
+      <div class="stack">
+        <h2 class="rise" style="--i:0"><span class="n">THE INSPIRATION</span>Neurons</h2>
+        <p class="rise" style="--i:1">Brain cells that talk using electrical and chemical signals.</p>
+        <ol class="num rise" style="--i:2">
+          <li><b>Dendrites</b> receive signals</li>
+          <li>The cell body adds them up</li>
+          <li>If strong enough, it <b class="y">fires</b> down the <b>axon</b> to other neurons</li>
+        </ol>
+        <p class="rise muted" style="--i:3">Billions of connected neurons give us thought, movement and perception.</p>
+        <a class="linkchip rise" style="--i:4" href="https://substack.com/@sciencedaily11/note/c-319137742?utm_source=notes-share-action" target="_blank" rel="noopener">Video: neurons forming connections</a>
+      </div>
+      <div class="stage-box rise" style="--i:2"><canvas id="neuro"></canvas><div class="cap">signals travel, add up, and fire</div></div>
+    </div>
+  </section>
+
+  <!-- perceptron -->
+  <section class="slide" data-id="perceptron">
+    <div class="two">
+      <div class="stack">
+        <h2 class="rise" style="--i:0"><span class="n">1957 · FRANK ROSENBLATT</span>The Perceptron</h2>
+        <p class="rise" style="--i:1">The simplest neural network: one artificial neuron that makes a <b>yes / no</b> (1 / 0) decision.</p>
+        <ul class="bul rise" style="--i:2">
+          <li>Each input is multiplied by a <b class="y">weight</b> (how much it matters)</li>
+          <li>A <b class="y">bias</b> shifts how easily it fires</li>
+          <li>A step function outputs 1 if the total ≥ 0</li>
+          <li>Training turns these “knobs” to reduce errors</li>
+        </ul>
+        <div class="eq rise" style="--i:3">output = step( <b>Σ</b> input × weight + bias )</div>
+      </div>
+      <div class="stack rise" style="--i:2">
+        <div class="eyebrow" style="font-size:16px">Should I go to the beach?</div>
+        <div class="pgrid" id="pgrid"></div>
+        <div class="pout card"><div class="sum" id="psum"></div><div class="res" id="pres">STAY</div></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- activation -->
+  <section class="slide" data-id="activation">
+    <div class="two wide-r">
+      <div class="stack">
+        <h2 class="rise" style="--i:0"><span class="n">INSIDE A NEURON</span>Activation functions</h2>
+        <p class="rise" style="--i:1">They turn a neuron’s weighted sum into its output.</p>
+        <p class="rise" style="--i:2">Non-linear functions let networks learn <b>complex patterns</b>, not just straight-line relationships.</p>
+        <div class="seg rise" style="--i:3" id="actBtns"></div>
+        <p class="rise mono muted" style="--i:4;font-size:19px" id="actDesc"></p>
+      </div>
+      <div class="stage-box rise" style="--i:2"><canvas id="actPlot"></canvas></div>
+    </div>
+  </section>
+
+  <!-- TIMELINE 1965 -->
+  <section class="slide tl" data-id="tl-4" data-upto="3"></section>
+
+  <!-- eliza -->
+  <section class="slide" data-id="eliza">
+    <div class="two">
+      <div class="stack">
+        <h2 class="rise" style="--i:0"><span class="n">1965 · JOSEPH WEIZENBAUM, MIT</span>ELIZA</h2>
+        <p class="rise" style="--i:1">An early chatbot that imitated a therapist using simple <b>pattern-matching rules</b>. It understood nothing, yet people felt understood.</p>
+        <p class="rise" style="--i:2"><b class="y">chat</b> (chatter) + <b class="y">bot</b> (robot) = chatbot: a program built for natural-feeling conversation.</p>
+        <a class="linkchip rise" style="--i:3" href="https://www.masswerk.at/elizabot/eliza.html" target="_blank" rel="noopener">Full ELIZA: masswerk.at/elizabot</a>
+      </div>
+      <div class="stage-box rise" style="--i:2">
+        <div class="eterm"><div class="log" id="elog"></div><form id="eform" autocomplete="off"><span class="pr">YOU:</span><input id="ein" placeholder="type here and press enter…" maxlength="120"></form></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- TIMELINE 1970s -->
+  <section class="slide tl" data-id="tl-5" data-upto="4"><canvas class="bg snow" id="snow" style="z-index:3;pointer-events:none"></canvas></section>
+
+  <!-- TIMELINE 1980 -->
+  <section class="slide tl" data-id="tl-6" data-upto="5"></section>
+
+  <!-- expert systems -->
+  <section class="slide" data-id="expert">
+    <h2 class="rise" style="--i:0"><span class="n">1980 · RULES STRIKE BACK</span>Expert systems</h2>
+    <p class="rise" style="--i:1;margin-top:18px;max-width:1200px">Programs that mimic a human expert’s decisions in one narrow field, such as diagnosing diseases or troubleshooting machines, using <b>if-then rules</b>.</p>
+    <div class="pipe">
+      <div class="stg card rise" style="--i:2"><div class="ic">01</div><h3>Knowledge acquisition</h3><p>Experts explain how they decide: their rules, facts and reasoning.</p></div>
+      <div class="flow"><svg viewBox="0 0 60 40" preserveAspectRatio="xMidYMid meet"><line x1="4" y1="20" x2="44" y2="20" class="fl"/><path d="M58 20 L44 11 L44 29Z" fill="#ffc20e"/><circle cx="4" cy="20" r="6" class="fd"/></svg></div>
+      <div class="stg card rise" style="--i:3"><div class="ic">02</div><h3>Knowledge base</h3><p>That knowledge, stored as if-then rules. The system’s “brain.”</p><div class="rules" id="kbRules"></div></div>
+      <div class="flow"><svg viewBox="0 0 60 40" preserveAspectRatio="xMidYMid meet"><line x1="4" y1="20" x2="44" y2="20" class="fl"/><path d="M58 20 L44 11 L44 29Z" fill="#ffc20e"/><circle cx="4" cy="20" r="6" class="fd"/></svg></div>
+      <div class="stg card rise" style="--i:4"><div class="ic">03</div><h3>Inference engine</h3><p>Applies the rules to new cases to reach conclusions, sometimes with a confidence level.</p></div>
+    </div>
+  </section>
+
+  <!-- dendral & mycin -->
+  <section class="slide" data-id="dendral">
+    <h2 class="rise" style="--i:0"><span class="n">EXPERT SYSTEMS IN ACTION</span>DENDRAL &amp; MYCIN</h2>
+    <div class="es2">
+      <div class="sys card rise" style="--i:1">
+        <div><h3>DENDRAL</h3><div class="when">1960s · Stanford · chemistry</div>
+          <ul class="bul"><li>Identified the structure of organic molecules from mass-spectrometry data</li><li>Used expert heuristics to narrow down possible structures</li><li>One of the first successful expert systems</li></ul></div>
+        <canvas id="mol"></canvas>
+      </div>
+      <div class="sys card rise" style="--i:2">
+        <div><h3>MYCIN</h3><div class="when">1970s · medicine</div>
+          <ul class="bul"><li>Asked doctors questions about symptoms</li><li>Suggested diagnoses and treatments for bacterial infections</li><li>Gave confidence levels, an early way of handling uncertainty</li></ul></div>
+        <canvas id="myc"></canvas>
+      </div>
+    </div>
+  </section>
+
+  <!-- decision tree -->
+  <section class="slide" data-id="dtree">
+    <div class="two wide-r" style="grid-template-columns:.7fr 1.3fr">
+      <div class="stack">
+        <h2 class="rise" style="--i:0"><span class="n">RULES IN GAMES</span>Decision trees</h2>
+        <p class="rise" style="--i:1">A chain of yes/no questions that ends in an action. Toggle what the guard knows:</p>
+        <div class="facts rise" style="--i:2" id="dtFacts"></div>
+        <p class="rise muted" style="--i:3;font-size:17px">From <i>Artificial Intelligence for Games</i> by I. Millington &amp; J. Funge</p>
+      </div>
+      <div class="stage-box dt rise" style="--i:2;height:640px"><svg id="dtSvg" viewBox="0 0 900 640"></svg></div>
+    </div>
+  </section>
+
+  <!-- are you sick -->
+  <section class="slide" data-id="sick">
+    <div class="two">
+      <div class="stack">
+        <h2 class="rise" style="--i:0"><span class="n">YOUR TURN</span>Build an expert system</h2>
+        <p class="rise" style="--i:1">A tiny rule base for one decision: <b>should you come to class?</b> Answer the questions, then add your own rules.</p>
+        <div class="trail rise" style="--i:2" id="sickTrail"></div>
+      </div>
+      <div class="askcard card rise" style="--i:2" id="sickCard"></div>
+    </div>
+  </section>
+
+  <!-- TIMELINE 1986 -->
+  <section class="slide tl" data-id="tl-7" data-upto="6"></section>
+
+  <!-- TIMELINE 1997 -->
+  <section class="slide tl" data-id="tl-8" data-upto="7"></section>
+
+  <!-- ai + games -->
+  <section class="slide" data-id="games">
+    <canvas class="bg" id="pong"></canvas>
+    <div class="vignette" style="background:radial-gradient(ellipse at center,rgba(18,18,20,.75) 0%,rgba(18,18,20,.55) 70%,rgba(18,18,20,.8) 100%)"></div>
+    <div class="content center">
+      <div class="eyebrow rise" style="--i:0">A perfect testbed</div>
+      <h1 class="rise" style="--i:1">AI <span>+</span> Games</h1>
+      <p class="lede rise" style="--i:2">Clear rules, clear goals, clear winners. From tic-tac-toe and checkers to chess and Go.</p>
+    </div>
+  </section>
+
+  <!-- tic tac toe -->
+  <section class="slide" data-id="ttt">
+    <div class="two" style="grid-template-columns:1fr 560px">
+      <div class="stack">
+        <h2 class="rise" style="--i:0"><span class="n">PLAY</span>Can you beat it?</h2>
+        <p class="rise" style="--i:1">You are <b class="y">X</b>. The computer plays <b style="color:var(--blue)">O</b> using <b>minimax</b>: it checks every possible future before it moves.</p>
+        <div class="status rise" style="--i:2" id="tttStatus">Your move.</div>
+        <div class="score rise" style="--i:3"><div class="card"><b id="scY">0</b><span>YOU</span></div><div class="card"><b id="scD">0</b><span>DRAWS</span></div><div class="card"><b id="scA">0</b><span>AI</span></div></div>
+        <div class="rise" style="--i:4;display:flex;gap:12px"><button class="btn" id="tttNew">New game</button><button class="btn" id="tttFirst">AI goes first</button></div>
+      </div>
+      <div class="ttt rise" style="--i:2" id="tttBoard"></div>
+    </div>
+  </section>
+
+  <!-- minimax -->
+  <section class="slide" data-id="minimax">
+    <div class="two wide-r">
+      <div class="stack">
+        <h2 class="rise" style="--i:0"><span class="n">THE ALGORITHM</span>Minimax</h2>
+        <p class="rise" style="--i:1">Used in two-player games like chess and tic-tac-toe.</p>
+        <ol class="num rise" style="--i:2">
+          <li>Simulate every possible move and reply</li>
+          <li>Score the end positions</li>
+          <li>Assume both sides play their best: <b class="y">MAX</b> picks the highest score, <b style="color:var(--blue)">MIN</b> the lowest</li>
+          <li>Choose the move with the best guaranteed outcome</li>
+        </ol>
+        <a class="linkchip rise" style="--i:3" href="https://neumont-gamedev.github.io/posts/ai-minimax/" target="_blank" rel="noopener">neumont-gamedev.github.io/posts/ai-minimax</a>
+      </div>
+      <div class="stage-box rise" style="--i:2"><canvas id="mmTree"></canvas><div class="cap">scores flow up from the leaves</div></div>
+    </div>
+  </section>
+
+  <!-- deep blue -->
+  <section class="slide" data-id="deepblue">
+    <div class="two">
+      <div class="stack">
+        <h2 class="rise" style="--i:0"><span class="n">1997 · IBM</span>Deep Blue</h2>
+        <p class="rise" style="--i:1">Defeated world chess champion <b>Garry Kasparov</b>. Under the hood:</p>
+        <ul class="bul rise" style="--i:2">
+          <li><b class="y">Minimax</b> to weigh every move against every reply</li>
+          <li><b class="y">Alpha-beta pruning</b> to skip hopeless branches</li>
+          <li>A huge library of <b>chess knowledge</b></li>
+          <li>Custom hardware evaluating <b>millions of positions per second</b></li>
+        </ul>
+      </div>
+      <div class="stage-box rise" style="--i:2"><canvas id="chess"></canvas><div class="cap" id="chessCap">positions evaluated: 0</div></div>
+    </div>
+  </section>
+
+  <div id="chrome"><span class="sp"></span><button class="nbtn" id="prev" aria-label="Previous">←</button><span id="count"></span><button class="nbtn" id="next" aria-label="Next">→</button><button class="nbtn" id="fs" aria-label="Fullscreen" title="Fullscreen (F)">⤢</button></div>
+  <div id="progress"></div>
+  <div id="livewrap"><span id="liveauth"></span><div id="livebar"></div></div>
+  <div id="toast" role="status"></div>
+</div>
+<script>
+{{APP}}
+</script>
+</body>
+</html>
