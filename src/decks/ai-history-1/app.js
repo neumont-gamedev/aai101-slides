@@ -565,7 +565,7 @@ document.querySelectorAll(".slide.tl").forEach(sl=>{
     const go=s>=T-1e-9, z=pct(0), p=pct(s), fill=$("ptFill");
     fill.style.left=Math.min(z,p)+"%"; fill.style.width=Math.abs(p-z)+"%"; fill.classList.toggle("go",go);
     $("ptSum").textContent=(s<0?"−":"")+Math.abs(s).toFixed(2);
-    const res=$("ptRes"); res.textContent=go?"GO":"STAY"; res.classList.toggle("on",go);
+    const res=$("ptRes"); res.textContent=go?"GO":"STAY"; res.classList.toggle("on",go); res.classList.toggle("stay",!go);
     renderGoal();
   }
   A.perceptron={ enter(){ upd(); } };
