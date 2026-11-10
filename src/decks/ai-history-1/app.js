@@ -152,9 +152,14 @@ const A={};
   A.shannon={ enter(){ st.andA=1; st.andB=0; st.orA=0; st.orB=1; render(); } };
 })();
 
-/* ---------- 7 talos ---------- */
+/* ---------- talos: watch, or play as talos ---------- */
 (() => {
-  const cv=$("talos"), cap=$("talosCap"); let W,H,isl=[],path=[],plen=0,ships=[],rocks=[],splash=[],pos=0,cool=0,lap=0,t=0;
+  // idle: talos defends crete by himself. game: the player clicks ships to throw boulders,
+  // 3 ships landing = game over, surviving 3 patrol laps (one day) = win.
+  const cv=$("talos"), cap=$("talosCap"), hud=$("talosHud"), over=$("talosOver");
+  let W,H,isl=[],path=[],plen=0,ships=[],rocks=[],splash=[],pos=0,cool=0,lap=0,t=0;
+  let mode="idle", sunk=0, landed=0, spawnT=0, elapsed=0;
+  const LAND_MAX=3, LAPS=3, GAME_SPEED=.0082, IDLE_SPEED=.022, COOL=320;
   function build(){
     W=cv.offsetWidth; H=cv.offsetHeight; isl=[]; path=[];
     const cx=W/2, cy=H/2, rx=W*.3, ry=H*.13;
@@ -163,10 +168,36 @@ const A={};
     for(const [x,y] of isl){ const dx=x-cx, dy=y-cy, d=Math.hypot(dx,dy); path.push([x+dx/d*22, y+dy/d*22]); }
     plen=path.length;
   }
+  function onIsland(px,py){ let inside=false; for(let i=0,j=isl.length-1;i<isl.length;j=i++){ const [xi,yi]=isl[i],[xj,yj]=isl[j];
+    if(((yi>py)!==(yj>py))&&(px<(xj-xi)*(py-yi)/(yj-yi)+xi)) inside=!inside; } return inside; }
   function talosXY(){ const i=Math.floor(pos)%plen, f=pos-Math.floor(pos), a=path[i], b=path[(i+1)%plen]; return [a[0]+(b[0]-a[0])*f, a[1]+(b[1]-a[1])*f]; }
-  function spawn(){ const side=Math.random()<.5?-1:1; const y=rnd(H*.12,H*.88); ships.push({x:side<0?-30:W+30,y,vx:side*-rnd(.22,.38),vy:(H/2-y)*.0006,alive:1,sink:0,dir:-side}); }
+  function spawn(speed=1){
+    const side=pick(["l","r","t","b"]); let x,y;
+    if(side==="l"){ x=-30; y=rnd(H*.1,H*.9); } else if(side==="r"){ x=W+30; y=rnd(H*.1,H*.9); }
+    else if(side==="t"){ x=rnd(W*.1,W*.9); y=-30; } else { x=rnd(W*.1,W*.9); y=H+30; }
+    const tx=W/2+rnd(-W*.22,W*.22), ty=H/2+rnd(-H*.06,H*.06), d=Math.hypot(tx-x,ty-y), v=rnd(.22,.34)*speed;
+    ships.push({x,y,vx:(tx-x)/d*v,vy:(ty-y)/d*v,alive:1,sink:0,landed:0,dir:tx>x?1:-1});
+  }
+  function throwAt(tx,ty,ship){ const [sx,sy]=talosXY(); const T=650;
+    const px=ship?ship.x+ship.vx*T/16.7:tx, py=ship?ship.y+ship.vy*T/16.7:ty;
+    rocks.push({x0:sx,y0:sy,t:0,T,x1:px,y1:py}); if(ship) ship.targeted=1; cool=COOL; }
+  function setOverlay(html){ if(!html){ over.classList.add("hide"); return; } over.innerHTML=`<div class="box">${html}</div>`; over.classList.remove("hide");
+    const b=over.querySelector("button"); if(b) b.onclick=start; }
+  function idleOverlay(){ setOverlay(`<h3>Play as Talos</h3><p>Click the enemy ships to hurl boulders at them. If <b>3 ships</b> reach the shore, Crete falls. Survive <b>3 patrol laps</b> to win.</p><button class="btn on">Start ▶</button>`); }
+  function start(){ mode="game"; ships=[]; rocks=[]; splash=[]; sunk=0; landed=0; lap=0; pos=0; cool=0; spawnT=600; elapsed=0; setOverlay(null); }
+  function end(won){ mode="over";
+    setOverlay(won?`<div class="big" style="color:var(--y)">Crete is safe!</div><p>You sank <b>${sunk}</b> ships and lasted a full day of patrols.</p><button class="btn on">Play again ↺</button>`
+                  :`<div class="big" style="color:var(--red)">Crete has fallen</div><p>Three ships made it ashore during lap ${lap+1}. You sank <b>${sunk}</b>.</p><button class="btn on">Try again ↺</button>`); }
+  function renderHud(){ hud.innerHTML = mode==="idle" ? "" : `<span>Lap <b>${Math.min(lap+1,LAPS)}</b> of ${LAPS}</span><span>Sunk <b>${sunk}</b></span><span class="${landed?"bad":""}">Landed <b>${landed}</b> / ${LAND_MAX}</span>`; }
+  cv.addEventListener("pointerdown",e=>{
+    if(mode!=="game"||cool>0) return;
+    const r=cv.getBoundingClientRect(), x=(e.clientX-r.left)*W/r.width, y=(e.clientY-r.top)*H/r.height;
+    let best=null, bd=46; for(const s of ships){ if(!s.alive||s.landed) continue; const d=Math.hypot(s.x-x,s.y-y); if(d<bd){ bd=d; best=s; } }
+    throwAt(x,y,best);
+  });
+  cv._ships=()=>ships.filter(s=>s.alive&&!s.landed).map(s=>({x:s.x,y:s.y,W,H}));   // used by the automated test
   A.talos={
-    enter(){ build(); ships=[]; rocks=[]; splash=[]; pos=0; cool=0; lap=0; t=0; for(let i=0;i<3;i++){ spawn(); ships[i].x+=ships[i].vx*-400; } },
+    enter(){ build(); mode="idle"; ships=[]; rocks=[]; splash=[]; pos=0; cool=0; lap=0; t=0; for(let i=0;i<3;i++){ spawn(); ships[i].x+=ships[i].vx*400; ships[i].y+=ships[i].vy*400; } idleOverlay(); renderHud(); },
     tick(dt){
       if(!W) build();
       const x=ctxOf(cv), f=dt/16.7; t+=dt;
@@ -178,33 +209,42 @@ const A={};
       x.beginPath(); isl.forEach(([a,b],i)=>i?x.lineTo(a,b):x.moveTo(a,b)); x.closePath();
       x.fillStyle="#2b2721"; x.fill(); x.strokeStyle="rgba(255,194,14,.35)"; x.lineWidth=3; x.stroke();
       x.fillStyle="rgba(243,241,234,.35)"; x.font="600 22px 'JetBrains Mono',Consolas,monospace"; x.textAlign="center"; x.fillText("CRETE",W/2,H/2+8);
-      // patrol path
       x.setLineDash([4,10]); x.strokeStyle="rgba(255,194,14,.25)"; x.lineWidth=2; x.beginPath(); path.forEach(([a,b],i)=>i?x.lineTo(a,b):x.moveTo(a,b)); x.closePath(); x.stroke(); x.setLineDash([]);
-      // talos
-      const prev=pos; pos+=dt*.022; if(pos>=plen){ pos-=plen; lap=(lap+1)%3; } cap.textContent=`patrol lap ${lap+1} of 3`;
+      // talos patrols: 3 laps = one day
+      if(mode!=="over"){ pos+=dt*(mode==="game"?GAME_SPEED:IDLE_SPEED); if(pos>=plen){ pos-=plen; lap++; if(mode==="game"&&lap>=LAPS){ end(true); } else if(mode!=="game") lap%=3; } }
+      cap.textContent = mode==="game" ? "click a ship to hurl a boulder" : `patrol lap ${lap%3+1} of 3`;
       const [tx,ty]=talosXY();
       const rg=x.createRadialGradient(tx,ty,0,tx,ty,30); rg.addColorStop(0,"rgba(255,194,14,.9)"); rg.addColorStop(1,"rgba(255,194,14,0)"); x.fillStyle=rg; x.beginPath(); x.arc(tx,ty,30,0,7); x.fill();
       x.fillStyle="#ffe7a3"; x.beginPath(); x.arc(tx,ty,8,0,7); x.fill();
-      // ships
-      if(Math.random()<.006*f && ships.filter(s=>s.alive).length<5) spawn();
       cool-=dt;
+      if(mode==="game"&&cool>0){ x.strokeStyle="rgba(255,231,163,.8)"; x.lineWidth=3; x.beginPath(); x.arc(tx,ty,14,-Math.PI/2,-Math.PI/2+Math.PI*2*(1-cool/COOL)); x.stroke(); }
+      // ships: spawn faster as the day goes on
+      if(mode==="game"){ elapsed+=dt; spawnT-=dt; const prog=Math.min(1,elapsed/40000);
+        if(spawnT<=0){ spawn(1+prog*.7); spawnT=rnd(1700,2400)*(1-prog*.5); } }
+      else if(mode==="idle"&&Math.random()<.006*f&&ships.filter(s=>s.alive&&!s.landed).length<5) spawn();
       for(const s of ships){
-        if(s.alive){ s.x+=s.vx*f; s.y+=s.vy*f;
-          const d=Math.hypot(s.x-tx,s.y-ty);
-          if(d<260 && cool<=0 && !s.targeted){ s.targeted=1; cool=700; const T=1100; rocks.push({x0:tx,y0:ty,s,t:0,T,x1:s.x+s.vx*T/16.7,y1:s.y+s.vy*T/16.7}); }
-        } else s.sink+=dt/1200;
+        if(s.alive&&!s.landed){ s.x+=s.vx*f; s.y+=s.vy*f;
+          if(onIsland(s.x+s.vx*12,s.y+s.vy*12)){
+            if(mode==="game"){ s.landed=1; landed++; if(landed>=LAND_MAX) end(false); }
+            else s.alive=0;  // idle: talos never lets one through
+          }
+          if(mode==="idle"&&cool<=0&&!s.targeted&&Math.hypot(s.x-tx,s.y-ty)<260) throwAt(0,0,s);
+        } else if(!s.alive) s.sink+=dt/1200;
         if(s.sink>=1) continue;
         x.save(); x.translate(s.x,s.y); x.globalAlpha=1-s.sink; x.rotate(s.sink*.6*s.dir); const sc=1-s.sink*.5; x.scale(sc*s.dir,sc);
-        x.fillStyle="#8a6b45"; x.beginPath(); x.moveTo(-18,0); x.lineTo(18,0); x.lineTo(12,8); x.lineTo(-14,8); x.closePath(); x.fill();
-        x.fillStyle=INK; x.beginPath(); x.moveTo(0,-2); x.lineTo(0,-26); x.lineTo(14,-4); x.closePath(); x.fill();
+        x.fillStyle=s.landed?"#6b5236":"#8a6b45"; x.beginPath(); x.moveTo(-18,0); x.lineTo(18,0); x.lineTo(12,8); x.lineTo(-14,8); x.closePath(); x.fill();
+        x.fillStyle=s.landed?RED:INK; x.beginPath(); x.moveTo(0,-2); x.lineTo(0,-26); x.lineTo(14,-4); x.closePath(); x.fill();
         x.restore();
       }
-      ships=ships.filter(s=>s.sink<1 && s.x>-60 && s.x<W+60);
-      // rocks
-      rocks=rocks.filter(r=>{ r.t+=dt; const p=Math.min(1,r.t/r.T); const rx=r.x0+(r.x1-r.x0)*p, ry=r.y0+(r.y1-r.y0)*p-Math.sin(p*Math.PI)*140;
+      ships=ships.filter(s=>s.sink<1 && s.x>-60 && s.x<W+60 && s.y>-60 && s.y<H+60);
+      // boulders
+      rocks=rocks.filter(r=>{ r.t+=dt; const p=Math.min(1,r.t/r.T); const rx=r.x0+(r.x1-r.x0)*p, ry=r.y0+(r.y1-r.y0)*p-Math.sin(p*Math.PI)*120;
         x.fillStyle="#b9b2a5"; x.beginPath(); x.arc(rx,ry,6+Math.sin(p*Math.PI)*4,0,7); x.fill();
-        if(p>=1){ splash.push({x:r.x1,y:r.y1,t:0}); if(r.s.alive && Math.hypot(r.s.x-r.x1,r.s.y-r.y1)<40) r.s.alive=0; else r.s.targeted=0; return false; } return true; });
+        if(p>=1){ splash.push({x:r.x1,y:r.y1,t:0});
+          for(const s of ships){ if(s.alive&&!s.landed&&Math.hypot(s.x-r.x1,s.y-r.y1)<34){ s.alive=0; if(mode==="game") sunk++; } else if(s.targeted&&s.alive) s.targeted=0; }
+          return false; } return true; });
       splash=splash.filter(s=>{ s.t+=dt/700; x.strokeStyle=`rgba(243,241,234,${1-s.t})`; x.lineWidth=2; x.beginPath(); x.arc(s.x,s.y,8+s.t*34,0,7); x.stroke(); return s.t<1; });
+      renderHud();
     }
   };
 })();
@@ -850,7 +890,7 @@ addEventListener("keydown",e=>{
   else if(k==="Home") go(0); else if(k==="End") go(slides.length-1);
   else if(k==="f"||k==="F") toggleFS();
 });
-let sx=null; stage.addEventListener("touchstart",e=>{ if(e.target.closest("input,button,.cell,.switch,.fact,svg")) return; sx=e.touches[0].clientX; },{passive:true});
+let sx=null; stage.addEventListener("touchstart",e=>{ if(e.target.closest("input,button,.cell,.switch,.fact,svg,canvas")) return; sx=e.touches[0].clientX; },{passive:true});
 stage.addEventListener("touchend",e=>{ if(sx===null) return; const dx=e.changedTouches[0].clientX-sx; if(Math.abs(dx)>60) (dx<0?advance:retreat)(); sx=null; });
 addEventListener("resize",fitStage);
 fitStage(); fromHash(); claudeAdapter();

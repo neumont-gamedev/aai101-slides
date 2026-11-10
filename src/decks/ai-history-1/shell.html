@@ -339,6 +339,16 @@
   .trail div.why{color:var(--mute);font-size:15px;padding-left:24px}
   .keyIdea{opacity:0;transform:translateY(12px);transition:opacity .6s ease .5s,transform .6s cubic-bezier(.2,.7,.2,1) .5s}
   .keyIdea.on{opacity:1;transform:none}
+  /* talos mini-game */
+  .tgHud{position:absolute;left:14px;right:14px;top:12px;display:flex;gap:10px;justify-content:space-between;z-index:2;pointer-events:none;font-family:var(--mono);font-size:16px}
+  .tgHud span{background:rgba(13,13,15,.8);padding:6px 11px;border-radius:8px;color:var(--ink)}
+  .tgHud b{color:var(--y)} .tgHud .bad b{color:var(--red)}
+  .tgOver{position:absolute;inset:0;z-index:3;display:flex;align-items:center;justify-content:center;background:rgba(11,16,24,.55);transition:opacity .35s}
+  .tgOver.hide{opacity:0;pointer-events:none}
+  .tgOver .box{background:rgba(18,18,20,.94);border:1px solid var(--line);border-radius:18px;padding:28px 32px;max-width:440px;text-align:center;display:flex;flex-direction:column;gap:14px;align-items:center}
+  .tgOver h3{font-size:30px} .tgOver p{font-size:19px;color:#c9c6be;line-height:1.45}
+  .tgOver .btn{font-size:20px;padding:12px 28px}
+  .tgOver .big{font-size:38px;font-weight:700}
 </style>
 </head>
 <body>
@@ -399,7 +409,10 @@
           <li>Circled the island 3 times a day, hurling boulders at enemy ships</li>
         </ul>
       </div>
-      <div class="stage-box rise" style="--i:2"><canvas id="talos"></canvas><div class="cap" id="talosCap">patrol lap 1 of 3</div></div>
+      <div class="stage-box rise" style="--i:2" id="talosBox"><canvas id="talos" style="cursor:crosshair"></canvas>
+        <div class="tgHud" id="talosHud"></div>
+        <div class="tgOver" id="talosOver"></div>
+        <div class="cap" id="talosCap">patrol lap 1 of 3</div></div>
     </div>
   </section>
 
