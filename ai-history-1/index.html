@@ -729,15 +729,15 @@ const A={};
 (() => {
   const svg=$("euler"), lines=[...document.querySelectorAll("#sylA .l")];
   svg.innerHTML=`
-    <defs><filter id="glow"><feGaussianBlur stdDeviation="8" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter></defs>
-    <circle id="eM" cx="320" cy="330" r="250" fill="rgba(106,184,255,.06)" stroke="${BLUE}" stroke-width="3"/>
-    <text id="eMl" x="320" y="128" text-anchor="middle" fill="${BLUE}" font-family="JetBrains Mono, Consolas, monospace" font-size="20" letter-spacing="3">MORTAL THINGS</text>
-    <circle id="eH" cx="320" cy="380" r="140" fill="rgba(255,194,14,.08)" stroke="${Y}" stroke-width="3"/>
-    <text id="eHl" x="320" y="290" text-anchor="middle" fill="${Y}" font-family="JetBrains Mono, Consolas, monospace" font-size="20" letter-spacing="3">HUMANS</text>
-    <g id="eS"><circle cx="320" cy="410" r="18" fill="${GREEN}" filter="url(#glow)"/><text x="320" y="462" text-anchor="middle" fill="${GREEN}" font-family="Space Grotesk, system-ui, sans-serif" font-size="24" font-weight="700">Socrates</text></g>`;
+    <defs><filter id="glow" x="-150%" y="-150%" width="400%" height="400%"><feGaussianBlur stdDeviation="8" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter></defs>
+    <circle id="eM" cx="320" cy="296" r="245" fill="rgba(106,184,255,.06)" stroke="${BLUE}" stroke-width="3"/>
+    <text id="eMl" x="320" y="98" text-anchor="middle" fill="${BLUE}" font-family="JetBrains Mono, Consolas, monospace" font-size="20" letter-spacing="3">MORTAL THINGS</text>
+    <circle id="eH" cx="320" cy="346" r="140" fill="rgba(255,194,14,.08)" stroke="${Y}" stroke-width="3"/>
+    <text id="eHl" x="320" y="256" text-anchor="middle" fill="${Y}" font-family="JetBrains Mono, Consolas, monospace" font-size="20" letter-spacing="3">HUMANS</text>
+    <g id="eS"><circle cx="320" cy="376" r="18" fill="${GREEN}" filter="url(#glow)"/><text x="320" y="428" text-anchor="middle" fill="${GREEN}" font-family="Space Grotesk, system-ui, sans-serif" font-size="24" font-weight="700">Socrates</text></g>`;
   const M=$("eM"), H=$("eH"), S=$("eS"), Ml=$("eMl"), Hl=$("eHl");
   const circ=(el,r)=>{ const L=2*Math.PI*r; el.style.strokeDasharray=L; return L; };
-  const LM=circ(M,250), LH=circ(H,140);
+  const LM=circ(M,245), LH=circ(H,140);
   let t=0;
   A.aristotle={
     enter(){ t=0; },
