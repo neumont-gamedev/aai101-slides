@@ -757,6 +757,54 @@ document.querySelectorAll(".slide.tl").forEach(sl=>{
   A.sick={ enter(){ ans=[]; render(); } };
 })();
 
+/* ---------- the trouble with rules ---------- */
+(() => {
+  // one rule about birds, then exceptions pile up until two rules contradict each other
+  const CASES=[
+    {q:"a penguin", note:"Penguins are birds, but they can’t fly.", add:["penguin"]},
+    {q:"an ostrich", note:"Also a bird. Also can’t fly. Neither can emus or kiwis.", add:["ostrich","emu","kiwi"]},
+    {q:"a bird with a broken wing", note:"Normally it flies. Just not today.", add:["injured"]},
+    {q:"a baby bird", note:"Chicks can’t fly yet.", add:["too_young"]},
+    {q:"a bird in a cage", note:"It can fly, but it can’t go anywhere. Our rule needs a special case.", rule:["bird","in_cage","can_fly_but_stays_put"]},
+    {q:"a bat", note:"Not a bird at all, but it flies. Our rules never even covered it.", rule:["bat",null,"can_fly"]},
+    {q:"a penguin on an airplane", note:"Rule 1 says it can’t fly. But it’s flying at 35,000 feet. Now the rules contradict each other.", clash:true},
+  ];
+  let step=0, fixed=false, nots=[], extra=[], fresh=null;
+  const kb=$("rtKb"), box=$("rtCase"), idea=$("rtIdea");
+  const K=w=>`<span class="kw">${w}</span>`;
+  function bump(id,v){ const el=$(id); if(el.textContent!==String(v)){ el.textContent=v; el.classList.remove("bump"); void el.offsetWidth; el.classList.add("bump"); } }
+  function render(){
+    const conds=["bird",...nots.map(n=>"NOT "+n)];
+    const base=`${K("IF")} bird${nots.map(n=>` ${K("AND")} <span class="${fresh&&fresh.includes(n)?"new":""}">NOT ${n}</span>`).join("")} ${K("THEN")} <span class="th">can_fly</span>`;
+    const clash=step>=CASES.length-1&&fixed;
+    let html=`<div class="r ${clash?"clash":""}">${base}</div>`;
+    html+=extra.map((r,i)=>`<div class="r ${fresh==="rule"&&i===extra.length-1?"newr":""}">${K("IF")} ${r[0]}${r[1]?` ${K("AND")} ${r[1]}`:""} ${K("THEN")} <span class="th">${r[2]}</span></div>`).join("");
+    if(clash) html+=`<div class="r clash newr">${K("IF")} in_airplane ${K("THEN")} <span class="th">is_flying</span> <span style="color:var(--red)">⚠ conflicts with rule 1</span></div>`;
+    kb.innerHTML=html;
+    bump("rtRules",1+extra.length+(clash?1:0));
+    bump("rtConds",conds.length+extra.reduce((a,r)=>a+(r[1]?2:1),0)+(clash?1:0));
+    bump("rtFixes",step+(fixed?1:0));
+    idea.classList.toggle("on",clash);
+    if(step===0&&!fixed&&!box.dataset.started){
+      box.innerHTML=`<div class="q">Seems reasonable.</div><div class="note">Birds fly. Done! Is one rule enough?</div><div class="acts"><button class="btn on" id="rtAsk">But what about…?</button></div>`;
+    } else if(!fixed){
+      const c=CASES[step];
+      box.innerHTML=`<div class="eyebrow" style="font-size:14px">Exception ${step+1} of ${CASES.length}</div><div class="q flip">But what about <span>${c.q}</span>?</div><div class="note">${c.note}</div><div class="acts"><button class="btn on" id="rtFix">${c.clash?"Try to fix it…":"Fix the rules"}</button></div>`;
+    } else if(step<CASES.length-1){
+      box.innerHTML=`<div class="q">Patched.</div><div class="note">The rule works again… for now.</div><div class="acts"><button class="btn on" id="rtAsk">But what about…?</button></div>`;
+    } else {
+      box.innerHTML=`<div class="q" style="color:var(--red)">There’s no clean fix.</div><div class="note">Every patch makes the rules longer, and some situations just contradict each other. Real experts handle this with common sense, which is very hard to write down.</div><div class="acts"><button class="btn" id="rtRe">Start over ↺</button></div>`;
+    }
+    const ask=$("rtAsk"); if(ask) ask.onclick=()=>{ box.dataset.started=1; if(fixed){ step++; fixed=false; } fresh=null; render(); };
+    const fix=$("rtFix"); if(fix) fix.onclick=()=>{ const c=CASES[step]; fixed=true;
+      if(c.add){ nots.push(...c.add); fresh=c.add; } else if(c.rule){ extra.push(c.rule); fresh="rule"; } else fresh=null; render(); };
+    const re=$("rtRe"); if(re) re.onclick=reset;
+  }
+  function reset(){ step=0; fixed=false; nots=[]; extra=[]; fresh=null; delete box.dataset.started; render(); }
+  A["rules-trouble"]={ enter(){ if(!box.dataset.started) reset(); } };
+  reset();
+})();
+
 /* ---------- pong ---------- */
 (() => {
   const cv=$("pong"); let b,p1,p2;

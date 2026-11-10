@@ -350,6 +350,25 @@
   .tgOver h3{font-size:30px} .tgOver p{font-size:19px;color:#c9c6be;line-height:1.45}
   .tgOver .btn{font-size:20px;padding:12px 28px}
   .tgOver .big{font-size:38px;font-weight:700}
+  /* trouble with rules */
+  .rtCount{display:flex;gap:14px}
+  .rtCount .card{padding:14px 18px;min-width:120px;text-align:center}
+  .rtCount b{display:block;font-family:var(--mono);font-size:38px;color:var(--y);transition:transform .3s}
+  .rtCount b.bump{animation:win .5s ease}
+  @keyframes win{0%{transform:scale(1)}40%{transform:scale(1.18)}100%{transform:scale(1)}}
+  .rtCount span{font-family:var(--mono);font-size:14px;color:var(--mute);letter-spacing:.04em}
+  .rtKb{padding:20px 24px;min-height:220px}
+  #rtKb{font-family:var(--mono);font-size:19px;line-height:1.6;display:flex;flex-direction:column;gap:10px}
+  #rtKb .r{padding:8px 12px;border-radius:8px;background:#151518;border:1px solid var(--line)}
+  #rtKb .kw{color:var(--blue)} #rtKb .th{color:var(--y)} #rtKb .new{color:var(--red);animation:rtnew 1.4s ease}
+  #rtKb .r.newr{border-color:var(--red);animation:rtnew 1.4s ease}
+  #rtKb .r.clash{border-color:var(--red);background:rgba(255,90,78,.1)}
+  @keyframes rtnew{0%{background:rgba(255,90,78,.35)}100%{background:transparent}}
+  .rtCase{padding:24px 28px;display:flex;flex-direction:column;gap:12px;min-height:200px}
+  .rtCase .q{font-size:34px;font-weight:700;line-height:1.15}
+  .rtCase .q span{color:var(--y)}
+  .rtCase .note{font-size:20px;color:#c9c6be;line-height:1.4}
+  .rtCase .acts{display:flex;gap:12px;margin-top:4px}
 </style>
 </head>
 <body>
@@ -663,6 +682,22 @@
         <p class="rise muted" style="--i:3;font-size:15px">A classroom demo of how expert systems reason, not medical advice.</p>
       </div>
       <div class="askcard card rise" style="--i:2" id="sickCard"></div>
+    </div>
+  </section>
+
+  <!-- the trouble with rules -->
+  <section class="slide" data-id="rules-trouble">
+    <div class="two" style="grid-template-columns:.9fr 1.1fr;gap:56px">
+      <div class="stack">
+        <h2 class="rise" style="--i:0"><span class="n">THE LIMITS OF RULES</span>The trouble with rules</h2>
+        <p class="rise" style="--i:1">An expert system only knows what someone writes down. Let’s write one simple rule about birds and see how long it lasts.</p>
+        <div class="rtCount rise" style="--i:2"><div class="card"><b id="rtRules">1</b><span>rules</span></div><div class="card"><b id="rtConds">1</b><span>conditions</span></div><div class="card"><b id="rtFixes">0</b><span>exceptions found</span></div></div>
+        <div class="callout keyIdea" id="rtIdea">Experts can’t write down <b>everything</b> they know. Expert systems became expensive to build and maintain, and broke on cases nobody had written a rule for. The next big question: <b class="y">what if machines could learn the rules from examples?</b></div>
+      </div>
+      <div class="stack rise" style="--i:2;gap:18px">
+        <div class="card rtKb"><div class="eyebrow" style="font-size:14px;margin-bottom:10px">Knowledge base</div><div id="rtKb"></div></div>
+        <div class="card rtCase" id="rtCase"></div>
+      </div>
     </div>
   </section>
 
@@ -1496,6 +1531,54 @@ document.querySelectorAll(".slide.tl").forEach(sl=>{
     card.querySelector(".b-no").onclick=()=>{ ans.push(0); render(); };
   }
   A.sick={ enter(){ ans=[]; render(); } };
+})();
+
+/* ---------- the trouble with rules ---------- */
+(() => {
+  // one rule about birds, then exceptions pile up until two rules contradict each other
+  const CASES=[
+    {q:"a penguin", note:"Penguins are birds, but they can’t fly.", add:["penguin"]},
+    {q:"an ostrich", note:"Also a bird. Also can’t fly. Neither can emus or kiwis.", add:["ostrich","emu","kiwi"]},
+    {q:"a bird with a broken wing", note:"Normally it flies. Just not today.", add:["injured"]},
+    {q:"a baby bird", note:"Chicks can’t fly yet.", add:["too_young"]},
+    {q:"a bird in a cage", note:"It can fly, but it can’t go anywhere. Our rule needs a special case.", rule:["bird","in_cage","can_fly_but_stays_put"]},
+    {q:"a bat", note:"Not a bird at all, but it flies. Our rules never even covered it.", rule:["bat",null,"can_fly"]},
+    {q:"a penguin on an airplane", note:"Rule 1 says it can’t fly. But it’s flying at 35,000 feet. Now the rules contradict each other.", clash:true},
+  ];
+  let step=0, fixed=false, nots=[], extra=[], fresh=null;
+  const kb=$("rtKb"), box=$("rtCase"), idea=$("rtIdea");
+  const K=w=>`<span class="kw">${w}</span>`;
+  function bump(id,v){ const el=$(id); if(el.textContent!==String(v)){ el.textContent=v; el.classList.remove("bump"); void el.offsetWidth; el.classList.add("bump"); } }
+  function render(){
+    const conds=["bird",...nots.map(n=>"NOT "+n)];
+    const base=`${K("IF")} bird${nots.map(n=>` ${K("AND")} <span class="${fresh&&fresh.includes(n)?"new":""}">NOT ${n}</span>`).join("")} ${K("THEN")} <span class="th">can_fly</span>`;
+    const clash=step>=CASES.length-1&&fixed;
+    let html=`<div class="r ${clash?"clash":""}">${base}</div>`;
+    html+=extra.map((r,i)=>`<div class="r ${fresh==="rule"&&i===extra.length-1?"newr":""}">${K("IF")} ${r[0]}${r[1]?` ${K("AND")} ${r[1]}`:""} ${K("THEN")} <span class="th">${r[2]}</span></div>`).join("");
+    if(clash) html+=`<div class="r clash newr">${K("IF")} in_airplane ${K("THEN")} <span class="th">is_flying</span> <span style="color:var(--red)">⚠ conflicts with rule 1</span></div>`;
+    kb.innerHTML=html;
+    bump("rtRules",1+extra.length+(clash?1:0));
+    bump("rtConds",conds.length+extra.reduce((a,r)=>a+(r[1]?2:1),0)+(clash?1:0));
+    bump("rtFixes",step+(fixed?1:0));
+    idea.classList.toggle("on",clash);
+    if(step===0&&!fixed&&!box.dataset.started){
+      box.innerHTML=`<div class="q">Seems reasonable.</div><div class="note">Birds fly. Done! Is one rule enough?</div><div class="acts"><button class="btn on" id="rtAsk">But what about…?</button></div>`;
+    } else if(!fixed){
+      const c=CASES[step];
+      box.innerHTML=`<div class="eyebrow" style="font-size:14px">Exception ${step+1} of ${CASES.length}</div><div class="q flip">But what about <span>${c.q}</span>?</div><div class="note">${c.note}</div><div class="acts"><button class="btn on" id="rtFix">${c.clash?"Try to fix it…":"Fix the rules"}</button></div>`;
+    } else if(step<CASES.length-1){
+      box.innerHTML=`<div class="q">Patched.</div><div class="note">The rule works again… for now.</div><div class="acts"><button class="btn on" id="rtAsk">But what about…?</button></div>`;
+    } else {
+      box.innerHTML=`<div class="q" style="color:var(--red)">There’s no clean fix.</div><div class="note">Every patch makes the rules longer, and some situations just contradict each other. Real experts handle this with common sense, which is very hard to write down.</div><div class="acts"><button class="btn" id="rtRe">Start over ↺</button></div>`;
+    }
+    const ask=$("rtAsk"); if(ask) ask.onclick=()=>{ box.dataset.started=1; if(fixed){ step++; fixed=false; } fresh=null; render(); };
+    const fix=$("rtFix"); if(fix) fix.onclick=()=>{ const c=CASES[step]; fixed=true;
+      if(c.add){ nots.push(...c.add); fresh=c.add; } else if(c.rule){ extra.push(c.rule); fresh="rule"; } else fresh=null; render(); };
+    const re=$("rtRe"); if(re) re.onclick=reset;
+  }
+  function reset(){ step=0; fixed=false; nots=[]; extra=[]; fresh=null; delete box.dataset.started; render(); }
+  A["rules-trouble"]={ enter(){ if(!box.dataset.started) reset(); } };
+  reset();
 })();
 
 /* ---------- pong ---------- */

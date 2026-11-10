@@ -349,6 +349,25 @@
   .tgOver h3{font-size:30px} .tgOver p{font-size:19px;color:#c9c6be;line-height:1.45}
   .tgOver .btn{font-size:20px;padding:12px 28px}
   .tgOver .big{font-size:38px;font-weight:700}
+  /* trouble with rules */
+  .rtCount{display:flex;gap:14px}
+  .rtCount .card{padding:14px 18px;min-width:120px;text-align:center}
+  .rtCount b{display:block;font-family:var(--mono);font-size:38px;color:var(--y);transition:transform .3s}
+  .rtCount b.bump{animation:win .5s ease}
+  @keyframes win{0%{transform:scale(1)}40%{transform:scale(1.18)}100%{transform:scale(1)}}
+  .rtCount span{font-family:var(--mono);font-size:14px;color:var(--mute);letter-spacing:.04em}
+  .rtKb{padding:20px 24px;min-height:220px}
+  #rtKb{font-family:var(--mono);font-size:19px;line-height:1.6;display:flex;flex-direction:column;gap:10px}
+  #rtKb .r{padding:8px 12px;border-radius:8px;background:#151518;border:1px solid var(--line)}
+  #rtKb .kw{color:var(--blue)} #rtKb .th{color:var(--y)} #rtKb .new{color:var(--red);animation:rtnew 1.4s ease}
+  #rtKb .r.newr{border-color:var(--red);animation:rtnew 1.4s ease}
+  #rtKb .r.clash{border-color:var(--red);background:rgba(255,90,78,.1)}
+  @keyframes rtnew{0%{background:rgba(255,90,78,.35)}100%{background:transparent}}
+  .rtCase{padding:24px 28px;display:flex;flex-direction:column;gap:12px;min-height:200px}
+  .rtCase .q{font-size:34px;font-weight:700;line-height:1.15}
+  .rtCase .q span{color:var(--y)}
+  .rtCase .note{font-size:20px;color:#c9c6be;line-height:1.4}
+  .rtCase .acts{display:flex;gap:12px;margin-top:4px}
 </style>
 </head>
 <body>
@@ -662,6 +681,22 @@
         <p class="rise muted" style="--i:3;font-size:15px">A classroom demo of how expert systems reason, not medical advice.</p>
       </div>
       <div class="askcard card rise" style="--i:2" id="sickCard"></div>
+    </div>
+  </section>
+
+  <!-- the trouble with rules -->
+  <section class="slide" data-id="rules-trouble">
+    <div class="two" style="grid-template-columns:.9fr 1.1fr;gap:56px">
+      <div class="stack">
+        <h2 class="rise" style="--i:0"><span class="n">THE LIMITS OF RULES</span>The trouble with rules</h2>
+        <p class="rise" style="--i:1">An expert system only knows what someone writes down. Let’s write one simple rule about birds and see how long it lasts.</p>
+        <div class="rtCount rise" style="--i:2"><div class="card"><b id="rtRules">1</b><span>rules</span></div><div class="card"><b id="rtConds">1</b><span>conditions</span></div><div class="card"><b id="rtFixes">0</b><span>exceptions found</span></div></div>
+        <div class="callout keyIdea" id="rtIdea">Experts can’t write down <b>everything</b> they know. Expert systems became expensive to build and maintain, and broke on cases nobody had written a rule for. The next big question: <b class="y">what if machines could learn the rules from examples?</b></div>
+      </div>
+      <div class="stack rise" style="--i:2;gap:18px">
+        <div class="card rtKb"><div class="eyebrow" style="font-size:14px;margin-bottom:10px">Knowledge base</div><div id="rtKb"></div></div>
+        <div class="card rtCase" id="rtCase"></div>
+      </div>
     </div>
   </section>
 
