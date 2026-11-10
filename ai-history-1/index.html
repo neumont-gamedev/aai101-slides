@@ -916,7 +916,7 @@ const A={};
     const side=pick(["l","r","t","b"]); let x,y;
     if(side==="l"){ x=-30; y=rnd(H*.1,H*.9); } else if(side==="r"){ x=W+30; y=rnd(H*.1,H*.9); }
     else if(side==="t"){ x=rnd(W*.1,W*.9); y=-30; } else { x=rnd(W*.1,W*.9); y=H+30; }
-    const tx=W/2+rnd(-W*.22,W*.22), ty=H/2+rnd(-H*.06,H*.06), d=Math.hypot(tx-x,ty-y), v=rnd(.22,.34)*speed;
+    const tx=W/2+rnd(-W*.22,W*.22), ty=H/2+rnd(-H*.06,H*.06), d=Math.hypot(tx-x,ty-y), v=rnd(.27,.4)*speed;
     ships.push({x,y,vx:(tx-x)/d*v,vy:(ty-y)/d*v,alive:1,sink:0,landed:0,dir:tx>x?1:-1});
   }
   function throwAt(tx,ty,ship){ const [sx,sy]=talosXY(); const T=650;
@@ -961,7 +961,8 @@ const A={};
       if(mode==="game"&&cool>0){ x.strokeStyle="rgba(255,231,163,.8)"; x.lineWidth=3; x.beginPath(); x.arc(tx,ty,14,-Math.PI/2,-Math.PI/2+Math.PI*2*(1-cool/COOL)); x.stroke(); }
       // ships: spawn faster as the day goes on
       if(mode==="game"){ elapsed+=dt; spawnT-=dt; const prog=Math.min(1,elapsed/40000);
-        if(spawnT<=0){ spawn(1+prog*.7); spawnT=rnd(1700,2400)*(1-prog*.5); } }
+        if(spawnT<=0){ spawn(1+prog*1.1); if(prog>.55&&Math.random()<prog*.5) spawn(1+prog*1.1);   // late in the day: faster, and often two at once
+          spawnT=rnd(1500,2100)*(1-prog*.55); } }
       else if(mode==="idle"&&Math.random()<.006*f&&ships.filter(s=>s.alive&&!s.landed).length<5) spawn();
       for(const s of ships){
         if(s.alive&&!s.landed){ s.x+=s.vx*f; s.y+=s.vy*f;
