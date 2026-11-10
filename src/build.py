@@ -29,11 +29,22 @@ DECKS = [
      "Simple rules, complex worlds: Conway’s Game of Life, patterns, and a sandbox to play in."),
 ]
 
+def stamp():
+    # shown next to the slide counter so you can tell which version a browser has loaded
+    from datetime import datetime
+    try:
+        from zoneinfo import ZoneInfo
+        now = datetime.now(ZoneInfo("America/Denver"))
+    except Exception:
+        now = datetime.now()
+    return now.strftime("%b %d, %I:%M %p").replace(" 0", " ")
+
 def to_web(html, slug):
     # tag the deck, make the brand a link home, and load the firebase live sync
     html = html.replace("<head>", f'<head>\n<meta name="deck-id" content="{slug}">', 1)
     html, n = re.subn(r'<div id="brand">(.*?)</div>', r'<a id="brand" href="../" title="All slide decks" style="text-decoration:none">← \1</a>', html, count=1)
     assert n == 1, "deck is missing its #brand element"
+    html = html.replace('<span id="count">', f'<span class="ver" style="font-size:12px;opacity:.6;margin-right:8px">updated {stamp()}</span><span id="count">', 1)
     return html.replace("</body>", '<script type="module" src="../live.js"></script>\n</body>', 1)
 
 def main():
