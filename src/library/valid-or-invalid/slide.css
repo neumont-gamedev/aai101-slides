@@ -1,0 +1,18 @@
+  /* valid or invalid game */
+  .vqHead{display:flex;align-items:center;gap:16px}
+  .vqHead #vqScore{margin-left:auto;font-size:17px;color:var(--mute)}
+  .vqDots{display:flex;gap:7px}.vqDots i{width:10px;height:10px;border-radius:50%;background:#3a3a42}.vqDots i.on{background:var(--y)}.vqDots i.ok{background:var(--green)}.vqDots i.no{background:var(--red)}
+  .vqAct{display:flex;flex-direction:column;gap:14px;min-height:150px}
+  .vqBtns{display:flex;gap:16px}
+  .vqBtns .btn{font-size:22px;padding:12px 30px;border-radius:999px}
+  .vqFb{display:flex;flex-direction:column;gap:10px}
+  .vqFb .top{display:flex;gap:12px;align-items:center;flex-wrap:wrap}
+  .vqFb .tag{font-size:17px;padding:6px 12px}
+  .vqFb .fm{font-family:var(--mono);font-size:19px;color:var(--ink)}
+  .vqFb .why{font-size:20px;line-height:1.45;color:#d6d3cb}
+  .trapCard{position:relative;transition:opacity .4s,border-color .4s}
+  .trapCard.locked{opacity:.35}
+  .trapCard.locked .form{filter:blur(5px)}
+  .trapCard.fresh{border-color:var(--red);box-shadow:0 0 0 4px rgba(255,90,78,.12)}
+  .trapLock{position:absolute;right:20px;top:22px;font-family:var(--mono);font-size:13px;color:var(--mute)}
+  .trapCard:not(.locked) .trapLock{display:none}

@@ -1,0 +1,30 @@
+  <section class="slide" data-id="form">
+    <h2 class="rise" style="--i:0"><span class="n">ARISTOTLE · YOUR TURN</span>Valid or <span class="y">invalid</span>?</h2>
+    <p class="rise" style="--i:1;margin-top:14px;max-width:1150px">An argument is <b>valid</b> if the conclusion <i class="t">must</i> follow from the premises. Judge the <b>form</b>, not whether you agree with it.</p>
+    <div class="two" style="height:auto;margin-top:30px;align-items:start;grid-template-columns:1.15fr .85fr;gap:48px">
+      <div class="stack" style="gap:18px">
+        <div class="card rise" style="--i:2;padding:24px 30px">
+          <div class="vqHead"><span class="eyebrow" style="font-size:15px" id="vqNum"></span><span class="vqDots" id="vqDots"></span><span class="mono" id="vqScore"></span></div>
+          <div class="syl" id="vqSyl" style="margin-top:16px;font-size:31px">
+            <div class="l on"><span class="k">PREMISE 1</span><span id="vq1"></span></div>
+            <div class="l on"><span class="k">PREMISE 2</span><span id="vq2"></span></div>
+            <hr>
+            <div class="l on"><span class="k">THEREFORE</span><span id="vq3"></span></div>
+          </div>
+        </div>
+        <div class="vqAct rise" style="--i:3" id="vqAct"></div>
+      </div>
+      <div class="stack" style="gap:18px">
+        <div class="card rise" style="--i:2;padding:22px 26px">
+          <div class="eyebrow" style="font-size:15px;margin-bottom:12px;color:var(--green)">✓ A valid pattern</div>
+          <div class="form"><span>All <span class="term tA">A</span> are <span class="term tB">B</span></span><span><span class="term tC">C</span> is <span class="term tA">A</span></span><span>∴ <span class="term tC">C</span> is <span class="term tB">B</span></span></div>
+        </div>
+        <div class="card trapCard rise" style="--i:3;padding:22px 26px" id="vqTrap">
+          <div class="eyebrow" style="font-size:15px;margin-bottom:12px;color:var(--red)">✗ The common trap</div>
+          <div class="form"><span>All <span class="term tA">A</span> are <span class="term tB">B</span></span><span><span class="term tC">C</span> is <span class="term tB">B</span></span><span>∴ <span class="term tC">C</span> is <span class="term tA">A</span></span></div>
+          <div class="trapLock">unlocks when you find one</div>
+        </div>
+        <div class="callout rise" style="--i:4">You can check the form <b>without understanding the words</b>. If reasoning is just following rules, a machine could do it. That idea is the seed of AI.</div>
+      </div>
+    </div>
+  </section>
