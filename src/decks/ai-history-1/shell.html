@@ -368,6 +368,25 @@
   .rtCase .q span{color:var(--y)}
   .rtCase .note{font-size:20px;color:#c9c6be;line-height:1.4}
   .rtCase .acts{display:flex;gap:12px;margin-top:4px}
+  /* lovelace */
+  .ph.init{display:grid;place-items:center;background:linear-gradient(160deg,#3a3326,#1c1c20)}
+  .ph.init span{font-family:var(--mono);font-size:34px;font-weight:600;color:var(--y);letter-spacing:.05em}
+  .ph.init::after{display:none}
+  .llq{font-size:24px;line-height:1.45;color:var(--ink);border-left:4px solid var(--y);padding:6px 0 6px 20px;font-style:italic}
+  .llq cite{display:block;font-style:normal;font-family:var(--mono);font-size:15px;color:var(--mute);margin-top:10px}
+  .flips{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+  .flip3{perspective:900px;height:150px;cursor:pointer}
+  .flip3 .in{position:relative;width:100%;height:100%;transition:transform .6s cubic-bezier(.2,.7,.2,1);transform-style:preserve-3d}
+  .flip3.on .in{transform:rotateY(180deg)}
+  .flip3 .f,.flip3 .b{position:absolute;inset:0;backface-visibility:hidden;border-radius:16px;border:1px solid var(--line);padding:16px 18px;display:flex;flex-direction:column;justify-content:center;gap:6px}
+  .flip3 .f{background:var(--panel)}
+  .flip3 .f .k{font-family:var(--mono);font-size:13px;color:var(--mute);letter-spacing:.08em}
+  .flip3 .f .t{font-size:22px;font-weight:600;line-height:1.25}
+  .flip3:hover .f{border-color:var(--y)}
+  .flip3 .b{background:#1d1b16;transform:rotateY(180deg);border-color:rgba(255,194,14,.4)}
+  .flip3 .b .v{font-family:var(--mono);font-size:15px;font-weight:600}
+  .flip3 .b .v.yes{color:var(--green)} .flip3 .b .v.maybe{color:var(--blue)}
+  .flip3 .b .t{font-size:17px;line-height:1.4;color:#d6d3cb}
 </style>
 </head>
 <body>
@@ -475,6 +494,23 @@
   </section>
 
   <!-- 4 form -->
+
+  <!-- lovelace -->
+  <section class="slide" data-id="lovelace">
+    <div class="two" style="grid-template-columns:1fr 1fr;gap:56px">
+      <div class="stack" style="gap:22px">
+        <div class="who rise" style="--i:0"><div class="ph init"><span>AL</span></div><div><div class="nm">Ada Lovelace</div><div class="dt">1815–1852</div><div class="rl">Mathematician and writer, often called the first programmer</div></div></div>
+        <h2 class="rise" style="--i:0"><span class="n">1843 · THE ANALYTICAL ENGINE</span>The first program</h2>
+        <p class="rise" style="--i:1">Charles Babbage designed the <b>Analytical Engine</b>, a general-purpose mechanical computer that was never fully built. Ada Lovelace wrote notes on it that included a step-by-step method for computing <b>Bernoulli numbers</b>, often called the first computer program.</p>
+        <blockquote class="llq rise" style="--i:2">“The Analytical Engine has no pretensions whatever to <span class="y">originate</span> anything. It can do whatever we know how to order it to perform.”<cite>Ada Lovelace, 1843</cite></blockquote>
+      </div>
+      <div class="stack rise" style="--i:2;gap:16px">
+        <div class="eyebrow" style="font-size:16px">Can a machine… <span class="muted" style="letter-spacing:0;text-transform:none;font-family:var(--sans)">(click a card)</span></div>
+        <div class="flips" id="llCards"></div>
+        <div class="callout keyIdea" id="llIdea">In 1950, Alan Turing called her doubt <b>“Lady Lovelace’s objection”</b> and argued back: machines can still <b class="y">surprise us</b>. Keep that question in mind for the rest of the course.</div>
+      </div>
+    </div>
+  </section>
 
   <!-- 5 boole -->
   <section class="slide" data-id="boole">

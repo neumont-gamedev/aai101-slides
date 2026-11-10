@@ -85,6 +85,20 @@ const A={};
   };
 })();
 
+/* ---------- lovelace: can a machine…? ---------- */
+(() => {
+  const C=[
+    ["do math?","yes","YES","That’s what it was built for. Lovelace’s program computed Bernoulli numbers."],
+    ["compose music?","yes","YES","Lovelace predicted it in 1843. Today, AI composes music."],
+    ["beat a world chess champion?","yes","YES","IBM’s Deep Blue did it in 1997. You’ll see it at the end of today."],
+    ["come up with something truly original?","maybe","STILL DEBATED","Lovelace said no. Turing said maybe. People still argue about it today."],
+  ];
+  const box=$("llCards"), idea=$("llIdea"); let seen=new Set();
+  box.innerHTML=C.map(([q,c,v,t],i)=>`<div class="flip3" data-i="${i}"><div class="in"><div class="f"><span class="k">CAN A MACHINE…</span><span class="t">${q}</span></div><div class="b"><span class="v ${c}">${v}</span><span class="t">${t}</span></div></div></div>`).join("");
+  box.querySelectorAll(".flip3").forEach(el=>el.onclick=()=>{ el.classList.toggle("on"); seen.add(el.dataset.i); idea.classList.toggle("on", seen.has("3")); });
+  A.lovelace={ enter(){ seen=new Set(); idea.classList.remove("on"); box.querySelectorAll(".flip3").forEach(el=>el.classList.remove("on")); } };
+})();
+
 /* ---------- 5 boole ---------- */
 (() => {
   const sa=$("swA"), sb=$("swB"), tt=$("tt"); let a=0,b=0, auto=true, t=0, k=0;
