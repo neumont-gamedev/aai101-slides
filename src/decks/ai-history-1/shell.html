@@ -295,6 +295,31 @@
   .amDots i{width:8px;height:8px;border-radius:50%;background:#3a3a42}
   .amDots i.on{background:var(--y)}
   #gears .crank{cursor:grab} #gears .crank:active{cursor:grabbing}
+  /* perceptron trainer */
+  .pt{display:flex;flex-direction:column;gap:14px}
+  .ptHead{display:flex;align-items:center;gap:14px}
+  .ptTitle{flex:1}
+  .ptRule{font-size:22px;font-weight:600;line-height:1.3;margin-top:4px;min-height:58px}
+  .ptW{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}
+  .ptW .card{padding:12px 14px;display:flex;flex-direction:column;gap:6px}
+  .ptW .nm{font-size:16px;color:var(--mute)}
+  .ptW .val{font-family:var(--mono);font-size:24px;font-weight:600;color:var(--y)}
+  .ptW .val.neg{color:var(--blue)}
+  table.ptab{border-collapse:separate;border-spacing:0 6px;font-family:var(--mono);font-size:17px;width:100%}
+  .ptab th{font-weight:400;color:var(--mute);font-size:13px;letter-spacing:.06em;text-align:center;padding:0 6px}
+  .ptab td{background:var(--panel);text-align:center;padding:8px 6px;border-top:1px solid var(--line);border-bottom:1px solid var(--line)}
+  .ptab td:first-child{border-left:1px solid var(--line);border-radius:10px 0 0 10px}
+  .ptab td:last-child{border-right:1px solid var(--line);border-radius:0 10px 10px 0}
+  .ptab .x1{color:var(--ink)} .ptab .x0{color:#4d4b46}
+  .ptab .go{color:var(--y);font-weight:600} .ptab .stay{color:var(--mute)}
+  .ptab tr.ok td{background:rgba(95,214,138,.08)} .ptab tr.bad td{background:rgba(255,90,78,.08)}
+  .ptab .mk{font-size:20px;width:40px} .ptab tr.ok .mk{color:var(--green)} .ptab tr.bad .mk{color:var(--red)}
+  .ptStat{display:flex;align-items:center;gap:14px;min-height:46px;font-size:19px}
+  .ptStat .tag{font-size:17px;padding:7px 14px}
+  .ptStat .btn{font-size:16px;padding:8px 16px}
+  .ptWhy{font-size:17px;line-height:1.45;color:#d6d3cb;border-left:4px solid var(--blue);padding:8px 14px;background:rgba(106,184,255,.07);border-radius:0 10px 10px 0}
+  @keyframes win{0%{transform:scale(1)}40%{transform:scale(1.06)}100%{transform:scale(1)}}
+  .ptStat.win .tag{animation:win .6s ease}
 </style>
 </head>
 <body>
@@ -526,23 +551,23 @@
 
   <!-- perceptron -->
   <section class="slide" data-id="perceptron">
-    <div class="two">
-      <div class="stack">
+    <div class="two" style="grid-template-columns:.82fr 1.18fr;gap:48px">
+      <div class="stack" style="gap:22px">
         <div class="who rise" style="--i:0"><div class="ph"><img src="{{IMG:rosenblatt.jpg}}" alt="Frank Rosenblatt"></div><div><div class="nm">Frank Rosenblatt</div><div class="dt">1928–1971</div><div class="rl">Psychologist and AI researcher, Cornell</div></div></div>
         <h2 class="rise" style="--i:0"><span class="n">1957 · FRANK ROSENBLATT</span>The Perceptron</h2>
-        <p class="rise" style="--i:1">The simplest neural network: one artificial neuron that makes a <b>yes / no</b> (1 / 0) decision.</p>
+        <p class="rise" style="--i:1">The simplest neural network: one artificial neuron that makes a <b>yes / no</b> decision.</p>
         <ul class="bul rise" style="--i:2">
-          <li>Each input is multiplied by a <b class="y">weight</b> (how much it matters)</li>
-          <li>A <b class="y">bias</b> shifts how easily it fires</li>
-          <li>A step function outputs 1 if the total ≥ 0</li>
-          <li>Training turns these “knobs” to reduce errors</li>
+          <li>Each input is multiplied by a <b class="y">weight</b>: how much it matters, and whether it pushes toward GO (+) or STAY (−)</li>
+          <li>If the total reaches the <b class="y">threshold</b>, it fires</li>
+          <li><b>Training</b> = adjusting the weights until the answers come out right</li>
         </ul>
-        <div class="eq rise" style="--i:3">output = step( <b>Σ</b> input × weight + bias )</div>
+        <div class="eq rise" style="--i:3">GO if <b>Σ</b> input × weight ≥ <b>0.75</b></div>
       </div>
-      <div class="stack rise" style="--i:2">
-        <div class="eyebrow" style="font-size:16px">Should I go to the beach?</div>
-        <div class="pgrid" id="pgrid"></div>
-        <div class="pout card"><div class="sum" id="psum"></div><div class="res" id="pres">STAY</div></div>
+      <div class="pt rise" style="--i:2">
+        <div class="ptHead"><button class="amArr" id="ptPrev" aria-label="Previous challenge">‹</button><div class="ptTitle"><div class="eyebrow" style="font-size:14px" id="ptNum"></div><div class="ptRule" id="ptRule"></div></div><button class="amArr" id="ptNext" aria-label="Next challenge">›</button></div>
+        <div class="ptW" id="ptW"></div>
+        <table class="ptab" id="ptab"></table>
+        <div class="ptStat" id="ptStat"></div>
       </div>
     </div>
   </section>

@@ -296,6 +296,31 @@
   .amDots i{width:8px;height:8px;border-radius:50%;background:#3a3a42}
   .amDots i.on{background:var(--y)}
   #gears .crank{cursor:grab} #gears .crank:active{cursor:grabbing}
+  /* perceptron trainer */
+  .pt{display:flex;flex-direction:column;gap:14px}
+  .ptHead{display:flex;align-items:center;gap:14px}
+  .ptTitle{flex:1}
+  .ptRule{font-size:22px;font-weight:600;line-height:1.3;margin-top:4px;min-height:58px}
+  .ptW{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}
+  .ptW .card{padding:12px 14px;display:flex;flex-direction:column;gap:6px}
+  .ptW .nm{font-size:16px;color:var(--mute)}
+  .ptW .val{font-family:var(--mono);font-size:24px;font-weight:600;color:var(--y)}
+  .ptW .val.neg{color:var(--blue)}
+  table.ptab{border-collapse:separate;border-spacing:0 6px;font-family:var(--mono);font-size:17px;width:100%}
+  .ptab th{font-weight:400;color:var(--mute);font-size:13px;letter-spacing:.06em;text-align:center;padding:0 6px}
+  .ptab td{background:var(--panel);text-align:center;padding:8px 6px;border-top:1px solid var(--line);border-bottom:1px solid var(--line)}
+  .ptab td:first-child{border-left:1px solid var(--line);border-radius:10px 0 0 10px}
+  .ptab td:last-child{border-right:1px solid var(--line);border-radius:0 10px 10px 0}
+  .ptab .x1{color:var(--ink)} .ptab .x0{color:#4d4b46}
+  .ptab .go{color:var(--y);font-weight:600} .ptab .stay{color:var(--mute)}
+  .ptab tr.ok td{background:rgba(95,214,138,.08)} .ptab tr.bad td{background:rgba(255,90,78,.08)}
+  .ptab .mk{font-size:20px;width:40px} .ptab tr.ok .mk{color:var(--green)} .ptab tr.bad .mk{color:var(--red)}
+  .ptStat{display:flex;align-items:center;gap:14px;min-height:46px;font-size:19px}
+  .ptStat .tag{font-size:17px;padding:7px 14px}
+  .ptStat .btn{font-size:16px;padding:8px 16px}
+  .ptWhy{font-size:17px;line-height:1.45;color:#d6d3cb;border-left:4px solid var(--blue);padding:8px 14px;background:rgba(106,184,255,.07);border-radius:0 10px 10px 0}
+  @keyframes win{0%{transform:scale(1)}40%{transform:scale(1.06)}100%{transform:scale(1)}}
+  .ptStat.win .tag{animation:win .6s ease}
 </style>
 </head>
 <body>
@@ -527,23 +552,23 @@
 
   <!-- perceptron -->
   <section class="slide" data-id="perceptron">
-    <div class="two">
-      <div class="stack">
+    <div class="two" style="grid-template-columns:.82fr 1.18fr;gap:48px">
+      <div class="stack" style="gap:22px">
         <div class="who rise" style="--i:0"><div class="ph"><img src="img/rosenblatt.jpg" alt="Frank Rosenblatt"></div><div><div class="nm">Frank Rosenblatt</div><div class="dt">1928–1971</div><div class="rl">Psychologist and AI researcher, Cornell</div></div></div>
         <h2 class="rise" style="--i:0"><span class="n">1957 · FRANK ROSENBLATT</span>The Perceptron</h2>
-        <p class="rise" style="--i:1">The simplest neural network: one artificial neuron that makes a <b>yes / no</b> (1 / 0) decision.</p>
+        <p class="rise" style="--i:1">The simplest neural network: one artificial neuron that makes a <b>yes / no</b> decision.</p>
         <ul class="bul rise" style="--i:2">
-          <li>Each input is multiplied by a <b class="y">weight</b> (how much it matters)</li>
-          <li>A <b class="y">bias</b> shifts how easily it fires</li>
-          <li>A step function outputs 1 if the total ≥ 0</li>
-          <li>Training turns these “knobs” to reduce errors</li>
+          <li>Each input is multiplied by a <b class="y">weight</b>: how much it matters, and whether it pushes toward GO (+) or STAY (−)</li>
+          <li>If the total reaches the <b class="y">threshold</b>, it fires</li>
+          <li><b>Training</b> = adjusting the weights until the answers come out right</li>
         </ul>
-        <div class="eq rise" style="--i:3">output = step( <b>Σ</b> input × weight + bias )</div>
+        <div class="eq rise" style="--i:3">GO if <b>Σ</b> input × weight ≥ <b>0.75</b></div>
       </div>
-      <div class="stack rise" style="--i:2">
-        <div class="eyebrow" style="font-size:16px">Should I go to the beach?</div>
-        <div class="pgrid" id="pgrid"></div>
-        <div class="pout card"><div class="sum" id="psum"></div><div class="res" id="pres">STAY</div></div>
+      <div class="pt rise" style="--i:2">
+        <div class="ptHead"><button class="amArr" id="ptPrev" aria-label="Previous challenge">‹</button><div class="ptTitle"><div class="eyebrow" style="font-size:14px" id="ptNum"></div><div class="ptRule" id="ptRule"></div></div><button class="amArr" id="ptNext" aria-label="Next challenge">›</button></div>
+        <div class="ptW" id="ptW"></div>
+        <table class="ptab" id="ptab"></table>
+        <div class="ptStat" id="ptStat"></div>
       </div>
     </div>
   </section>
@@ -1231,28 +1256,46 @@ document.querySelectorAll(".slide.tl").forEach(sl=>{
   };
 })();
 
-/* ---------- perceptron ---------- */
+/* ---------- perceptron: train it by hand ---------- */
 (() => {
-  const grid=$("pgrid"), sum=$("psum"), res=$("pres");
-  const IN=[{n:"It’s sunny",x:1,w:.8},{n:"I have free time",x:0,w:.6},{n:"Friends are going",x:1,w:.4}];
-  let bias=-1;
-  const fmt=v=>(v>=0?"+":"−")+Math.abs(v).toFixed(1);
-  IN.forEach(inp=>{
-    const r=document.createElement("div"); r.className="pin card";
-    r.innerHTML=`<span class="nm">${inp.n}</span><span class="x"></span><input type="range" min="-1" max="1" step="0.1"><span class="w"></span>`;
-    const xb=r.querySelector(".x"), sl=r.querySelector("input"), wv=r.querySelector(".w");
-    sl.value=inp.w; xb.onclick=()=>{ inp.x^=1; upd(); }; sl.oninput=()=>{ inp.w=+sl.value; upd(); };
-    inp.r={xb,wv}; grid.appendChild(r);
-  });
-  const br=document.createElement("div"); br.className="pin card";
-  br.innerHTML=`<span class="nm">Bias</span><span></span><input type="range" min="-2" max="1" step="0.1"><span class="w"></span>`;
-  const bs=br.querySelector("input"), bv=br.querySelector(".w"); bs.value=bias; bs.oninput=()=>{ bias=+bs.value; upd(); }; grid.appendChild(br);
-  function upd(){
-    let s=bias; IN.forEach(i=>{ s+=i.x*i.w; i.r.xb.textContent=i.x?"1":"0"; i.r.xb.classList.toggle("on",!!i.x); i.r.wv.textContent="w "+fmt(i.w); }); bv.textContent="b "+fmt(bias);
-    sum.innerHTML=IN.map(i=>`${i.x}×${i.w.toFixed(1)}`).join(" + ")+` ${bias<0?"−":"+"} ${Math.abs(bias).toFixed(1)}<br>= <b>${s.toFixed(2)}</b> ${s>=0?"≥ 0 → 1":"< 0 → 0"}`;
-    res.textContent=s>=0?"GO":"STAY"; res.classList.toggle("on",s>=0);
+  const T=0.75, IN=["It’s sunny","Friends are going","I have to study"];
+  // each challenge: a rule and the situations it must get right ([sunny, friends, study], should go?)
+  const C=[
+    {rule:"Go only when it’s sunny AND friends are going.", rows:[[[1,1,0],1],[[1,0,0],0],[[0,1,0],0],[[0,0,0],0]]},
+    {rule:"Studying comes first. Otherwise, go whenever it’s sunny.", rows:[[[1,0,0],1],[[1,1,0],1],[[0,1,0],0],[[1,0,1],0],[[1,1,1],0]]},
+    {rule:"Sunny OR friends going is enough, unless you have to study.", rows:[[[1,0,0],1],[[0,1,0],1],[[1,1,0],1],[[0,0,0],0],[[1,1,1],0],[[0,1,1],0]]},
+    {rule:"Go if it’s sunny or friends are going, but NOT both.", rows:[[[1,0,0],1],[[0,1,0],1],[[1,1,0],0],[[0,0,0],0]], impossible:true},
+  ];
+  const w=[0.2,0.2,0.2]; let ci=0, solved=new Set(), whyOpen=false;
+  const wBox=$("ptW"), tab=$("ptab"), stat=$("ptStat");
+  const vals=IN.map((nm,i)=>{ const c=document.createElement("div"); c.className="card";
+    c.innerHTML=`<span class="nm">${nm}</span><span class="val"></span><input type="range" min="-1" max="1" step="0.05" aria-label="weight for ${nm}">`;
+    const r=c.querySelector("input"); r.value=w[i]; r.oninput=()=>{ w[i]=+r.value; render(); }; wBox.appendChild(c); return {v:c.querySelector(".val"),r}; });
+  const f=v=>(v<0?"−":"+")+Math.abs(v).toFixed(2);
+  function render(){
+    vals.forEach((o,i)=>{ o.v.textContent="w "+f(w[i]); o.v.classList.toggle("neg",w[i]<0); });
+    const ch=C[ci];
+    $("ptNum").textContent=`Challenge ${ci+1} of ${C.length}`+(solved.has(ci)?" · solved":"");
+    $("ptRule").textContent=ch.rule;
+    let ok=0;
+    tab.innerHTML=`<tr><th>SUNNY</th><th>FRIENDS</th><th>STUDY</th><th>SUM</th><th>NEURON</th><th>SHOULD</th><th></th></tr>`+ch.rows.map(([x,t])=>{
+      const s=x.reduce((a,xi,i)=>a+xi*w[i],0), out=s>=T-1e-9?1:0, good=out===t; if(good) ok++;
+      return `<tr class="${good?"ok":"bad"}">${x.map(v=>`<td class="x${v}">${v?"yes":"no"}</td>`).join("")}<td>${s.toFixed(2)}</td><td class="${out?"go":"stay"}">${out?"GO":"STAY"}</td><td class="${t?"go":"stay"}">${t?"GO":"STAY"}</td><td class="mk">${good?"✓":"✗"}</td></tr>`;
+    }).join("");
+    const all=ok===ch.rows.length, was=solved.has(ci);
+    if(all) solved.add(ci);
+    stat.classList.toggle("win",all&&!was);
+    if(all) stat.innerHTML=`<span class="tag t-green">✓ Trained! All ${ok} answers right</span>`+(ci<C.length-1?`<button class="btn on" id="ptGo">Next challenge →</button>`:"");
+    else stat.innerHTML=`<span class="tag t-y">${ok} of ${ch.rows.length} right</span><span class="muted" style="font-size:17px">Drag the weights until every row matches.</span>`+(ch.impossible?`<button class="btn" id="ptWhy">Stuck?</button>`:"");
+    const why=$("ptWhyBox"); if(why) why.remove();
+    if(ch.impossible&&whyOpen) stat.insertAdjacentHTML("afterend",`<div class="ptWhy" id="ptWhyBox"><b>You can’t solve this one.</b> To say GO for each input alone, both weights must be at least 0.75, but then both together add up past 0.75 and say GO too. A single perceptron can only draw <b>one straight line</b> between GO and STAY, and this rule (called <b>XOR</b>) needs two. The fix is to connect several neurons into a <b>network</b>.</div>`);
+    const go=$("ptGo"); if(go) go.onclick=()=>{ ci++; whyOpen=false; render(); };
+    const wy=$("ptWhy"); if(wy) wy.onclick=()=>{ whyOpen=true; render(); };
   }
-  A.perceptron={ enter(){ upd(); } };
+  $("ptPrev").onclick=()=>{ ci=(ci-1+C.length)%C.length; whyOpen=false; render(); };
+  $("ptNext").onclick=()=>{ ci=(ci+1)%C.length; whyOpen=false; render(); };
+  A.perceptron={ enter(){ render(); } };
+  render();
 })();
 
 /* ---------- activation functions ---------- */

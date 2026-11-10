@@ -515,28 +515,46 @@ document.querySelectorAll(".slide.tl").forEach(sl=>{
   };
 })();
 
-/* ---------- perceptron ---------- */
+/* ---------- perceptron: train it by hand ---------- */
 (() => {
-  const grid=$("pgrid"), sum=$("psum"), res=$("pres");
-  const IN=[{n:"It’s sunny",x:1,w:.8},{n:"I have free time",x:0,w:.6},{n:"Friends are going",x:1,w:.4}];
-  let bias=-1;
-  const fmt=v=>(v>=0?"+":"−")+Math.abs(v).toFixed(1);
-  IN.forEach(inp=>{
-    const r=document.createElement("div"); r.className="pin card";
-    r.innerHTML=`<span class="nm">${inp.n}</span><span class="x"></span><input type="range" min="-1" max="1" step="0.1"><span class="w"></span>`;
-    const xb=r.querySelector(".x"), sl=r.querySelector("input"), wv=r.querySelector(".w");
-    sl.value=inp.w; xb.onclick=()=>{ inp.x^=1; upd(); }; sl.oninput=()=>{ inp.w=+sl.value; upd(); };
-    inp.r={xb,wv}; grid.appendChild(r);
-  });
-  const br=document.createElement("div"); br.className="pin card";
-  br.innerHTML=`<span class="nm">Bias</span><span></span><input type="range" min="-2" max="1" step="0.1"><span class="w"></span>`;
-  const bs=br.querySelector("input"), bv=br.querySelector(".w"); bs.value=bias; bs.oninput=()=>{ bias=+bs.value; upd(); }; grid.appendChild(br);
-  function upd(){
-    let s=bias; IN.forEach(i=>{ s+=i.x*i.w; i.r.xb.textContent=i.x?"1":"0"; i.r.xb.classList.toggle("on",!!i.x); i.r.wv.textContent="w "+fmt(i.w); }); bv.textContent="b "+fmt(bias);
-    sum.innerHTML=IN.map(i=>`${i.x}×${i.w.toFixed(1)}`).join(" + ")+` ${bias<0?"−":"+"} ${Math.abs(bias).toFixed(1)}<br>= <b>${s.toFixed(2)}</b> ${s>=0?"≥ 0 → 1":"< 0 → 0"}`;
-    res.textContent=s>=0?"GO":"STAY"; res.classList.toggle("on",s>=0);
+  const T=0.75, IN=["It’s sunny","Friends are going","I have to study"];
+  // each challenge: a rule and the situations it must get right ([sunny, friends, study], should go?)
+  const C=[
+    {rule:"Go only when it’s sunny AND friends are going.", rows:[[[1,1,0],1],[[1,0,0],0],[[0,1,0],0],[[0,0,0],0]]},
+    {rule:"Studying comes first. Otherwise, go whenever it’s sunny.", rows:[[[1,0,0],1],[[1,1,0],1],[[0,1,0],0],[[1,0,1],0],[[1,1,1],0]]},
+    {rule:"Sunny OR friends going is enough, unless you have to study.", rows:[[[1,0,0],1],[[0,1,0],1],[[1,1,0],1],[[0,0,0],0],[[1,1,1],0],[[0,1,1],0]]},
+    {rule:"Go if it’s sunny or friends are going, but NOT both.", rows:[[[1,0,0],1],[[0,1,0],1],[[1,1,0],0],[[0,0,0],0]], impossible:true},
+  ];
+  const w=[0.2,0.2,0.2]; let ci=0, solved=new Set(), whyOpen=false;
+  const wBox=$("ptW"), tab=$("ptab"), stat=$("ptStat");
+  const vals=IN.map((nm,i)=>{ const c=document.createElement("div"); c.className="card";
+    c.innerHTML=`<span class="nm">${nm}</span><span class="val"></span><input type="range" min="-1" max="1" step="0.05" aria-label="weight for ${nm}">`;
+    const r=c.querySelector("input"); r.value=w[i]; r.oninput=()=>{ w[i]=+r.value; render(); }; wBox.appendChild(c); return {v:c.querySelector(".val"),r}; });
+  const f=v=>(v<0?"−":"+")+Math.abs(v).toFixed(2);
+  function render(){
+    vals.forEach((o,i)=>{ o.v.textContent="w "+f(w[i]); o.v.classList.toggle("neg",w[i]<0); });
+    const ch=C[ci];
+    $("ptNum").textContent=`Challenge ${ci+1} of ${C.length}`+(solved.has(ci)?" · solved":"");
+    $("ptRule").textContent=ch.rule;
+    let ok=0;
+    tab.innerHTML=`<tr><th>SUNNY</th><th>FRIENDS</th><th>STUDY</th><th>SUM</th><th>NEURON</th><th>SHOULD</th><th></th></tr>`+ch.rows.map(([x,t])=>{
+      const s=x.reduce((a,xi,i)=>a+xi*w[i],0), out=s>=T-1e-9?1:0, good=out===t; if(good) ok++;
+      return `<tr class="${good?"ok":"bad"}">${x.map(v=>`<td class="x${v}">${v?"yes":"no"}</td>`).join("")}<td>${s.toFixed(2)}</td><td class="${out?"go":"stay"}">${out?"GO":"STAY"}</td><td class="${t?"go":"stay"}">${t?"GO":"STAY"}</td><td class="mk">${good?"✓":"✗"}</td></tr>`;
+    }).join("");
+    const all=ok===ch.rows.length, was=solved.has(ci);
+    if(all) solved.add(ci);
+    stat.classList.toggle("win",all&&!was);
+    if(all) stat.innerHTML=`<span class="tag t-green">✓ Trained! All ${ok} answers right</span>`+(ci<C.length-1?`<button class="btn on" id="ptGo">Next challenge →</button>`:"");
+    else stat.innerHTML=`<span class="tag t-y">${ok} of ${ch.rows.length} right</span><span class="muted" style="font-size:17px">Drag the weights until every row matches.</span>`+(ch.impossible?`<button class="btn" id="ptWhy">Stuck?</button>`:"");
+    const why=$("ptWhyBox"); if(why) why.remove();
+    if(ch.impossible&&whyOpen) stat.insertAdjacentHTML("afterend",`<div class="ptWhy" id="ptWhyBox"><b>You can’t solve this one.</b> To say GO for each input alone, both weights must be at least 0.75, but then both together add up past 0.75 and say GO too. A single perceptron can only draw <b>one straight line</b> between GO and STAY, and this rule (called <b>XOR</b>) needs two. The fix is to connect several neurons into a <b>network</b>.</div>`);
+    const go=$("ptGo"); if(go) go.onclick=()=>{ ci++; whyOpen=false; render(); };
+    const wy=$("ptWhy"); if(wy) wy.onclick=()=>{ whyOpen=true; render(); };
   }
-  A.perceptron={ enter(){ upd(); } };
+  $("ptPrev").onclick=()=>{ ci=(ci-1+C.length)%C.length; whyOpen=false; render(); };
+  $("ptNext").onclick=()=>{ ci=(ci+1)%C.length; whyOpen=false; render(); };
+  A.perceptron={ enter(){ render(); } };
+  render();
 })();
 
 /* ---------- activation functions ---------- */
