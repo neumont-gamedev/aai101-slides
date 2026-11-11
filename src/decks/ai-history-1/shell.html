@@ -398,6 +398,8 @@
   .slide[data-id="eliza"] .eterm input{color:#a8ffbf;caret-color:#33ff66;text-shadow:inherit}
   .slide[data-id="eliza"] .eterm input::placeholder{color:rgba(51,255,102,.4)}
   .slide[data-id="eliza"] .eterm form{border-top-color:rgba(51,255,102,.25)}
+  .eterm .ebanner{margin:2px 0 14px;font-family:var(--mono);font-size:19px;line-height:1.12;color:#33ff66;white-space:pre;flex:none}
+  .eterm .log{min-height:0}
 </style>
 </head>
 <body>
@@ -669,7 +671,11 @@
         <a class="linkchip rise" style="--i:3" href="https://www.masswerk.at/elizabot/eliza.html" target="_blank" rel="noopener">Full ELIZA: masswerk.at/elizabot</a>
       </div>
       <div class="stage-box rise" style="--i:2">
-        <div class="eterm"><div class="log" id="elog"></div><form id="eform" autocomplete="off"><span class="pr">YOU:</span><input id="ein" placeholder="type here and press enter…" maxlength="120"></form></div>
+        <div class="eterm"><pre class="ebanner" aria-label="ELIZA">EEEEEE  LL      IIII  ZZZZZZZ   AAAAA
+EE      LL       II        ZZ  AA   AA
+EEEEE   LL       II      ZZZ   AAAAAAA
+EE      LL       II     ZZ     AA   AA
+EEEEEE  LLLLLL  IIII  ZZZZZZZ  AA   AA</pre><div class="log" id="elog"></div><form id="eform" autocomplete="off"><span class="pr">YOU:</span><input id="ein" placeholder="type here and press enter…" maxlength="120"></form></div>
       </div>
     </div>
   </section>
