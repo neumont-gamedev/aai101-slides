@@ -479,6 +479,73 @@ document.querySelectorAll(".slide.tl").forEach(sl=>{
         const {a,b}=p.e; svgEl("circle",{cx:a.x+(b.x-a.x)*p.t,cy:a.y+(b.y-a.y)*p.t,r:4,fill:Y},g); return true; }); } };
 })();
 
+/* ---------- a single neuron: inputs, weights, bias, activation ---------- */
+(() => {
+  const svg=$("nrSvg"), ctl=$("nrCtl"), math=$("nrMath"), tbl=$("nrTbl"), goal=$("nrGoal");
+  const SUB="₁₂₃";
+  let x=[1,0.5,0], w=[1.2,-0.6,0.8], b=-0.5, act="step", mode="free";
+  const F={ step:z=>z>=0?1:0, sig:z=>1/(1+Math.exp(-z)), relu:z=>Math.max(0,z) };
+  const NAME={step:"step",sig:"sigmoid",relu:"ReLU"};
+  ctl.innerHTML=[0,1,2].map(i=>`<div class="nrGrp"><div class="nrRow"><span class="nrL">input x${SUB[i]}</span><input type="range" min="0" max="1" step="0.1" data-k="x${i}"><span class="nrV" id="nrVx${i}"></span></div>
+    <div class="nrRow"><span class="nrL">weight w${SUB[i]}</span><input class="w" type="range" min="-2" max="2" step="0.1" data-k="w${i}"><span class="nrV" id="nrVw${i}"></span></div></div>`).join("")+
+    `<div class="nrGrp"><div class="nrRow"><span class="nrL">bias b</span><input class="b" type="range" min="-3" max="3" step="0.1" data-k="b"><span class="nrV" id="nrVb"></span></div></div>`;
+  ctl.addEventListener("input",e=>{ const k=e.target.dataset.k; if(!k) return; const v=+e.target.value;
+    if(k==="b") b=v; else if(k[0]==="x") x[+k[1]]=v; else w[+k[1]]=v; update(); });
+  ctl.addEventListener("keydown",e=>e.stopPropagation());
+  document.querySelectorAll("#nrAct [data-f]").forEach(btn=>btn.onclick=()=>{ act=btn.dataset.f; document.querySelectorAll("#nrAct [data-f]").forEach(o=>o.classList.toggle("on",o===btn)); update(); });
+  document.querySelectorAll('[data-id="neuron"] [data-c]').forEach(btn=>btn.onclick=()=>{ mode=btn.dataset.c; document.querySelectorAll('[data-id="neuron"] [data-c]').forEach(o=>o.classList.toggle("on",o===btn));
+    if(mode!=="free"){ x[2]=0; } update(); });
+  // static drawing
+  const IN=[[90,130],[90,280],[90,430]], NX=430, NY=280, AX=560, AW=170, OX=800;
+  const gE=svgEl("g",{},svg), gD=svgEl("g",{},svg), gN=svgEl("g",{},svg);
+  const edges=IN.map(([ix,iy])=>svgEl("line",{x1:ix+34,y1:iy,x2:NX-70,y2:NY,"stroke-linecap":"round"},gE));
+  const wl=IN.map(([ix,iy])=>{ const g=svgEl("g",{},gN), mx=(ix+NX)/2-10, my=(iy+NY)/2; svgEl("rect",{x:mx-46,y:my-17,width:92,height:32,rx:8,fill:"#121214",stroke:LINE},g); const t=svgEl("text",{x:mx,y:my+6,"text-anchor":"middle","font-size":17,"font-family":MONO,"font-weight":600},g); return t; });
+  const ins=IN.map(([ix,iy],i)=>{ const c=svgEl("circle",{cx:ix,cy:iy,r:34,fill:"#1c1c20",stroke:BLUE,"stroke-width":3},gN); const t=svgEl("text",{x:ix,y:iy+7,"text-anchor":"middle",fill:INK,"font-size":20,"font-family":MONO,"font-weight":600},gN);
+    const l=svgEl("text",{x:ix,y:iy-44,"text-anchor":"middle",fill:MUTE,"font-size":15,"font-family":MONO},gN); l.textContent="x"+SUB[i]; return {c,t}; });
+  svgEl("line",{x1:NX,y1:118,x2:NX,y2:NY-70,stroke:"#b07cff","stroke-width":3},gE);
+  svgEl("circle",{cx:NX,cy:92,r:26,fill:"#1c1c20",stroke:"#b07cff","stroke-width":3},gN);
+  const bt=svgEl("text",{x:NX,y:99,"text-anchor":"middle",fill:INK,"font-size":17,"font-family":MONO,"font-weight":600},gN);
+  const bl=svgEl("text",{x:NX+38,y:98,fill:"#b07cff","font-size":15,"font-family":MONO},gN); bl.textContent="bias";
+  const neu=svgEl("circle",{cx:NX,cy:NY,r:70,fill:"#1c1c20",stroke:Y,"stroke-width":3.5},gN);
+  const sg=svgEl("text",{x:NX,y:NY-10,"text-anchor":"middle",fill:Y,"font-size":40,"font-family":SANS,"font-weight":700},gN); sg.textContent="Σ";
+  const zt=svgEl("text",{x:NX,y:NY+30,"text-anchor":"middle",fill:INK,"font-size":18,"font-family":MONO},gN);
+  svgEl("line",{x1:NX+70,y1:NY,x2:AX,y2:NY,stroke:MUTE,"stroke-width":2.5},gE);
+  svgEl("rect",{x:AX,y:NY-85,width:AW,height:170,rx:14,fill:"#16161a",stroke:LINE,"stroke-width":2},gN);
+  const at=svgEl("text",{x:AX+AW/2,y:NY-100,"text-anchor":"middle",fill:MUTE,"font-size":15,"font-family":MONO},gN);
+  svgEl("line",{x1:AX+12,y1:NY+60,x2:AX+AW-12,y2:NY+60,stroke:LINE},gN); svgEl("line",{x1:AX+AW/2,y1:NY-75,x2:AX+AW/2,y2:NY+70,stroke:LINE},gN);
+  const curve=svgEl("path",{fill:"none",stroke:Y,"stroke-width":3},gN), mk=svgEl("circle",{r:7,fill:"#fff",stroke:Y,"stroke-width":2},gN);
+  svgEl("line",{x1:AX+AW,y1:NY,x2:OX-38,y2:NY,stroke:MUTE,"stroke-width":2.5},gE);
+  const out=svgEl("circle",{cx:OX,cy:NY,r:38,fill:"#1c1c20",stroke:Y,"stroke-width":3},gN);
+  const ot=svgEl("text",{x:OX,y:NY+7,"text-anchor":"middle",fill:INK,"font-size":19,"font-family":MONO,"font-weight":700},gN);
+  const ol=svgEl("text",{x:OX,y:NY+66,"text-anchor":"middle","font-size":17,"font-family":SANS,"font-weight":700},gN);
+  const ol0=svgEl("text",{x:OX,y:NY-50,"text-anchor":"middle",fill:MUTE,"font-size":15,"font-family":MONO},gN); ol0.textContent="output";
+  const zOf=(xx)=>xx[0]*w[0]+xx[1]*w[1]+xx[2]*w[2]+b, f2=v=>(v<0?"−":"")+Math.abs(v).toFixed(1), f2p=v=>v<0?`(−${Math.abs(v).toFixed(1)})`:v.toFixed(1);
+  function update(){
+    ctl.querySelectorAll("input").forEach(inp=>{ const k=inp.dataset.k; inp.value=k==="b"?b:k[0]==="x"?x[+k[1]]:w[+k[1]]; inp.disabled=mode!=="free"&&k==="x2"; });
+    [0,1,2].forEach(i=>{ $("nrVx"+i).textContent=x[i].toFixed(1); $("nrVw"+i).textContent=f2(w[i]); }); $("nrVb").textContent=f2(b);
+    const z=zOf(x), o=F[act](z), fire=o>.5;
+    edges.forEach((e,i)=>{ e.setAttribute("stroke",w[i]>=0?Y:BLUE); e.setAttribute("stroke-width",1.5+Math.abs(w[i])*4); e.setAttribute("stroke-opacity",.25+.75*Math.min(1,x[i])); });
+    wl.forEach((t,i)=>{ t.textContent="w"+SUB[i]+"="+f2(w[i]); t.setAttribute("fill",w[i]>=0?Y:BLUE); });
+    ins.forEach((n,i)=>{ n.t.textContent=x[i].toFixed(1); n.c.setAttribute("fill",`rgba(106,184,255,${x[i]*.35})`); });
+    bt.textContent=f2(b); zt.textContent="z = "+f2(z);
+    at.textContent=NAME[act];
+    const ymax=act==="relu"?4:1, px=v=>AX+AW/2+v/4*(AW/2-12), py=v=>NY+60-Math.min(v,ymax)/ymax*130;
+    let d=""; for(let k=0;k<=80;k++){ const v=-4+k/10; d+=(k?"L":"M")+px(v).toFixed(1)+" "+py(F[act](v)).toFixed(1); } curve.setAttribute("d",d);
+    mk.setAttribute("cx",px(clamp(z,-4,4))); mk.setAttribute("cy",py(F[act](clamp(z,-4,4))));
+    ot.textContent=o.toFixed(2); out.setAttribute("fill",`rgba(255,194,14,${Math.min(1,o)*.85})`); ot.setAttribute("fill",o>.55?"#121214":INK);
+    out.style.filter=fire?"drop-shadow(0 0 14px rgba(255,194,14,.9))":"none"; neu.style.filter=fire?"drop-shadow(0 0 10px rgba(255,194,14,.6))":"none";
+    ol.textContent=fire?"FIRES!":"stays quiet"; ol.setAttribute("fill",fire?Y:MUTE);
+    math.innerHTML=`z = ${[0,1,2].map(i=>`${x[i].toFixed(1)}×${f2p(w[i])}`).join(" + ")} + ${f2p(b)} = <b>${f2(z)}</b><br>${NAME[act]}(${f2(z)}) = <b>${o.toFixed(2)}</b> → ${fire?"<b>fires</b>":"quiet"} (fires when output &gt; 0.5)`;
+    if(mode==="free"){ tbl.innerHTML=""; goal.innerHTML="Drag the sliders. Positive weights (yellow) push the neuron toward firing, negative weights (blue) hold it back. The bias shifts how easy it is to fire."; return; }
+    const want=mode==="and"?(a,c)=>a&&c:(a,c)=>a||c; let ok=0;
+    tbl.innerHTML=`<tr><th>x₁</th><th>x₂</th><th>output</th><th>want</th><th></th></tr>`+[[0,0],[0,1],[1,0],[1,1]].map(([a,c])=>{ const oo=F[act](zOf([a,c,0])), f=oo>.5, wt=!!want(a,c), good=f===wt; ok+=good;
+      return `<tr><td>${a}</td><td>${c}</td><td>${oo.toFixed(2)}</td><td>${wt?"fire":"quiet"}</td><td class="${good?"ok":"no"}">${good?"✓":"✗"}</td></tr>`; }).join("");
+    goal.innerHTML=ok===4?`<b class="y">✓ You built an ${mode.toUpperCase()} gate from one neuron.</b> George Boole would approve.`:`Set weights and bias so it fires only when x₁ ${mode==="and"?"<b>and</b>":"<b>or</b>"} x₂ is 1 (x₃ is off). ${ok}/4 correct.`;
+  }
+  update();
+  A.neuron={ enter(){ update(); } };
+})();
+
 /* ---------- alexnet: error by year ---------- */
 (() => {
   const svg=$("axSvg"), note=$("axNote");

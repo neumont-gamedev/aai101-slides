@@ -237,6 +237,25 @@
   .count{font-family:var(--mono);font-size:56px;font-weight:600;color:var(--y);line-height:1}
   #fcSvg .nd{cursor:pointer}
 
+  /* single neuron */
+  .nrCtl{padding:14px 18px;display:flex;flex-direction:column;gap:8px}
+  .nrRow{display:grid;grid-template-columns:96px 1fr 62px;gap:10px;align-items:center}
+  .nrRow .ctl{grid-column:2/4}
+  .nrL{font-family:var(--mono);font-size:14px;color:var(--mute);letter-spacing:.04em}
+  .nrRow input[type=range]{width:100%;accent-color:#ffc20e}
+  .nrRow input.w{accent-color:#6ab8ff}
+  .nrRow input.b{accent-color:#b07cff}
+  .nrRow input:disabled{opacity:.3}
+  .nrV{font-family:var(--mono);font-size:17px;text-align:right}
+  .nrGrp{display:flex;flex-direction:column;gap:4px;padding-bottom:8px;border-bottom:1px solid var(--line)}
+  .nrGrp:last-child{border-bottom:0;padding-bottom:0}
+  .nrMath{font-family:var(--mono);font-size:20px;line-height:1.5;color:#d6d3cb}
+  .nrMath b{color:var(--y)}
+  .nrTbl{border-collapse:collapse;font-family:var(--mono);font-size:16px;width:100%}
+  .nrTbl td,.nrTbl th{padding:4px 8px;text-align:center;border-bottom:1px solid var(--line)}
+  .nrTbl th{color:var(--mute);font-weight:400}
+  .nrTbl .ok{color:var(--green)} .nrTbl .no{color:var(--red)}
+
   /* doodle */
   #ddCv{cursor:crosshair;background:#f6f3ea;touch-action:none}
   .ddTop{position:absolute;left:0;right:0;top:0;padding:14px 18px;display:flex;align-items:center;gap:14px;z-index:2;background:linear-gradient(#f6f3ea,rgba(246,243,234,0));pointer-events:none}
@@ -550,6 +569,28 @@
       <div class="rise" style="--i:2">
         <div class="stage-box" style="height:560px"><svg id="fcSvg" viewBox="0 0 860 560"></svg></div>
         <div class="lyr" id="fcLyr"></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- a single neuron -->
+  <section class="slide" data-id="neuron">
+    <div class="two" style="grid-template-columns:1.12fr .88fr;gap:40px">
+      <div class="stack" style="gap:12px">
+        <h2 class="rise" style="--i:0"><span class="n">Zoom in</span>Inside <span class="y">one neuron</span></h2>
+        <div class="stage-box rise" style="--i:1;height:560px"><svg id="nrSvg" viewBox="0 0 860 560"></svg></div>
+        <div class="nrMath rise" style="--i:2" id="nrMath"></div>
+      </div>
+      <div class="stack rise" style="--i:2;gap:12px">
+        <div class="card nrCtl" id="nrCtl"></div>
+        <div class="card nrCtl">
+          <div class="nrRow"><span class="nrL">activation</span><div class="ctl" id="nrAct"><button class="btn on" data-f="step">Step</button><button class="btn" data-f="sig">Sigmoid</button><button class="btn" data-f="relu">ReLU</button></div></div>
+        </div>
+        <div class="card nrCtl">
+          <div class="ctl"><span class="nrL">Challenge</span><button class="btn on" data-c="free">Free play</button><button class="btn" data-c="and">Make AND</button><button class="btn" data-c="or">Make OR</button></div>
+          <div id="nrGoal" class="hint"></div>
+          <table class="nrTbl" id="nrTbl"></table>
+        </div>
       </div>
     </div>
   </section>
