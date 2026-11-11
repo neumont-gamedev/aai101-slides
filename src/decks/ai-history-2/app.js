@@ -58,6 +58,7 @@ const EVENTS=[
   ["1997","IBM’s Deep Blue defeats world chess champion Garry Kasparov."],
   ["2002","iRobot introduces Roomba, the first mass-produced home robot vacuum that navigates on its own."],
   ["2012","AlexNet (Krizhevsky, Sutskever & Hinton) wins the ImageNet challenge by a huge margin. Deep learning takes off."],
+  ["2016","DeepMind’s AlphaGo beats Go champion Lee Sedol 4–1, using deep learning and reinforcement learning."],
   ["2017","Google researchers publish “Attention Is All You Need”, introducing the Transformer."],
   ["2022","OpenAI releases ChatGPT (GPT-3.5) to the public on November 30."],
 ];
@@ -608,6 +609,123 @@ document.querySelectorAll(".slide.tl").forEach(sl=>{
       T[l].textContent=((st.done[l]||st.t)/1000).toFixed(1)+" s"; });
   }
   A.gpu={ enter(){ st=null; T.forEach(t=>t.textContent="0.0 s"); $("gpGo").textContent="Race ▶"; }, tick(dt){ if(st&&!(st.done[0]&&st.done[1])) st.t+=dt; draw(); } };
+})();
+
+/* ---------- alphago: a go board + why search fails ---------- */
+(() => {
+  const cv=$("agBoard"), N=19; let stones=[], grid=null, last=0, fade=1;
+  function reset(){ stones=[]; grid=new Int8Array(N*N); fade=1; }
+  function place(){
+    const color=stones.length%2?2:1; let x,y;
+    if(!stones.length){ x=3; y=15; }
+    else { for(let t=0;t<40;t++){ const s=pick(stones.slice(-12)); x=s.x+Math.round(rnd(-2.4,2.4)); y=s.y+Math.round(rnd(-2.4,2.4)); if(x>=0&&y>=0&&x<N&&y<N&&!grid[y*N+x]) break; x=null; }
+      if(x==null){ do{ x=(Math.random()*N)|0; y=(Math.random()*N)|0; } while(grid[y*N+x]); } }
+    grid[y*N+x]=color; stones.push({x,y,c:color,t:performance.now()});
+  }
+  function draw(now){
+    const x=ctxOf(cv), W=cv.offsetWidth, H=cv.offsetHeight; x.clearRect(0,0,W,H);
+    const S=Math.min(W,H)-44, g=S/(N-1), ox=(W-S)/2, oy=(H-S)/2;
+    x.strokeStyle="rgba(40,26,8,.75)"; x.lineWidth=1.2;
+    for(let i=0;i<N;i++){ x.beginPath(); x.moveTo(ox,oy+i*g); x.lineTo(ox+S,oy+i*g); x.moveTo(ox+i*g,oy); x.lineTo(ox+i*g,oy+S); x.stroke(); }
+    x.fillStyle="rgba(40,26,8,.85)"; for(const a of [3,9,15]) for(const b of [3,9,15]){ x.beginPath(); x.arc(ox+a*g,oy+b*g,3.5,0,7); x.fill(); }
+    x.globalAlpha=fade;
+    stones.forEach((s,i)=>{ const k=ease((now-s.t)/250), r=g*.47*(.6+.4*k), cx=ox+s.x*g, cy=oy+s.y*g;
+      const gr=x.createRadialGradient(cx-r*.35,cy-r*.35,r*.1,cx,cy,r);
+      if(s.c===1){ gr.addColorStop(0,"#555"); gr.addColorStop(1,"#0b0b0b"); } else { gr.addColorStop(0,"#fff"); gr.addColorStop(1,"#c9c6bd"); }
+      x.fillStyle=gr; x.beginPath(); x.arc(cx,cy,r,0,7); x.fill();
+      if(i===stones.length-1){ x.strokeStyle=s.c===1?"#fff":"#000"; x.lineWidth=2; x.beginPath(); x.arc(cx,cy,r*.45,0,7); x.stroke(); } });
+    x.globalAlpha=1;
+  }
+  const sup=n=>String(n).split("").map(c=>"⁰¹²³⁴⁵⁶⁷⁸⁹"[c]).join("");
+  const big=e=>e<6?fmt(Math.pow(10,e)):`${Math.pow(10,e%1).toFixed(1)} × 10${sup(Math.floor(e))}`;
+  function dur(l){ // l = log10 of seconds
+    if(l<0) return "less than a second"; const s=Math.pow(10,l);
+    if(s<60) return `${s.toFixed(0)} seconds`; if(s<3600) return `${(s/60).toFixed(0)} minutes`; if(s<86400) return `${(s/3600).toFixed(0)} hours`;
+    if(s<3.156e7) return `${(s/86400).toFixed(0)} days`; const y=l-Math.log10(3.156e7);
+    return y<6?`${fmt(Math.pow(10,y))} years`:`about 10${sup(Math.floor(y))} years`; }
+  function calc(){ const n=+$("agR").value; $("agN").textContent=n;
+    const ec=n*Math.log10(35), eg=n*Math.log10(250); $("agC").textContent=big(ec); $("agG").textContent=big(eg);
+    const ly=eg-Math.log10(2e8)-Math.log10(3.156e7);
+    $("agT").innerHTML=`Deep Blue checked about 200 million positions a second. At that speed, every Go line ${n} move${n>1?"s":""} deep would take <b>${dur(eg-Math.log10(2e8))}</b>.`+(ly>10.14?" That’s far longer than the universe has existed.":"")+(eg>80?" There are more lines to check than atoms in the universe!":""); }
+  $("agR").oninput=calc; calc();
+  A.alphago={ enter(){ reset(); for(let i=0;i<14;i++) place(); stones.forEach(s=>s.t=0); last=performance.now(); },
+    tick(dt,now){ if(now-last>480){ last=now; if(stones.length>150){ fade-=.05; if(fade<=0) reset(); } else place(); } draw(now); } };
+})();
+
+/* ---------- reinforcement learning: q-learning in a grid world ---------- */
+(() => {
+  const cv=$("rlCv"), cap=$("rlCap"), C=8, R=6, START=[0,5], GOAL=[7,0];
+  const D=[[0,-1],[1,0],[0,1],[-1,0]];  // up, right, down, left
+  const DEF={"2,1":"wall","2,2":"wall","5,2":"wall","5,3":"wall","3,4":"lava","4,4":"lava","6,1":"lava"};
+  let map={...DEF}, Q=new Float32Array(C*R*4), ep=0, hist=[], run=false, speed=1, tool="wall", agent=null, epR=0, watch=null, trail=[];
+  const id=(x,y)=>y*C+x, eps=()=>Math.max(.05,Math.pow(.96,ep));
+  const isGoal=(x,y)=>x===GOAL[0]&&y===GOAL[1];
+  function newEp(){ agent={x:START[0],y:START[1],n:0}; epR=0; trail=[[agent.x,agent.y]]; }
+  function best(x,y){ let b=0; for(let a=1;a<4;a++) if(Q[id(x,y)*4+a]>Q[id(x,y)*4+b]) b=a; return b; }
+  function move(s,a){ const nx=s.x+D[a][0], ny=s.y+D[a][1];
+    if(nx<0||ny<0||nx>=C||ny>=R||map[nx+","+ny]==="wall") return {x:s.x,y:s.y,r:-.5,done:false};
+    if(map[nx+","+ny]==="lava") return {x:nx,y:ny,r:-10,done:true,lava:true};
+    if(isGoal(nx,ny)) return {x:nx,y:ny,r:10,done:true,win:true};
+    return {x:nx,y:ny,r:-.1,done:false}; }
+  function learnStep(){
+    const s=agent, a=Math.random()<eps()?(Math.random()*4)|0:best(s.x,s.y), o=move(s,a), k=id(s.x,s.y)*4+a;
+    const target=o.r+(o.done?0:.95*Math.max(...Q.slice(id(o.x,o.y)*4,id(o.x,o.y)*4+4)));
+    Q[k]+=.5*(target-Q[k]); epR+=o.r; agent={x:o.x,y:o.y,n:s.n+1}; trail.push([o.x,o.y]); if(trail.length>40) trail.shift();
+    if(o.done||agent.n>=80){ ep++; hist.push(epR); if(hist.length>200) hist.shift(); agent.flash=o.win?"win":o.lava?"lava":null; newEp(); }
+  }
+  const setRun=v=>{ run=v; $("rlRun").textContent=v?"Pause ❚❚":"Train ▶"; $("rlRun").classList.toggle("on",!v); };
+  $("rlRun").onclick=()=>{ watch=null; setRun(!run); };
+  $("rlFast").onclick=()=>{ speed=speed===1?8:speed===8?200:1; $("rlFast").textContent=`Speed ×${speed}`; };
+  $("rlTool").onclick=()=>{ tool=tool==="wall"?"lava":"wall"; $("rlTool").textContent=tool==="wall"?"Placing: 🧱 wall":"Placing: 🔥 lava"; };
+  $("rlReset").onclick=()=>{ Q=new Float32Array(C*R*4); ep=0; hist=[]; watch=null; setRun(false); newEp(); };
+  $("rlWatch").onclick=()=>{ setRun(false); watch={x:START[0],y:START[1],n:0,t:0,path:[[START[0],START[1]]],end:null}; };
+  let geo=null;
+  function layout(){ const W=cv.offsetWidth, H=cv.offsetHeight, top=70, gh=H-top-200, cs=Math.min((W-40)/C,gh/R); geo={W,H,cs,ox:(W-cs*C)/2,oy:top,cy:top+cs*R+30}; }
+  cv.addEventListener("pointerdown",e=>{ if(!geo) return; const p=ptr(e,cv), x=Math.floor((p.x-geo.ox)/geo.cs), y=Math.floor((p.y-geo.oy)/geo.cs);
+    if(x<0||y<0||x>=C||y>=R||(x===START[0]&&y===START[1])||isGoal(x,y)) return; const k=x+","+y; if(map[k]===tool) delete map[k]; else map[k]=tool; });
+  function draw(now){
+    layout(); const {W,H,cs,ox,oy,cy}=geo, x=ctxOf(cv); x.fillStyle="#0d0d0f"; x.fillRect(0,0,W,H);
+    x.textAlign="center"; x.textBaseline="middle";
+    for(let j=0;j<R;j++) for(let i=0;i<C;i++){ const k=i+","+j, px=ox+i*cs, py=oy+j*cs;
+      if(map[k]==="wall"){ x.fillStyle="#3a3a42"; x.fillRect(px+1,py+1,cs-2,cs-2); x.font=`${cs*.45}px ${SANS}`; x.fillText("🧱",px+cs/2,py+cs/2); continue; }
+      if(map[k]==="lava"){ x.fillStyle="#5a1f12"; x.fillRect(px+1,py+1,cs-2,cs-2); x.font=`${cs*.45}px ${SANS}`; x.fillText("🔥",px+cs/2,py+cs/2); continue; }
+      const q=Q.slice(id(i,j)*4,id(i,j)*4+4), v=Math.max(...q), any=q.some(t=>t!==0);
+      x.fillStyle=!any||isGoal(i,j)?"#1a1a1f":v>=0?`rgba(95,214,138,${Math.min(.75,v/10)})`:`rgba(255,90,78,${Math.min(.6,-v/8)})`; x.fillRect(px+1,py+1,cs-2,cs-2);
+      if(any&&!isGoal(i,j)){ const b=best(i,j), [dx,dy]=D[b], cx=px+cs/2, cyy=py+cs/2, L=cs*.28;
+        x.strokeStyle="rgba(243,241,234,.75)"; x.fillStyle="rgba(243,241,234,.75)"; x.lineWidth=3; x.beginPath(); x.moveTo(cx-dx*L,cyy-dy*L); x.lineTo(cx+dx*L,cyy+dy*L); x.stroke();
+        x.beginPath(); x.moveTo(cx+dx*(L+6),cyy+dy*(L+6)); x.lineTo(cx+dx*L-dy*7,cyy+dy*L+dx*7); x.lineTo(cx+dx*L+dy*7,cyy+dy*L-dx*7); x.fill(); } }
+    x.strokeStyle=LINE; x.lineWidth=1; for(let i=0;i<=C;i++){ x.beginPath(); x.moveTo(ox+i*cs,oy); x.lineTo(ox+i*cs,oy+R*cs); x.stroke(); } for(let j=0;j<=R;j++){ x.beginPath(); x.moveTo(ox,oy+j*cs); x.lineTo(ox+C*cs,oy+j*cs); x.stroke(); }
+    x.font=`${cs*.55}px ${SANS}`; x.fillText("🧀",ox+GOAL[0]*cs+cs/2,oy+GOAL[1]*cs+cs/2);
+    x.font=`600 13px ${MONO}`; x.fillStyle=MUTE; x.fillText("start",ox+START[0]*cs+cs/2,oy+START[1]*cs+cs-12);
+    const tr=watch?watch.path:trail; x.strokeStyle=watch?"rgba(255,194,14,.85)":"rgba(255,194,14,.3)"; x.lineWidth=watch?5:3; x.beginPath();
+    tr.forEach(([i,j],n)=>{ const px=ox+i*cs+cs/2, py=oy+j*cs+cs/2; n?x.lineTo(px,py):x.moveTo(px,py); }); x.stroke();
+    const ag=watch||agent; if(ag){ x.font=`${cs*.55}px ${SANS}`; x.fillText("🐭",ox+ag.x*cs+cs/2,oy+ag.y*cs+cs/2); }
+    // reward chart
+    const ch=H-cy-30, cw=W-80; x.textAlign="left"; x.textBaseline="alphabetic"; x.fillStyle=MUTE; x.font=`14px ${MONO}`; x.fillText("reward per try (higher is better)",40,cy-6);
+    x.strokeStyle=LINE; x.strokeRect(40,cy,cw,ch); const yv=v=>cy+ch-(clamp(v,-20,10)+20)/30*ch;
+    x.setLineDash([4,4]); x.beginPath(); x.moveTo(40,yv(0)); x.lineTo(40+cw,yv(0)); x.stroke(); x.setLineDash([]);
+    if(hist.length>1){ x.strokeStyle=Y; x.lineWidth=2; x.beginPath(); let m=hist[0];
+      hist.forEach((v,i)=>{ m=m*.85+v*.15; const px=40+i/(hist.length-1)*cw; i?x.lineTo(px,yv(m)):x.moveTo(px,yv(m)); }); x.stroke(); }
+    if(watch&&watch.end){ x.textAlign="center"; x.font=`700 30px ${SANS}`; x.fillStyle="rgba(13,13,15,.85)"; x.fillRect(ox,oy+R*cs/2-34,C*cs,68); x.fillStyle=watch.end==="win"?GREEN:RED; x.fillText(watch.end==="win"?`Found the cheese in ${watch.n} steps!`:watch.end==="lava"?"Ouch, lava! It needs more training.":"Got lost. It needs more training.",W/2,oy+R*cs/2); }
+    cap.textContent=`tries: ${ep} · exploring randomly ${Math.round(eps()*100)}% of the time`;
+  }
+  function stepWatch(){ const a=best(watch.x,watch.y), o=move(watch,a); watch.x=o.x; watch.y=o.y; watch.n++; watch.path.push([o.x,o.y]);
+    if(o.win) watch.end="win"; else if(o.lava) watch.end="lava"; else if(watch.n>=30) watch.end="lost"; }
+  // the agent/environment loop diagram
+  const loop=$("rlLoop"); let dot=null, pth=null;
+  (()=>{ const box=(x,lab,col)=>{ svgEl("rect",{x,y:45,width:170,height:80,rx:14,fill:"#1c1c20",stroke:col,"stroke-width":2.5},loop); const t=svgEl("text",{x:x+85,y:92,"text-anchor":"middle",fill:INK,"font-size":22,"font-weight":700,"font-family":SANS},loop); t.textContent=lab; };
+    box(10,"Agent 🐭",Y); box(380,"Environment",BLUE);
+    pth=svgEl("path",{d:"M180 70 C 260 10, 300 10, 380 70 M380 100 C 300 160, 260 160, 180 100",fill:"none",stroke:MUTE,"stroke-width":2,"stroke-dasharray":"6 6"},loop);
+    const l1=svgEl("text",{x:280,y:24,"text-anchor":"middle",fill:Y,"font-size":17,"font-family":MONO},loop); l1.textContent="action";
+    const l2=svgEl("text",{x:280,y:162,"text-anchor":"middle",fill:BLUE,"font-size":17,"font-family":MONO},loop); l2.textContent="reward + new state";
+    dot=svgEl("circle",{r:7,fill:Y},loop); })();
+  let wt=0;
+  newEp();
+  A.rl={ enter(){ setRun(false); watch=null; },
+    tick(dt,now){ if(run){ const n=speed===1?1:speed===8?8:200; for(let i=0;i<n;i++) learnStep(); }
+      if(watch&&!watch.end){ wt+=dt; if(wt>170){ wt=0; stepWatch(); } }
+      const L=pth.getTotalLength(), p=(now/2600)%1, pt=pth.getPointAtLength(p*L); dot.setAttribute("cx",pt.x); dot.setAttribute("cy",pt.y); dot.setAttribute("fill",p<.5?Y:BLUE);
+      draw(now); } };
 })();
 
 /* ---------- tokens ---------- */
