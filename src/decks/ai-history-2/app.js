@@ -255,6 +255,92 @@ document.querySelectorAll(".slide.tl").forEach(sl=>{
   A.nest={ enter(dir){ show(dir<0?3:0); }, step(){ if(k>=3) return false; show(k+1); return true; }, back(){ if(k<=0) return false; show(k-1); return true; } };
 })();
 
+/* ---------- three kinds of learning ---------- */
+(() => {
+  const cv=$("lnCv"), top=$("lnTop"), say=$("lnSay"), tabs=[...document.querySelectorAll("#lnTabs .lnTab")];
+  let seed=7; const rand=()=>((seed=(seed*16807)%2147483647)/2147483647);
+  const gauss=()=>{ let u=0; for(let i=0;i<6;i++) u+=rand(); return (u-3)*1.41; };
+  // cats: small with pointy ears, dogs: bigger with floppier ears (x = size, y = ear pointiness)
+  function makeData(){ seed=7; const d=[];
+    for(let i=0;i<14;i++) d.push({x:clamp(.3+gauss()*.095,.05,.95),y:clamp(.7+gauss()*.09,.05,.95),l:1});
+    for(let i=0;i<14;i++) d.push({x:clamp(.68+gauss()*.1,.05,.95),y:clamp(.32+gauss()*.1,.05,.95),l:0});
+    return d; }
+  let tab=0, data=makeData(), w=[0,0,0], addL=1, mystery=null, km=null, kmT=0, rl=null, rlT=0;
+  const sig=v=>1/(1+Math.exp(-v)), prob=(x,y)=>sig(w[0]+w[1]*(x-.5)*6+w[2]*(y-.5)*6);
+  function trainLR(n){ for(let it=0;it<n;it++){ const g=[0,0,0]; for(const p of data){ const e=prob(p.x,p.y)-p.l; g[0]+=e; g[1]+=e*(p.x-.5)*6; g[2]+=e*(p.y-.5)*6; }
+    for(let i=0;i<3;i++) w[i]-=.15*(g[i]/data.length+.002*w[i]*(i>0)); } }
+  let geo=null;
+  function layout(){ const W=cv.offsetWidth, H=cv.offsetHeight, t=72, b=H-96, s=Math.min(W-100,b-t); geo={W,H,ox:(W-s)/2+16,oy:t,s}; }
+  const P=p=>({x:geo.ox+p.x*geo.s,y:geo.oy+(1-p.y)*geo.s});
+  const KCOL=[GREEN,"#b07cff",AMBER];
+  function axes(x){ const {ox,oy,s}=geo; x.strokeStyle=LINE; x.lineWidth=1.5; x.strokeRect(ox,oy,s,s);
+    x.fillStyle=MUTE; x.font=`14px ${MONO}`; x.textAlign="center"; x.fillText("size →",ox+s/2,oy+s+22);
+    x.save(); x.translate(ox-14,oy+s/2); x.rotate(-Math.PI/2); x.fillText("ear pointiness →",0,0); x.restore(); x.textAlign="left"; }
+  function dot(x,p,fill,label){ const q=P(p); x.fillStyle=fill; x.strokeStyle="#0d0d0f"; x.lineWidth=2; x.beginPath(); x.arc(q.x,q.y,9,0,7); x.fill(); x.stroke();
+    if(label){ x.font=`15px ${SANS}`; x.textAlign="center"; x.textBaseline="middle"; x.fillText(label,q.x,q.y-20); x.textBaseline="alphabetic"; x.textAlign="left"; } }
+  function setTab(t){ tab=t; tabs.forEach((b,i)=>b.classList.toggle("on",i===t)); mystery=null; km=null;
+    if(t===0){ top.innerHTML=`<span class="stat">Click the chart to add a</span><button class="btn on" data-a="1">🐱 cat</button><button class="btn" data-a="0">🐶 dog</button><span class="sp"></span><button class="btn" data-a="m">New mystery animal ❓</button><button class="btn" data-a="r">Reset</button>`;
+      say.innerHTML="Every dot comes with an answer: <b>cat</b> or <b>dog</b>. The model learns a line that splits them."; }
+    else if(t===1){ top.innerHTML=`<button class="btn on" data-a="k2">Find 2 groups</button><button class="btn" data-a="k3">Find 3 groups</button><span class="sp"></span><span class="stat">same animals, no labels</span>`;
+      say.innerHTML="Same animals, but <b>no labels</b>. Can the computer find groups on its own?"; }
+    else { top.innerHTML=`<button class="btn on" data-a="rl">Start over</button><span class="sp"></span><span class="stat">a 1D maze: walk to the cheese</span>`;
+      rl=newRL(); say.innerHTML="No labels and no examples. The mouse just tries moves: <b>+10</b> for cheese, <b>−10</b> for the trap."; } }
+  top.onclick=e=>{ const b=e.target.closest("[data-a]"); if(!b) return; const a=b.dataset.a;
+    if(a==="1"||a==="0"){ addL=+a; top.querySelectorAll('[data-a="1"],[data-a="0"]').forEach(o=>o.classList.toggle("on",o===b)); }
+    else if(a==="r"){ data=makeData(); w=[0,0,0]; mystery=null; }
+    else if(a==="m"){ mystery={x:rnd(.15,.85),y:rnd(.15,.85)}; }
+    else if(a==="k2"||a==="k3"){ top.querySelectorAll('[data-a^="k"]').forEach(o=>o.classList.toggle("on",o===b)); startKM(a==="k2"?2:3); }
+    else if(a==="rl") rl=newRL(); };
+  tabs.forEach((b,i)=>b.onclick=()=>setTab(i));
+  cv.addEventListener("pointerdown",e=>{ if(tab!==0||!geo) return; const q=ptr(e,cv), x=(q.x-geo.ox)/geo.s, y=1-(q.y-geo.oy)/geo.s;
+    if(x<0||y<0||x>1||y>1) return; data.push({x,y,l:addL,fresh:performance.now()}); });
+  // k-means, one visible step at a time
+  function startKM(k){ const pts=[...data].sort(()=>Math.random()-.5); km={k,c:pts.slice(0,k).map(p=>({x:p.x,y:p.y})),a:data.map(()=>-1),it:0,done:false}; kmT=0;
+    say.innerHTML="Step 1: drop "+k+" random centers. Then repeat: color each dot by its nearest center, move each center to the middle of its dots."; }
+  function stepKM(){ let changed=false;
+    data.forEach((p,i)=>{ let b=0,bd=1e9; km.c.forEach((c,j)=>{ const d=(p.x-c.x)**2+(p.y-c.y)**2; if(d<bd){ bd=d; b=j; } }); if(km.a[i]!==b){ km.a[i]=b; changed=true; } });
+    km.c=km.c.map((c,j)=>{ const m=data.filter((_,i)=>km.a[i]===j); return m.length?{x:m.reduce((s,p)=>s+p.x,0)/m.length,y:m.reduce((s,p)=>s+p.y,0)/m.length}:c; });
+    km.it++; if(!changed&&km.it>1){ km.done=true;
+      say.innerHTML=`Found <b>${km.k} groups</b> in ${km.it} rounds. It doesn’t know what they are: it can’t say “cat” or “dog”. ${km.k===3?"With 3 groups it splits one kind in two: the computer just finds whatever groups the numbers suggest.":"A person still has to name them."}`; } }
+  // reinforcement: a 1D corridor, trap on the left, cheese on the right
+  const N=9;
+  function newRL(){ return {Q:Array.from({length:N},()=>[0,0]),pos:4,ep:1,steps:0,last:null,flash:0,hist:[]}; }
+  function stepRL(){ const r=rl, e=Math.max(.1,Math.pow(.8,r.ep-1)), q=r.Q[r.pos]; const a=Math.random()<e||q[0]===q[1]?(Math.random()<.5?0:1):(q[1]>q[0]?1:0);
+    const np=r.pos+(a?1:-1); let rew=-.5, done=false; if(np===0){ rew=-10; done=true; } if(np===N-1){ rew=10; done=true; }
+    const nxt=done?0:Math.max(...r.Q[np]); q[a]+=.5*(rew+.9*nxt-q[a]); r.pos=np; r.steps++;
+    if(done){ r.last=rew>0?"win":"trap"; r.flash=1; r.hist.push(r.last); r.ep++; setTimeout(()=>{ if(rl===r){ r.pos=4; r.steps=0; } },350); r.pos=np; r.wait=true; setTimeout(()=>{ if(rl===r) r.wait=false; },350); }
+    const wins=r.hist.slice(-5).filter(h=>h==="win").length;
+    say.innerHTML=`Try <b>#${r.ep}</b> · last result: ${r.last==="win"?"🧀 +10":r.last==="trap"?"🪤 −10":"…"} · ${r.ep>6&&wins>=4?"It has learned: always go right!":"still exploring…"}`; }
+  function draw(now){
+    layout(); const x=ctxOf(cv), {W,H}=geo; x.fillStyle="#0d0d0f"; x.fillRect(0,0,W,H);
+    if(tab===0){ trainLR(8); const {ox,oy,s}=geo, G=32;
+      for(let j=0;j<G;j++) for(let i=0;i<G;i++){ const p=prob((i+.5)/G,1-(j+.5)/G); x.fillStyle=p>.5?`rgba(255,194,14,${(p-.5)*.36})`:`rgba(106,184,255,${(.5-p)*.36})`; x.fillRect(ox+i*s/G,oy+j*s/G,s/G+.5,s/G+.5); }
+      // boundary: w0 + w1*(x-.5)*6 + w2*(y-.5)*6 = 0
+      if(Math.abs(w[2])>1e-3){ x.strokeStyle=INK; x.lineWidth=3; x.setLineDash([10,7]); x.beginPath(); let first=true;
+        for(let k=0;k<=40;k++){ const xx=k/40, yy=.5-(w[0]+w[1]*(xx-.5)*6)/(w[2]*6); if(yy<0||yy>1){ first=true; continue; } const q=P({x:xx,y:yy}); first?x.moveTo(q.x,q.y):x.lineTo(q.x,q.y); first=false; } x.stroke(); x.setLineDash([]); }
+      axes(x); for(const p of data) dot(x,p,p.l?Y:BLUE,p.fresh&&now-p.fresh<1200?(p.l?"🐱":"🐶"):null);
+      x.font=`15px ${SANS}`; x.fillStyle=Y; x.fillText("● cat",geo.ox+geo.s-110,oy+22); x.fillStyle=BLUE; x.fillText("● dog",geo.ox+geo.s-55,oy+22);
+      if(mystery){ const pc=prob(mystery.x,mystery.y), q=P(mystery); x.fillStyle="#fff"; x.beginPath(); x.arc(q.x,q.y,13,0,7); x.fill(); x.fillStyle="#121214"; x.font=`700 16px ${SANS}`; x.textAlign="center"; x.textBaseline="middle"; x.fillText("?",q.x,q.y+1); x.textAlign="left"; x.textBaseline="alphabetic";
+        say.innerHTML=`Mystery animal ❓: the model predicts <b>${pc>.5?"cat":"dog"}</b> (${Math.round(Math.max(pc,1-pc)*100)}% sure), because of which side of the line it’s on.`; } }
+    else if(tab===1){ if(km&&!km.done){ kmT+=16; if(kmT>750){ kmT=0; stepKM(); } }
+      axes(x); data.forEach((p,i)=>dot(x,p,km&&km.a[i]>=0?KCOL[km.a[i]]:"#8a8a94"));
+      if(km) km.c.forEach((c,j)=>{ const q=P(c); x.strokeStyle=KCOL[j]; x.lineWidth=4; x.beginPath(); x.moveTo(q.x-12,q.y-12); x.lineTo(q.x+12,q.y+12); x.moveTo(q.x+12,q.y-12); x.lineTo(q.x-12,q.y+12); x.stroke();
+        if(km.done){ const t=`group ${"ABC"[j]} = ?`; x.font=`700 18px ${SANS}`; const tw=x.measureText(t).width; x.fillStyle="rgba(13,13,15,.85)"; x.fillRect(q.x-tw/2-8,q.y-46,tw+16,28); x.fillStyle=KCOL[j]; x.textAlign="center"; x.fillText(t,q.x,q.y-26); x.textAlign="left"; } }); }
+    else { const r=rl; if(!r.wait){ rlT+=16; if(rlT>(r.ep<4?260:140)){ rlT=0; stepRL(); } }
+      const cw=Math.min(84,(W-80)/N), ox=(W-cw*N)/2, oy=H/2-60;
+      for(let i=0;i<N;i++){ const px=ox+i*cw, q=r.Q[i], v=Math.max(...q);
+        x.fillStyle=i===0?"#5a1f12":i===N-1?"#1f3a26":v>0?`rgba(95,214,138,${Math.min(.6,v/10)})`:v<0?`rgba(255,90,78,${Math.min(.5,-v/10)})`:"#1a1a1f"; x.fillRect(px+2,oy,cw-4,cw);
+        x.textAlign="center"; x.textBaseline="middle"; x.font=`${cw*.5}px ${SANS}`;
+        if(i===0) x.fillText("🪤",px+cw/2,oy+cw/2); else if(i===N-1) x.fillText("🧀",px+cw/2,oy+cw/2);
+        else if(q[0]!==q[1]){ x.fillStyle="rgba(243,241,234,.8)"; x.font=`700 ${cw*.42}px ${SANS}`; x.fillText(q[1]>q[0]?"→":"←",px+cw/2,oy+cw+28); } }
+      x.font=`${cw*.55}px ${SANS}`; x.fillText("🐭",ox+r.pos*cw+cw/2,oy+cw/2);
+      x.fillStyle=MUTE; x.font=`14px ${MONO}`; x.fillText("arrows = what the mouse has learned is the best move from each square",W/2,oy+cw+70);
+      x.fillText("you’ll train a smarter mouse after AlphaGo",W/2,oy-36); x.textAlign="left"; x.textBaseline="alphabetic"; }
+  }
+  A.learning={ enter(dir){ data=makeData(); w=[0,0,0]; setTab(dir<0?2:0); }, tick(dt,now){ draw(now); },
+    step(){ if(tab>=2) return false; setTab(tab+1); return true; }, back(){ if(tab<=0) return false; setTab(tab-1); return true; } };
+})();
+
 /* ---------- imagenet: count up + labeling calculator ---------- */
 (() => {
   const N=14197122, num=$("inNum"), rng=$("inRange"); let t0=0, on=false;

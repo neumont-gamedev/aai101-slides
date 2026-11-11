@@ -194,6 +194,20 @@
   .fb{font-size:18px;line-height:1.4;min-height:50px}
   .fb.good{color:var(--green)} .fb.bad{color:var(--red)}
 
+  /* learning types */
+  .lnTabs{display:flex;flex-direction:column;gap:10px}
+  .lnTab{all:unset;cursor:pointer;display:flex;flex-direction:column;gap:4px;padding:14px 18px;border-radius:14px;border:1px solid var(--line);background:var(--panel);opacity:.55;transition:opacity .3s,border-color .3s,background .3s}
+  .lnTab:hover{opacity:.85}
+  .lnTab.on{opacity:1;border-color:var(--y);background:rgba(255,194,14,.06)}
+  .lnTab b{font-size:24px;color:var(--ink)} .lnTab.on b{color:var(--y)}
+  .lnTab span{font-size:18px;color:#d6d3cb;line-height:1.35} .lnTab em{font-style:normal;font-weight:700;color:var(--ink)}
+  .lnTab i{font-style:normal;font-family:var(--mono);font-size:13px;color:var(--mute)}
+  .lnTop{position:absolute;left:14px;right:14px;top:12px;display:flex;gap:8px;align-items:center;flex-wrap:wrap;z-index:2}
+  .lnTop .btn{font-size:15px;padding:7px 12px}
+  .lnTop .sp{flex:1}
+  .lnSay{position:absolute;left:16px;right:16px;bottom:14px;z-index:2;font-size:19px;line-height:1.4;color:var(--ink);background:rgba(13,13,15,.88);padding:10px 14px;border-radius:10px;min-height:44px}
+  .lnSay b{color:var(--y)}
+
   /* imagenet */
   .inMosaic{position:relative;height:300px;border-radius:16px;overflow:hidden;border:1px solid var(--line)}
   .inMosaic img{position:absolute;left:0;top:0;height:100%;width:auto;min-width:100%;transform:translateX(0);transition:transform 30s linear}
@@ -458,6 +472,26 @@
           <div class="def" data-k="dl"><b style="color:var(--green)">DEEP LEARNING</b><p>Machine learning with neural networks that have <b>many layers</b> and learn their own features from raw pixels and words.</p></div>
         </div>
         <div class="callout rise" style="--i:3" id="nestFb">Where does everything we’ve seen so far fit? Click to fill each circle.</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- three kinds of learning -->
+  <section class="slide" data-id="learning">
+    <div class="two" style="grid-template-columns:.78fr 1.22fr;gap:46px">
+      <div class="stack" style="gap:14px">
+        <h2 class="rise" style="--i:0"><span class="n">How does it learn?</span>Three ways machines <span class="y">learn</span></h2>
+        <div class="lnTabs rise" style="--i:1" id="lnTabs">
+          <button class="lnTab" data-t="0"><b>Supervised</b><span>Learn from examples that come with the <em>right answer</em> (a label).</span><i>ImageNet · spam filters · linear regression</i></button>
+          <button class="lnTab" data-t="1"><b>Unsupervised</b><span>No answers given. Find <em>patterns and groups</em> on its own.</span><i>customer groups · recommendations · word maps</i></button>
+          <button class="lnTab" data-t="2"><b>Reinforcement</b><span>No answers either. Try things and learn from <em>rewards</em> and penalties.</span><i>AlphaGo · game AI · robots</i></button>
+        </div>
+        <div class="callout rise" style="--i:2;font-size:19px">Supervised = learn from <b>answers</b> · Unsupervised = find <b>patterns</b> · Reinforcement = learn from <b>rewards</b></div>
+      </div>
+      <div class="stage-box rise" style="--i:2;height:690px">
+        <canvas id="lnCv"></canvas>
+        <div class="lnTop" id="lnTop"></div>
+        <div class="lnSay" id="lnSay"></div>
       </div>
     </div>
   </section>
