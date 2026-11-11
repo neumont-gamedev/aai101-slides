@@ -387,6 +387,17 @@
   .flip3 .b .v{font-family:var(--mono);font-size:15px;font-weight:600}
   .flip3 .b .v.yes{color:var(--green)} .flip3 .b .v.maybe{color:var(--blue)}
   .flip3 .b .t{font-size:17px;line-height:1.4;color:#d6d3cb}
+  /* eliza: green monochrome terminal */
+  .slide[data-id="eliza"] .stage-box{background:radial-gradient(ellipse at center,#06200f 0%,#020c05 75%);border-color:#14532a;box-shadow:inset 0 0 60px rgba(0,0,0,.8),0 0 0 1px rgba(51,255,102,.08)}
+  .slide[data-id="eliza"] .stage-box::after{content:"";position:absolute;inset:0;pointer-events:none;border-radius:20px;
+    background:repeating-linear-gradient(0deg,rgba(0,0,0,.22) 0 1px,transparent 1px 3px);mix-blend-mode:multiply}
+  .slide[data-id="eliza"] .eterm{color:#33ff66;text-shadow:0 0 6px rgba(51,255,102,.55),0 0 1px rgba(51,255,102,.9)}
+  .slide[data-id="eliza"] .eterm .e,.slide[data-id="eliza"] .eterm .pr{color:#33ff66}
+  .slide[data-id="eliza"] .eterm .u{color:#a8ffbf}
+  .slide[data-id="eliza"] .eterm b{color:inherit}
+  .slide[data-id="eliza"] .eterm input{color:#a8ffbf;caret-color:#33ff66;text-shadow:inherit}
+  .slide[data-id="eliza"] .eterm input::placeholder{color:rgba(51,255,102,.4)}
+  .slide[data-id="eliza"] .eterm form{border-top-color:rgba(51,255,102,.25)}
 </style>
 </head>
 <body>
