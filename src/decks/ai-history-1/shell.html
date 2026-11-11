@@ -400,6 +400,19 @@
   .slide[data-id="eliza"] .eterm form{border-top-color:rgba(51,255,102,.25)}
   .eterm .ebanner{align-self:center;margin:2px 0 14px;font-family:var(--mono);font-size:19px;line-height:1.12;color:#33ff66;white-space:pre;flex:none}
   .eterm .log{min-height:0}
+  /* minimax practice */
+  #mmSvg{position:absolute;left:0;right:0;top:0;width:100%;height:auto}
+  .mmMsg{position:absolute;left:18px;right:18px;bottom:16px;display:flex;flex-direction:column;gap:10px;z-index:2}
+  .mmMsg .st{font-family:var(--mono);font-size:14px;letter-spacing:.1em;color:var(--y)}
+  .mmMsg .tx{font-size:20px;line-height:1.4;color:var(--ink)}
+  .mmMsg .fb{font-size:18px;line-height:1.4;min-height:26px}
+  .mmMsg .fb.bad{color:var(--red)} .mmMsg .fb.good{color:var(--green)}
+  .mmMsg .btn{align-self:flex-start;font-size:17px;padding:8px 16px}
+  #mmSvg .leaf{cursor:pointer} #mmSvg .leaf rect{transition:fill .25s,stroke .25s}
+  #mmSvg .leaf:hover rect{stroke:var(--blue)}
+  #mmSvg .mnode.pick{cursor:pointer} #mmSvg .mnode.pick:hover path{stroke-width:5}
+  #mmSvg .shake{animation:mmshake .4s}
+  @keyframes mmshake{20%,60%{transform:translateX(-6px)}40%,80%{transform:translateX(6px)}}
 </style>
 </head>
 <body>
@@ -776,6 +789,27 @@ EEEEEE  LLLLLL  IIII  ZZZZZZZ  AA   AA</pre><div class="log" id="elog"></div><fo
     </div>
   </section>
 
+  <!-- minimax -->
+  <section class="slide" data-id="minimax">
+    <div class="two wide-r">
+      <div class="stack">
+        <h2 class="rise" style="--i:0"><span class="n">THE ALGORITHM</span>Minimax</h2>
+        <p class="rise" style="--i:1">How a computer picks a move in two-player games like tic-tac-toe and chess: look ahead, and assume your opponent plays their best.</p>
+        <ol class="num rise" style="--i:2">
+          <li>Score the possible outcomes (the numbers at the bottom)</li>
+          <li>Your opponent, <b style="color:var(--blue)">MIN</b>, will pick the <b>lowest</b> score for you</li>
+          <li>You, <b class="y">MAX</b>, pick the move whose worst case is the <b>highest</b></li>
+        </ol>
+        <div class="callout rise" style="--i:3">Real games have millions of branches. The computer does exactly this, just much faster.</div>
+        <a class="linkchip rise" style="--i:4" href="https://neumont-gamedev.github.io/posts/ai-minimax/" target="_blank" rel="noopener">neumont-gamedev.github.io/posts/ai-minimax</a>
+      </div>
+      <div class="stage-box rise" style="--i:2" id="mmBox">
+        <svg id="mmSvg" viewBox="0 0 760 520"></svg>
+        <div class="mmMsg" id="mmMsg"></div>
+      </div>
+    </div>
+  </section>
+
   <!-- tic tac toe -->
   <section class="slide" data-id="ttt">
     <div class="two" style="grid-template-columns:1fr 560px">
@@ -790,23 +824,6 @@ EEEEEE  LLLLLL  IIII  ZZZZZZZ  AA   AA</pre><div class="log" id="elog"></div><fo
     </div>
   </section>
 
-  <!-- minimax -->
-  <section class="slide" data-id="minimax">
-    <div class="two wide-r">
-      <div class="stack">
-        <h2 class="rise" style="--i:0"><span class="n">THE ALGORITHM</span>Minimax</h2>
-        <p class="rise" style="--i:1">Used in two-player games like chess and tic-tac-toe.</p>
-        <ol class="num rise" style="--i:2">
-          <li>Simulate every possible move and reply</li>
-          <li>Score the end positions</li>
-          <li>Assume both sides play their best: <b class="y">MAX</b> picks the highest score, <b style="color:var(--blue)">MIN</b> the lowest</li>
-          <li>Choose the move with the best guaranteed outcome</li>
-        </ol>
-        <a class="linkchip rise" style="--i:3" href="https://neumont-gamedev.github.io/posts/ai-minimax/" target="_blank" rel="noopener">neumont-gamedev.github.io/posts/ai-minimax</a>
-      </div>
-      <div class="stage-box rise" style="--i:2"><canvas id="mmTree"></canvas><div class="cap">scores flow up from the leaves</div></div>
-    </div>
-  </section>
 
   <!-- deep blue -->
   <section class="slide" data-id="deepblue">

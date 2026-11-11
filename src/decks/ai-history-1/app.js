@@ -869,31 +869,64 @@ document.querySelectorAll(".slide.tl").forEach(sl=>{
   A.ttt={ enter(){} };
 })();
 
-/* ---------- minimax tree ---------- */
+/* ---------- minimax: practice it by hand ---------- */
 (() => {
-  const cv=$("mmTree"); let vals=[], t=0;
-  const regen=()=>{ vals=Array.from({length:9},()=>Math.floor(rnd(-9,10))); };
-  A.minimax={ enter(){ regen(); t=0; }, tick(dt){
-    t+=dt; if(t>10500){ t=0; regen(); }
-    const s=t/1000, x=ctxOf(cv), W=cv.offsetWidth, H=cv.offsetHeight;
-    x.fillStyle="#0d0d0f"; x.fillRect(0,0,W,H);
-    const root={x:W/2,y:90}, mins=[0,1,2].map(i=>({x:W*(.2+i*.3),y:H*.42})), leaves=vals.map((v,i)=>({x:W*(.2+Math.floor(i/3)*.3)+(i%3-1)*W*.085,y:H*.78,v}));
-    const minV=[0,1,2].map(g=>Math.min(...vals.slice(g*3,g*3+3))), minIdx=[0,1,2].map(g=>g*3+vals.slice(g*3,g*3+3).indexOf(minV[g]));
-    const maxV=Math.max(...minV), maxIdx=minV.indexOf(maxV);
-    const leafOn=i=>s>.3+i*.17, minOn=g=>s>2.2+g*.8, rootOn=s>4.8;
-    const edge=(a,b,on,col)=>{ x.strokeStyle=on?col:"#2e2e35"; x.lineWidth=on?4:2; x.beginPath(); x.moveTo(a.x,a.y); x.lineTo(b.x,b.y); x.stroke(); };
-    mins.forEach((m,g)=>edge(root,m,rootOn&&g===maxIdx,Y));
-    leaves.forEach((l,i)=>{ const g=Math.floor(i/3); edge(mins[g],l,minOn(g)&&i===minIdx[g],BLUE); });
-    const tri=(p,up,col,fill,label)=>{ const r=34; x.beginPath(); if(up){ x.moveTo(p.x,p.y-r); x.lineTo(p.x+r*1.05,p.y+r*.7); x.lineTo(p.x-r*1.05,p.y+r*.7); } else { x.moveTo(p.x,p.y+r); x.lineTo(p.x+r*1.05,p.y-r*.7); x.lineTo(p.x-r*1.05,p.y-r*.7); } x.closePath();
-      x.fillStyle=fill?col:"#1c1c20"; x.fill(); x.strokeStyle=col; x.lineWidth=2.5; x.stroke();
-      if(label!==null){ x.fillStyle=fill?"#121214":INK; x.font="700 20px 'JetBrains Mono',Consolas,monospace"; x.textAlign="center"; x.fillText(label,p.x,p.y+(up?12:-2)); } };
-    tri(root,true,Y,rootOn,rootOn?maxV:null);
-    mins.forEach((m,g)=>tri(m,false,BLUE,minOn(g),minOn(g)?minV[g]:null));
-    leaves.forEach((l,i)=>{ const on=leafOn(i), w=46; x.fillStyle=on?"#24242a":"#151518"; x.strokeStyle=on?MUTE:"#2e2e35"; x.lineWidth=2; x.beginPath(); x.roundRect(l.x-w/2,l.y-w/2,w,w,8); x.fill(); x.stroke();
-      if(on){ x.fillStyle=INK; x.font="600 19px 'JetBrains Mono',Consolas,monospace"; x.textAlign="center"; x.fillText(l.v,l.x,l.y+7); } });
-    x.font="15px 'JetBrains Mono',Consolas,monospace"; x.textAlign="left"; x.fillStyle=Y; x.fillText("MAX · my move",24,root.y+6); x.fillStyle=BLUE; x.fillText("MIN · their reply",24,mins[0].y-50); x.fillStyle=MUTE; x.fillText("scores",24,leaves[0].y+56);
-    if(rootOn){ x.fillStyle=Y; x.font="600 18px 'JetBrains Mono',Consolas,monospace"; x.textAlign="center"; x.fillText(`best move → guarantees ${maxV}`,mins[maxIdx].x,mins[maxIdx].y-58); }
-  } };
+  const svg=$("mmSvg"), msg=$("mmMsg");
+  const ROOT={x:380,y:70}, MINS=[0,1,2].map(i=>({x:140+i*240,y:200})), LEAF_Y=330;
+  let vals, mins, best, stage, done;
+  // deal a tree whose biggest number is a trap: it sits in a branch the opponent would answer badly
+  function deal(){
+    for(;;){
+      vals=Array.from({length:9},()=>1+Math.floor(Math.random()*9));
+      mins=[0,1,2].map(g=>Math.min(...vals.slice(g*3,g*3+3)));
+      const top=Math.max(...mins); best=mins.indexOf(top);
+      const bigLeaf=vals.indexOf(Math.max(...vals)), trapGroup=Math.floor(bigLeaf/3);
+      if(mins.filter(m=>m===top).length===1 && trapGroup!==best && Math.max(...vals)-mins[trapGroup]>=4 && vals.filter(v=>v===Math.max(...vals)).length===1) break;
+    }
+    stage="min"; done=[null,null,null]; draw(); say();
+  }
+  function tri(x,y,up,cls){ const r=34; return up?`M${x} ${y-r} L${x+r*1.05} ${y+r*.7} L${x-r*1.05} ${y+r*.7}Z`:`M${x} ${y+r} L${x+r*1.05} ${y-r*.7} L${x-r*1.05} ${y-r*.7}Z`; }
+  function draw(){
+    const L=i=>({x:MINS[Math.floor(i/3)].x+(i%3-1)*72,y:LEAF_Y});
+    let s=`<text x="20" y="${ROOT.y+6}" fill="${Y}" font-family="JetBrains Mono, Consolas, monospace" font-size="15">MAX · you</text>
+           <text x="20" y="${MINS[0].y-46}" fill="${BLUE}" font-family="JetBrains Mono, Consolas, monospace" font-size="15">MIN · opponent</text>`;
+    MINS.forEach((m,g)=>{ const on=stage==="done"&&g===best; s+=`<line x1="${ROOT.x}" y1="${ROOT.y+24}" x2="${m.x}" y2="${m.y-24}" stroke="${on?Y:"#2e2e35"}" stroke-width="${on?5:2}"/>`; });
+    vals.forEach((v,i)=>{ const g=Math.floor(i/3), p=L(i), on=done[g]===i; s+=`<line x1="${MINS[g].x}" y1="${MINS[g].y+24}" x2="${p.x}" y2="${p.y-24}" stroke="${on?BLUE:"#2e2e35"}" stroke-width="${on?4:2}"/>`; });
+    s+=`<g><path d="${tri(ROOT.x,ROOT.y,true)}" fill="${stage==="done"?Y:"#1c1c20"}" stroke="${Y}" stroke-width="2.5"/>${stage==="done"?`<text x="${ROOT.x}" y="${ROOT.y+12}" text-anchor="middle" font-family="JetBrains Mono, Consolas, monospace" font-weight="700" font-size="20" fill="#121214">${mins[best]}</text>`:""}</g>`;
+    MINS.forEach((m,g)=>{ const filled=done[g]!==null; s+=`<g class="mnode ${stage==="max"?"pick":""}" data-g="${g}"><path d="${tri(m.x,m.y,false)}" fill="${filled?BLUE:"#1c1c20"}" stroke="${BLUE}" stroke-width="2.5"/>${filled?`<text x="${m.x}" y="${m.y+4}" text-anchor="middle" font-family="JetBrains Mono, Consolas, monospace" font-weight="700" font-size="20" fill="#121214">${mins[g]}</text>`:""}</g>`; });
+    vals.forEach((v,i)=>{ const p=L(i), g=Math.floor(i/3), on=done[g]===i;
+      s+=`<g class="leaf" data-i="${i}"><rect x="${p.x-24}" y="${p.y-24}" width="48" height="48" rx="9" fill="${on?"rgba(106,184,255,.25)":"#24242a"}" stroke="${on?BLUE:MUTE}" stroke-width="2"/><text x="${p.x}" y="${p.y+8}" text-anchor="middle" font-family="JetBrains Mono, Consolas, monospace" font-weight="600" font-size="21" fill="${INK}">${v}</text></g>`; });
+    svg.innerHTML=s;
+    svg.querySelectorAll(".leaf").forEach(el=>el.onclick=()=>pickLeaf(+el.dataset.i,el));
+    svg.querySelectorAll(".mnode").forEach(el=>el.onclick=()=>pickMove(+el.dataset.g,el));
+  }
+  function say(fb="",cls=""){
+    const left=done.filter(d=>d===null).length;
+    const st= stage==="min"?`STEP 1 · THEIR REPLY`: stage==="max"?`STEP 2 · YOUR MOVE`:`SOLVED`;
+    const tx= stage==="min"?`Your opponent always picks the <b>lowest</b> score. Click the lowest number in each group. (${3-left} of 3)`
+            : stage==="max"?`Which move should you make? Click the blue triangle with the <b>highest</b> guaranteed score.`
+            : `That’s minimax: assume the opponent’s best reply, then pick the move with the best worst case.`;
+    msg.innerHTML=`<div class="st">${st}</div><div class="tx">${tx}</div><div class="fb ${cls}">${fb}</div>`+(stage==="done"?`<button class="btn on" id="mmNew">New tree ↻</button>`:"");
+    const n=$("mmNew"); if(n) n.onclick=deal;
+  }
+  function shake(el){ el.classList.remove("shake"); void el.getBBox(); el.classList.add("shake"); }
+  function pickLeaf(i,el){
+    if(stage!=="min") return; const g=Math.floor(i/3); if(done[g]!==null) return;
+    if(vals[i]!==mins[g]){ shake(el); say(`Not quite. Your opponent wants the <b>lowest</b> score in that group.`,"bad"); return; }
+    done[g]=i;
+    if(done.every(d=>d!==null)) stage="max";
+    draw(); say(stage==="max"?`✓ Now you know what your opponent will do in each case.`:`✓ They’d answer with ${mins[g]}.`,"good");
+  }
+  function pickMove(g,el){
+    if(stage!=="max") return;
+    if(g===best){ stage="done"; draw(); say(`✓ Best move! Even with their best reply, you’re guaranteed <b>${mins[g]}</b>.`,"good"); return; }
+    shake(el);
+    const grp=vals.slice(g*3,g*3+3), big=Math.max(...vals);
+    if(grp.includes(big)) say(`Tempting! That branch has a ${big}, but your opponent would answer with <b>${mins[g]}</b>. Try again.`,"bad");
+    else say(`That only guarantees ${mins[g]}. Is there a higher one?`,"bad");
+  }
+  A.minimax={ enter(){ if(!vals||stage==="done") deal(); } };
+  deal();
 })();
 
 /* ---------- deep blue chess ---------- */
