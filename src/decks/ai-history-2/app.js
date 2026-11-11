@@ -793,6 +793,64 @@ document.querySelectorAll(".slide.tl").forEach(sl=>{
     tick(dt,now){ if(now-last>480){ last=now; if(stones.length>150){ fade-=.05; if(fade<=0) reset(); } else place(); } draw(now); } };
 })();
 
+/* ---------- play go: two players, one board ---------- */
+(() => {
+  const cv=$("goCv"), N=9, KOMI=6.5, STAR=[[2,2],[6,2],[4,4],[2,6],[6,6]];
+  let bd, turn, caps, seen, stack, passes, last, over, hover=null, msg="";
+  const nb=i=>{ const x=i%N, y=(i/N)|0, o=[]; if(x>0) o.push(i-1); if(x<N-1) o.push(i+1); if(y>0) o.push(i-N); if(y<N-1) o.push(i+N); return o; };
+  function group(b,i){ const c=b[i], g=new Set([i]), libs=new Set(), q=[i];
+    while(q.length){ const k=q.pop(); for(const n of nb(k)){ if(b[n]===0) libs.add(n); else if(b[n]===c&&!g.has(n)){ g.add(n); q.push(n); } } }
+    return {g,libs}; }
+  function reset(){ bd=new Int8Array(N*N); turn=1; caps=[0,0,0]; seen=new Set([bd.join("")]); stack=[]; passes=0; last=-1; over=null; msg="Black to play. Click an intersection."; status(); }
+  const name=c=>c===1?"Black":"White";
+  function play(i){
+    if(over) return; if(bd[i]){ msg="That point is taken."; status(); return; }
+    const b=bd.slice(), opp=3-turn; b[i]=turn; let got=0;
+    for(const n of nb(i)) if(b[n]===opp){ const {g,libs}=group(b,n); if(!libs.size){ for(const k of g){ b[k]=0; got++; } } }
+    if(!group(b,i).libs.size){ msg="Not allowed: your stone would have no liberties."; status(); return; }
+    const key=b.join(""); if(seen.has(key)){ msg="Not allowed: ko. That repeats an earlier board. Play somewhere else first."; status(); return; }
+    stack.push({bd:bd.slice(),turn,caps:caps.slice(),passes,last,key:null}); stack[stack.length-1].added=key;
+    bd=b; seen.add(key); caps[turn]+=got; passes=0; last=i; turn=opp;
+    msg=got?`${name(3-turn)} captured ${got} stone${got>1?"s":""}!`:`${name(turn)} to play.`; status(); }
+  function pass(){ if(over) return; stack.push({bd:bd.slice(),turn,caps:caps.slice(),passes,last,added:null}); passes++; last=-1; turn=3-turn;
+    if(passes>=2){ over=score(); msg=`Game over. Black ${over.b} · White ${over.w} (incl. ${KOMI} komi). <b>${over.b>over.w?"Black":"White"} wins!</b>`; }
+    else msg=`${name(3-turn)} passed. ${name(turn)} to play (pass too to end the game).`; status(); }
+  function undo(){ const s=stack.pop(); if(!s) return; if(s.added) seen.delete(s.added); bd=s.bd; turn=s.turn; caps=s.caps; passes=s.passes; last=s.last; over=null; msg=`${name(turn)} to play.`; status(); }
+  function score(){ const own=new Int8Array(N*N), visited=new Uint8Array(N*N); let b=0,w=0;
+    for(let i=0;i<N*N;i++){ if(bd[i]===1) b++; else if(bd[i]===2) w++; else if(!visited[i]){ const reg=[i], q=[i]; const border=new Set(); visited[i]=1;
+      while(q.length){ const k=q.pop(); for(const n of nb(k)){ if(bd[n]===0&&!visited[n]){ visited[n]=1; reg.push(n); q.push(n); } else if(bd[n]) border.add(bd[n]); } }
+      if(border.size===1){ const c=[...border][0]; for(const k of reg) own[k]=c; if(c===1) b+=reg.length; else w+=reg.length; } } }
+    return {b,w:w+KOMI,own}; }
+  function status(){ $("goTurn").innerHTML=over?"Final score":`<i style="background:${turn===1?"#111":"#f2f0ea"}"></i>${name(turn)} to play`;
+    $("goMsg").innerHTML=`${msg}<br><span class="mono" style="font-size:15px">captured · Black ${caps[1]} · White ${caps[2]}</span>`; }
+  let geo=null;
+  function cell(e){ const p=ptr(e,cv), i=Math.round((p.x-geo.ox)/geo.g), j=Math.round((p.y-geo.oy)/geo.g); return i>=0&&j>=0&&i<N&&j<N?j*N+i:null; }
+  cv.addEventListener("pointermove",e=>{ if(geo) hover=cell(e); }); cv.addEventListener("pointerleave",()=>hover=null);
+  cv.addEventListener("pointerdown",e=>{ if(!geo) return; const c=cell(e); if(c!=null) play(c); });
+  $("goPass").onclick=pass; $("goUndo").onclick=undo; $("goNew").onclick=reset;
+  function stone(x,cx,cy,r,c,alpha=1){ x.globalAlpha=alpha; const gr=x.createRadialGradient(cx-r*.35,cy-r*.35,r*.1,cx,cy,r);
+    if(c===1){ gr.addColorStop(0,"#555"); gr.addColorStop(1,"#0b0b0b"); } else { gr.addColorStop(0,"#fff"); gr.addColorStop(1,"#c9c6bd"); }
+    x.fillStyle=gr; x.beginPath(); x.arc(cx,cy,r,0,7); x.fill(); x.globalAlpha=1; }
+  function draw(){
+    const x=ctxOf(cv), W=cv.offsetWidth, H=cv.offsetHeight, S=Math.min(W,H)-90, g=S/(N-1), ox=(W-S)/2, oy=(H-S)/2; geo={g,ox,oy}; x.clearRect(0,0,W,H);
+    x.strokeStyle="rgba(40,26,8,.85)"; x.lineWidth=1.5;
+    for(let i=0;i<N;i++){ x.beginPath(); x.moveTo(ox,oy+i*g); x.lineTo(ox+S,oy+i*g); x.moveTo(ox+i*g,oy); x.lineTo(ox+i*g,oy+S); x.stroke(); }
+    x.fillStyle="rgba(40,26,8,.9)"; for(const [a,b] of STAR){ x.beginPath(); x.arc(ox+a*g,oy+b*g,5,0,7); x.fill(); }
+    const r=g*.47;
+    // liberties of the hovered group
+    let libs=null; if(hover!=null&&bd[hover]&&!over) libs=group(bd,hover);
+    for(let i=0;i<N*N;i++){ const cx=ox+(i%N)*g, cy=oy+((i/N)|0)*g;
+      if(bd[i]){ stone(x,cx,cy,r,bd[i]); if(libs&&libs.g.has(i)){ x.strokeStyle="#ffc20e"; x.lineWidth=3; x.beginPath(); x.arc(cx,cy,r-1,0,7); x.stroke(); } }
+      if(i===last&&bd[i]){ x.strokeStyle=bd[i]===1?"#fff":"#000"; x.lineWidth=2.5; x.beginPath(); x.arc(cx,cy,r*.42,0,7); x.stroke(); }
+      if(over&&!bd[i]&&over.own[i]){ x.fillStyle=over.own[i]===1?"#111":"#f2f0ea"; x.fillRect(cx-g*.15,cy-g*.15,g*.3,g*.3); } }
+    if(libs){ for(const k of libs.libs){ const cx=ox+(k%N)*g, cy=oy+((k/N)|0)*g; x.fillStyle="rgba(46,160,90,.9)"; x.beginPath(); x.arc(cx,cy,9,0,7); x.fill(); }
+      x.fillStyle="rgba(20,14,4,.85)"; x.font=`700 18px ${SANS}`; x.textAlign="center"; x.fillText(`${libs.libs.size} ${libs.libs.size===1?"liberty (in danger!)":"liberties"}`,W/2,oy-24); x.textAlign="left"; }
+    else if(hover!=null&&!bd[hover]&&!over){ stone(x,ox+(hover%N)*g,oy+((hover/N)|0)*g,r,turn,.45); }
+  }
+  reset();
+  A.gogame={ enter(){}, tick(){ draw(); } };
+})();
+
 /* ---------- reinforcement learning: q-learning in a grid world ---------- */
 (() => {
   const cv=$("rlCv"), cap=$("rlCap"), C=8, R=6, START=[0,5], GOAL=[7,0];

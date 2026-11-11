@@ -305,6 +305,13 @@
   .agT{font-size:19px;line-height:1.4;color:#d6d3cb;min-height:54px}
   .agT b{color:var(--y)}
 
+  /* play go */
+  #goCv{cursor:pointer}
+  .goRules li{font-size:19px}
+  .goStat{padding:14px 18px;display:flex;flex-direction:column;gap:6px}
+  .goTurn{font-size:24px;font-weight:700;display:flex;align-items:center;gap:10px}
+  .goTurn i{display:inline-block;width:22px;height:22px;border-radius:50%;border:1px solid #888}
+
   /* reinforcement learning */
   #rlCv{cursor:pointer}
   .rlTop{position:absolute;left:14px;right:14px;top:12px;display:flex;gap:8px;align-items:center;z-index:2}
@@ -697,6 +704,25 @@
           </div>
           <div class="agT" id="agT"></div>
         </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- play go -->
+  <section class="slide" data-id="gogame">
+    <div class="two" style="grid-template-columns:auto 1fr;gap:50px">
+      <div class="stage-box rise" style="--i:1;width:700px;height:700px;background:#d9a94f;border-color:#8a6a2c"><canvas id="goCv"></canvas></div>
+      <div class="stack" style="gap:14px">
+        <h2 class="rise" style="--i:0"><span class="n">Your turn</span>Play <span class="y">Go</span> (9 × 9)</h2>
+        <ol class="num rise goRules" style="--i:1">
+          <li>Take turns placing a stone on an <b>empty intersection</b>. Black goes first.</li>
+          <li>The empty points next to a group are its <b>liberties</b>. Take away all of them and the group is <b>captured</b>.</li>
+          <li>You can’t play where your stones would have no liberties, unless that move captures. You also can’t repeat the board from the move before (<b>ko</b>).</li>
+          <li>When both players pass, count <b>your stones + the empty points you surround</b>. White gets 6.5 bonus points (<i>komi</i>) for going second.</li>
+        </ol>
+        <div class="card goStat rise" style="--i:2"><div id="goTurn" class="goTurn"></div><div id="goMsg" class="hint"></div></div>
+        <div class="ctl rise" style="--i:3"><button class="btn" id="goPass">Pass</button><button class="btn" id="goUndo">Undo</button><button class="btn" id="goNew">New game</button></div>
+        <div class="ctl rise" style="--i:4"><a class="linkchip" href="https://learn-go.netlify.app/" target="_blank" rel="noopener">Learn Go step by step</a><a class="linkchip" href="https://online-go.com/" target="_blank" rel="noopener">Play online (OGS)</a></div>
       </div>
     </div>
   </section>
