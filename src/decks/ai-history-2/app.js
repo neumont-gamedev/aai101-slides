@@ -222,8 +222,9 @@ document.querySelectorAll(".slide.tl").forEach(sl=>{
     ["Deep Blue","ai",124,432,"Deep Blue searched millions of moves with a scoring function people tuned. Smart, but not learned from data."],
     ["Minimax","ai",152,530,"Minimax (like our tic-tac-toe player) just searches the game tree. No data, no learning."],
     ["Roomba (2002)","ai",290,165,"Roomba’s bump-and-turn behaviors were programmed by engineers."],
-    ["Perceptron","ml",310,310,"The perceptron learns its weights from labeled examples: machine learning, but only one layer."],
-    ["Our tree","ai",612,190,"The decision tree we built in Part 1 used rules we wrote ourselves, so it’s rule-based AI, like an expert system."],
+    ["Perceptron","ml",258,402,"The perceptron learns its weights from labeled examples: machine learning, but only one layer."],
+    ["Decision tree","ai",626,184,"The decision tree we built in Part 1 used rules we wrote ourselves, so it’s rule-based AI, like an expert system."],
+    ["Linear regression","ml",322,286,"It learns the best straight line through example data, then uses that line to predict a number, like a house’s price from its size."],
     ["Learned decision trees","ml",560,300,"Algorithms like ID3 and CART build the tree automatically from example data. Same kind of tree, but learned: that’s machine learning."],
     ["?","dl",440,430,null],["?","dl",510,480,null],["?","dl",450,540,null],
   ];
