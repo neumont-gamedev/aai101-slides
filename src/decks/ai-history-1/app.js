@@ -279,19 +279,25 @@ const A={};
     for(let k=0;k<4;k++) svgEl("line",{x1:0,y1:0,x2:Math.cos(k*Math.PI/2)*(ri-6),y2:Math.sin(k*Math.PI/2)*(ri-6),stroke:Y,"stroke-width":2,opacity:.4},g); return g; };
   const place=(g,x,y,ang)=>g.setAttribute("transform",`translate(${x} ${y}) rotate(${ang*180/Math.PI})`);
 
-  // --- machine 1: pecking bird (cam + follower) ---
+  // --- spinner: a windmill. a small gear multiplies the crank's speed; a belt carries it up to the sails ---
   const m1=svgEl("g",{},svg);
-  const b1g2=gear(m1,10,62,48,13);
-  svgEl("rect",{x:300,y:262,width:270,height:12,rx:4,fill:"#3a3a42"},m1);
-  const b1rod=svgEl("line",{class:"rod"},m1), b1pin=svgEl("circle",{r:8,class:"pin"},m1);
-  const bird=svgEl("g",{},m1);
-  svgEl("ellipse",{cx:420,cy:222,rx:62,ry:36,fill:Y},bird);
-  svgEl("path",{d:"M360 212 L318 194 L332 228Z",fill:"#d9a20a"},bird);
-  svgEl("line",{x1:412,y1:256,x2:412,y2:263,stroke:INK,"stroke-width":4},bird); svgEl("line",{x1:432,y1:256,x2:432,y2:263,stroke:INK,"stroke-width":4},bird);
-  const b1head=svgEl("g",{},bird);
-  svgEl("circle",{cx:492,cy:194,r:26,fill:Y},b1head); svgEl("circle",{cx:500,cy:188,r:5,fill:"#121214"},b1head);
-  svgEl("path",{d:"M514 190 L546 198 L514 206Z",fill:"#ff8a1f"},b1head);
-  const seeds=[530,548,560].map(x=>svgEl("circle",{cx:x,cy:258,r:3.5,fill:"#c9a06a"},m1));
+  const PIN={x:298,y:440}, HUB={x:470,y:245}, PR=24;
+  const w1g2=gear(m1,6,40,28,9);
+  svgEl("rect",{x:350,y:398,width:250,height:12,rx:4,fill:"#3a3a42"},m1);
+  svgEl("path",{d:`M${HUB.x-26} 398 L${HUB.x-12} ${HUB.y+18} L${HUB.x+12} ${HUB.y+18} L${HUB.x+26} 398Z`,fill:"#2f2a22",stroke:"#5a5040","stroke-width":2},m1);
+  const beltA=svgEl("line",{stroke:"#77746d","stroke-width":4,"stroke-dasharray":"10 8"},m1), beltB=svgEl("line",{stroke:"#77746d","stroke-width":4,"stroke-dasharray":"10 8"},m1);
+  const pulleyP=svgEl("circle",{cx:PIN.x,cy:PIN.y,r:PR,fill:"none",stroke:"#77746d","stroke-width":3},m1);
+  const pulleyH=svgEl("circle",{cx:HUB.x,cy:HUB.y,r:PR,fill:"#1c1c20",stroke:"#77746d","stroke-width":3},m1);
+  const sails=svgEl("g",{},m1);
+  for(let k=0;k<4;k++){ const g=svgEl("g",{transform:`rotate(${k*90})`},sails);
+    svgEl("line",{x1:0,y1:0,x2:0,y2:-122,stroke:INK,"stroke-width":5,"stroke-linecap":"round"},g);
+    svgEl("rect",{x:2,y:-120,width:30,height:94,rx:3,fill:"rgba(255,194,14,.22)",stroke:Y,"stroke-width":2},g);
+    for(let r=1;r<5;r++) svgEl("line",{x1:2,y1:-120+r*18.8,x2:32,y2:-120+r*18.8,stroke:Y,"stroke-width":1,opacity:.5},g); }
+  svgEl("circle",{cx:0,cy:0,r:12,fill:INK},sails);
+  const w1ratio=svgEl("text",{x:362,y:446,fill:MUTE,"font-family":"JetBrains Mono, Consolas, monospace","font-size":15},m1);
+  // belt: two straight runs between the pulleys (equal radius, so the runs are parallel)
+  (()=>{ const dx=HUB.x-PIN.x, dy=HUB.y-PIN.y, d=Math.hypot(dx,dy), nx=-dy/d*PR, ny=dx/d*PR;
+    [[beltA,1],[beltB,-1]].forEach(([l,s])=>{ l.setAttribute("x1",PIN.x+nx*s); l.setAttribute("y1",PIN.y+ny*s); l.setAttribute("x2",HUB.x+nx*s); l.setAttribute("y2",HUB.y+ny*s); }); })();
 
   // --- machine 2: drawing machine (two wheels, two arms, one pen) ---
   const m2=svgEl("g",{},svg);
@@ -327,9 +333,9 @@ const A={};
   svgEl("circle",{r:26,fill:"rgba(255,194,14,.18)"},crank); svgEl("circle",{r:15,fill:Y,stroke:"#121214","stroke-width":3},crank);
 
   const M=[
-    {g:m1,name:"Pecking bird",note:"A cam turns the crank’s rotation into a peck.",speed:.0011},
-    {g:m2,name:"Drawing machine",note:"Inspired by Jaquet-Droz’s Writer (1770s): two turning wheels guide one pen.",speed:.0024},
-    {g:m3,name:"Digesting Duck",note:"Vaucanson, 1739: it flapped, ate, and appeared to digest. (The digestion was faked.)",speed:.0013},
+    {key:"duck",g:m3,name:"Digesting Duck",note:"Vaucanson, 1739: it flapped, ate, and appeared to digest. (The digestion was faked.)",speed:.0013},
+    {key:"spin",g:m1,name:"Windmill",note:"Gears multiply speed: one slow turn of the crank spins the sails almost 3 times.",speed:.0009},
+    {key:"draw",g:m2,name:"Drawing machine",note:"Inspired by Jaquet-Droz’s Writer (1770s): two turning wheels guide one pen.",speed:.0024},
   ];
   let mi=0, a=0, auto=true, drag=null;
   const btn=$("amAuto"), dots=$("amDots");
@@ -355,13 +361,13 @@ const A={};
     const hx=D.x+Math.cos(a)*74, hy=D.y+Math.sin(a)*74;
     crankArm.setAttribute("x1",D.x); crankArm.setAttribute("y1",D.y); crankArm.setAttribute("x2",hx); crankArm.setAttribute("y2",hy);
     crank.setAttribute("transform",`translate(${hx} ${hy})`);
-    if(mi===0){
-      const g2=-a*16/10+Math.PI/10; place(b1g2,318,440,g2);
-      const px=318+Math.cos(g2)*40, py=440+Math.sin(g2)*40; b1pin.setAttribute("cx",px); b1pin.setAttribute("cy",py);
-      b1rod.setAttribute("x1",px); b1rod.setAttribute("y1",py); b1rod.setAttribute("x2",470); b1rod.setAttribute("y2",274+Math.sin(g2)*10);
-      const peck=Math.max(0,Math.sin(g2))*38; b1head.setAttribute("transform",`rotate(${peck} 470 210)`);
-      seeds.forEach((sd,k)=>sd.style.opacity=peck>30&&k===((Math.floor(-a*16/10/(2*Math.PI))%3+3)%3)?.25:1);
-    } else if(mi===1){
+    const key=M[mi].key;
+    if(key==="spin"){
+      const g2=-a*16/6+Math.PI/6; place(w1g2,PIN.x,PIN.y,g2);
+      sails.setAttribute("transform",`translate(${HUB.x} ${HUB.y}) rotate(${g2*180/Math.PI})`);
+      const off=(-g2*PR)%18; beltA.setAttribute("stroke-dashoffset",off); beltB.setAttribute("stroke-dashoffset",-off);
+      w1ratio.textContent=`crank ${(a/(2*Math.PI)).toFixed(1)} turns · sails ${(-g2/(2*Math.PI)+1/12).toFixed(1)}`;
+    } else if(key==="draw"){
       const ai=-a*16/6, bi=a*16/13; place(idl,IDL.x,IDL.y,ai); place(whB,WB.x,WB.y,bi);
       const pA={x:D.x+Math.cos(a+Math.PI)*62,y:D.y+Math.sin(a+Math.PI)*62}, pB={x:WB.x+Math.cos(bi)*52,y:WB.y+Math.sin(bi)*52};
       const P=circleX(pA,pB,L);
@@ -382,7 +388,7 @@ const A={};
     enter(){ setAuto(true); show(mi); },
     tick(dt){
       if(auto) a+=dt*M[mi].speed;
-      if(mi===2) pellets.forEach(p=>{ if(p.y<292){ p.v+=dt*.002; p.y=Math.min(292,p.y+p.v*dt); p.x+= (545-p.x)*Math.min(1,dt*.004); p.el.setAttribute("cy",p.y); p.el.setAttribute("cx",p.x); } });
+      if(M[mi].key==="duck") pellets.forEach(p=>{ if(p.y<292){ p.v+=dt*.002; p.y=Math.min(292,p.y+p.v*dt); p.x+= (545-p.x)*Math.min(1,dt*.004); p.el.setAttribute("cy",p.y); p.el.setAttribute("cx",p.x); } });
       render();
     }
   };
