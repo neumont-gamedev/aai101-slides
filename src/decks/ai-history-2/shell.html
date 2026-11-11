@@ -185,7 +185,11 @@
   .chip:hover{border-color:var(--y)}
   .chip.sel{background:var(--y);color:var(--bg);border-color:var(--y)}
   .chip.used{opacity:0;pointer-events:none;position:absolute}
-  .nestPlaced{position:absolute;transform:translate(-50%,-50%);font:500 15px var(--sans);color:var(--bg);background:var(--y);border-radius:999px;padding:4px 11px;white-space:nowrap;animation:pop .45s cubic-bezier(.3,1.5,.5,1);pointer-events:none}
+  .nestPlaced{position:absolute;transform:translate(-50%,-50%);font:500 16px var(--sans);color:var(--bg);background:var(--y);border-radius:999px;padding:5px 12px;white-space:nowrap;animation:pop .45s cubic-bezier(.3,1.5,.5,1) both;pointer-events:auto;cursor:pointer;border:2px solid transparent}
+  .nestPlaced:hover,.nestPlaced.sel{border-color:#fff}
+  .nestPlaced.q{background:transparent!important;color:var(--green);border:2px dashed var(--green);font-weight:700;animation:pop .45s cubic-bezier(.3,1.5,.5,1) both,qp 1.6s ease-in-out .5s infinite}
+  @keyframes qp{50%{box-shadow:0 0 0 6px rgba(95,214,138,.18)}}
+  .def{opacity:.45} .def.hi{opacity:1}
   @keyframes pop{0%{transform:translate(-50%,-50%) scale(.3);opacity:0}100%{transform:translate(-50%,-50%) scale(1);opacity:1}}
   .fb{font-size:18px;line-height:1.4;min-height:50px}
   .fb.good{color:var(--green)} .fb.bad{color:var(--red)}
@@ -440,7 +444,7 @@
   <section class="slide tl" data-id="tl-2" data-upto="3"></section>
 
   <!-- ai > ml > dl -->
-  <section class="slide" data-id="nest">
+  <section class="slide" data-id="nest" style="cursor:pointer">
     <div class="two" style="grid-template-columns:1fr .95fr;gap:50px">
       <div class="stage-box rise" style="--i:1;height:680px">
         <svg id="nestSvg" viewBox="0 0 760 680"></svg>
@@ -449,15 +453,11 @@
       <div class="stack" style="gap:16px">
         <h2 class="rise" style="--i:0"><span class="n">Words you’ll hear a lot</span>AI ⊃ ML ⊃ <span class="y">DL</span></h2>
         <div class="defs rise" style="--i:2">
-          <div class="def" data-k="ai"><b class="y">ARTIFICIAL INTELLIGENCE</b><p>The broad field: machines doing tasks that usually need human intelligence.</p></div>
+          <div class="def" data-k="ai"><b class="y">ARTIFICIAL INTELLIGENCE</b><p>The broad field: machines doing tasks that usually need human intelligence. The rules can be <b>written by people</b>.</p></div>
           <div class="def" data-k="ml"><b style="color:var(--blue)">MACHINE LEARNING</b><p>AI that <b>learns patterns from data</b> instead of being explicitly programmed.</p></div>
-          <div class="def" data-k="dl"><b style="color:var(--green)">DEEP LEARNING</b><p>Machine learning with neural networks that have <b>many layers</b>.</p></div>
+          <div class="def" data-k="dl"><b style="color:var(--green)">DEEP LEARNING</b><p>Machine learning with neural networks that have <b>many layers</b> and learn their own features from raw pixels and words.</p></div>
         </div>
-        <div class="rise" style="--i:3">
-          <div class="eyebrow" style="font-size:15px;margin-bottom:10px">Sort it · pick a chip, then click the right circle</div>
-          <div class="chips" id="nestChips"></div>
-        </div>
-        <div class="fb rise" style="--i:4" id="nestFb"></div>
+        <div class="callout rise" style="--i:3" id="nestFb">Where does everything we’ve seen so far fit? Click to fill each circle.</div>
       </div>
     </div>
   </section>

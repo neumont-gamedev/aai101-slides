@@ -206,59 +206,51 @@ document.querySelectorAll(".slide.tl").forEach(sl=>{
   A.robots={ enter(){ show(i); } };
 })();
 
-/* ---------- ai > ml > dl: sort the examples ---------- */
+/* ---------- ai > ml > dl: where does what we know fit? ---------- */
 (() => {
-  const svg=$("nestSvg"), drop=$("nestDrop"), fb=$("nestFb"), chipsEl=$("nestChips");
+  const svg=$("nestSvg"), drop=$("nestDrop"), fb=$("nestFb");
   const RINGS={
-    ai:{cx:380,cy:340,rx:360,ry:325,col:Y,label:"ARTIFICIAL INTELLIGENCE",ly:52},
-    ml:{cx:430,cy:400,rx:255,ry:245,col:BLUE,label:"MACHINE LEARNING",ly:190},
-    dl:{cx:475,cy:470,rx:140,ry:150,col:GREEN,label:"DEEP LEARNING",ly:355},
+    ai:{cx:380,cy:340,rx:360,ry:325,col:Y,label:"ARTIFICIAL INTELLIGENCE",ly:82},
+    ml:{cx:430,cy:400,rx:255,ry:245,col:BLUE,label:"MACHINE LEARNING",ly:218},
+    dl:{cx:475,cy:470,rx:140,ry:150,col:GREEN,label:"DEEP LEARNING",ly:384},
   };
-  // where placed chips sit inside each ring (only in the part not covered by the inner ring)
-  const SLOTS={ai:[[150,230],[110,360],[170,480],[230,590],[250,140]],ml:[[310,300],[300,420],[560,250],[410,250],[300,540]],dl:[[475,410],[475,460],[475,510],[475,560]]};
-  const ITEMS=[ // chip text, ring, short name once placed, explanation
-    ["Deep Blue (1997)","ai","Deep Blue","Deep Blue used hand-written rules and search. Smart, but it didn’t learn from data."],
-    ["MYCIN expert system","ai","MYCIN","MYCIN’s knowledge was typed in by experts as IF-THEN rules. AI, but not machine learning."],
-    ["Pac-Man ghosts","ai","Pac-Man ghosts","Classic game AI is hand-coded rules. No learning from data."],
-    ["Spam filter that learns from what you mark","ml","Spam filter","It learns patterns from examples, so it’s machine learning, but it doesn’t need a deep network."],
-    ["Decision tree learned from data","ml","Learned decision tree","A learned decision tree is classic machine learning, with no neural network."],
-    ["Netflix recommendations","ml","Netflix picks","Recommendations learn from viewing data: machine learning."],
-    ["AlexNet","dl","AlexNet","AlexNet is a neural network with 8 learned layers: deep learning."],
-    ["ChatGPT","dl","ChatGPT","ChatGPT is a huge transformer neural network: deep learning."],
-    ["Face unlock on your phone","dl","Face unlock","Face recognition uses deep convolutional networks: deep learning."],
+  const KEYS=["ai","ml","dl"];
+  // name, ring, x, y, why it belongs there
+  const ITEMS=[
+    ["ELIZA","ai",165,215,"ELIZA matched patterns with rules Weizenbaum wrote by hand. It never learned anything."],
+    ["MYCIN","ai",128,330,"Expert systems like MYCIN and DENDRAL ran on IF-THEN rules typed in by human experts."],
+    ["Deep Blue","ai",124,432,"Deep Blue searched millions of moves with a scoring function people tuned. Smart, but not learned from data."],
+    ["Minimax","ai",152,530,"Minimax (like our tic-tac-toe player) just searches the game tree. No data, no learning."],
+    ["Roomba (2002)","ai",290,165,"Roomba’s bump-and-turn behaviors were programmed by engineers."],
+    ["Perceptron","ml",310,310,"The perceptron learns its weights from labeled examples: machine learning, but only one layer."],
+    ["Decision trees","ml",560,300,"When the computer builds the tree from example data, it’s machine learning."],
+    ["?","dl",440,430,null],["?","dl",510,480,null],["?","dl",450,540,null],
   ];
-  const NAMES={ai:"AI (but not machine learning)",ml:"machine learning (but not deep learning)",dl:"deep learning"};
-  let sel=null, used={ai:0,ml:0,dl:0};
-  for(const k of ["ai","ml","dl"]){ const r=RINGS[k];
-    const g=svgEl("g",{class:"ring","data-k":k},svg);
-    svgEl("ellipse",{cx:r.cx,cy:r.cy,rx:r.rx,ry:r.ry,fill:r.col,"fill-opacity":.06,stroke:r.col,"stroke-width":2.5},g);
-    const t=svgEl("text",{x:r.cx,y:r.ly,"text-anchor":"middle",fill:r.col,"font-size":19,"font-weight":700,"letter-spacing":2.5},g); t.textContent=r.label;
-    g.addEventListener("mouseenter",()=>hi(k)); g.addEventListener("mouseleave",()=>hi(null));
-    g.addEventListener("click",e=>{ e.stopPropagation(); place(k); });
-  }
-  function hi(k){ document.querySelectorAll('[data-id="nest"] .def').forEach(d=>d.classList.toggle("hi",d.dataset.k===k)); }
-  // clicks on the inner ring bubble to the outer ones; stopPropagation above handles the innermost first
-  function place(k){
-    if(!sel){ fb.className="fb"; fb.textContent="Pick a chip first, then click a circle."; return; }
-    const it=ITEMS[+sel.dataset.i];
-    if(it[1]!==k){ fb.className="fb bad"; fb.textContent=`Not quite: “${it[0]}” isn’t ${NAMES[k]}. Try again.`; sel.classList.remove("shake"); void sel.offsetWidth; sel.classList.add("shake"); return; }
-    const [sx,sy]=SLOTS[k][used[k]++%SLOTS[k].length];
-    const el=document.createElement("div"); el.className="nestPlaced"; el.textContent=it[2];
-    if(k==="ml") el.style.background=BLUE; if(k==="dl") el.style.background=GREEN;
-    el.style.left=(sx/760*100)+"%"; el.style.top=(sy/680*100)+"%"; drop.appendChild(el);
-    sel.classList.add("used"); sel.classList.remove("sel"); sel=null;
-    fb.className="fb good"; fb.textContent="✓ "+it[3];
-    if(!chipsEl.querySelector(".chip:not(.used)")) fb.textContent+=" All sorted!";
-  }
-  function build(){
-    drop.innerHTML=""; used={ai:0,ml:0,dl:0}; sel=null; fb.className="fb"; fb.textContent="";
-    const order=ITEMS.map((_,i)=>i).sort(()=>Math.random()-.5);
-    chipsEl.innerHTML=order.map(i=>`<span class="chip" data-i="${i}">${ITEMS[i][0]}</span>`).join("");
-  }
-  chipsEl.onclick=e=>{ const c=e.target.closest(".chip"); if(!c||c.classList.contains("used")) return;
-    if(sel) sel.classList.remove("sel"); sel=c===sel?null:c; if(sel) sel.classList.add("sel"); fb.className="fb"; fb.textContent=sel?"Now click the circle where it belongs.":""; };
-  build();
-  A.nest={ enter(){ if(!chipsEl.querySelector(".chip.used")) build(); } };
+  const MSG=["Where does everything we’ve seen so far fit? Click to fill each circle.",
+    "<b>AI</b>: everything from Part 1 lives here. People wrote the rules or the search.",
+    "<b>Machine learning</b>: the program learns from examples instead. Click any chip for details.",
+    "<b>Deep learning</b> is empty so far. Filling it in is the rest of today’s story."];
+  const els={};
+  for(const k of KEYS){ const r=RINGS[k], g=svgEl("g",{},svg);
+    els[k]={g, e:svgEl("ellipse",{cx:r.cx,cy:r.cy,rx:r.rx,ry:r.ry,fill:r.col,"fill-opacity":0,stroke:r.col,"stroke-width":2.5},g)};
+    const t=svgEl("text",{x:r.cx,y:r.ly,"text-anchor":"middle",fill:r.col,"font-size":19,"font-weight":700,"letter-spacing":2.5},g); t.textContent=r.label; els[k].t=t;
+    g.style.transition="opacity .5s"; els[k].e.style.transition="fill-opacity .5s"; }
+  let k=0;
+  function show(n){ k=n; drop.innerHTML="";
+    KEYS.forEach((key,i)=>{ els[key].g.style.opacity=i<k?1:.25; els[key].e.setAttribute("fill-opacity",i<k?.07:0); });
+    document.querySelectorAll('[data-id="nest"] .def').forEach(d=>d.classList.toggle("hi",KEYS.indexOf(d.dataset.k)<k));
+    let n2=0;
+    ITEMS.forEach(([nm,ring,x,y,why])=>{ if(KEYS.indexOf(ring)>=k) return;
+      const el=document.createElement("div"); el.className="nestPlaced"+(why?"":" q"); el.textContent=nm;
+      if(ring==="ml") el.style.background=BLUE; if(ring==="dl") el.style.background=GREEN;
+      el.style.left=(x/760*100)+"%"; el.style.top=(y/680*100)+"%";
+      if(KEYS.indexOf(ring)===k-1) el.style.animationDelay=(n2++*120)+"ms"; else el.style.animation="none";
+      el.onclick=e=>{ e.stopPropagation(); drop.querySelectorAll(".sel").forEach(o=>o.classList.remove("sel")); el.classList.add("sel");
+        fb.innerHTML=why?`<b>${nm}:</b> ${why}`:"Coming up today: networks with many layers that learn their own features."; };
+      drop.appendChild(el); });
+    fb.innerHTML=MSG[k]; }
+  document.querySelector('[data-id="nest"]').addEventListener("click",e=>{ if(e.target.closest("button,a,.nestPlaced")) return; advance(); });
+  A.nest={ enter(dir){ show(dir<0?3:0); }, step(){ if(k>=3) return false; show(k+1); return true; }, back(){ if(k<=0) return false; show(k-1); return true; } };
 })();
 
 /* ---------- imagenet: count up + labeling calculator ---------- */
