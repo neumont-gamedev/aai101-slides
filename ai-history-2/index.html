@@ -587,11 +587,7 @@
         <div class="card nrCtl">
           <div class="nrRow"><span class="nrL">activation</span><div class="ctl" id="nrAct"><button class="btn on" data-f="step">Step</button><button class="btn" data-f="sig">Sigmoid</button><button class="btn" data-f="relu">ReLU</button></div></div>
         </div>
-        <div class="card nrCtl">
-          <div class="ctl"><span class="nrL">Challenge</span><button class="btn on" data-c="free">Free play</button><button class="btn" data-c="and">Make AND</button><button class="btn" data-c="or">Make OR</button></div>
-          <div id="nrGoal" class="hint"></div>
-          <table class="nrTbl" id="nrTbl"></table>
-        </div>
+        <div class="hint" id="nrGoal" style="padding:0 4px">Positive weights (yellow) push the neuron toward firing, negative weights (blue) hold it back. The bias shifts how easy it is to fire.</div>
       </div>
     </div>
   </section>
@@ -887,7 +883,7 @@
     </div>
   </section>
 
-  <div id="chrome"><span class="sp"></span><button class="nbtn" id="prev" aria-label="Previous">←</button><span class="ver" style="font-size:12px;opacity:.6;margin-right:8px">updated Nov 11, 1:04 PM</span><span id="count"></span><button class="nbtn" id="next" aria-label="Next">→</button><button class="nbtn" id="fs" aria-label="Fullscreen" title="Fullscreen (F)">⤢</button></div>
+  <div id="chrome"><span class="sp"></span><button class="nbtn" id="prev" aria-label="Previous">←</button><span class="ver" style="font-size:12px;opacity:.6;margin-right:8px">updated Nov 11, 1:08 PM</span><span id="count"></span><button class="nbtn" id="next" aria-label="Next">→</button><button class="nbtn" id="fs" aria-label="Fullscreen" title="Fullscreen (F)">⤢</button></div>
   <div id="progress"></div>
   <div id="livewrap"><span id="liveauth"></span><div id="livebar"></div></div>
   <div id="toast" role="status"></div>
@@ -1376,9 +1372,9 @@ document.querySelectorAll(".slide.tl").forEach(sl=>{
 
 /* ---------- a single neuron: inputs, weights, bias, activation ---------- */
 (() => {
-  const svg=$("nrSvg"), ctl=$("nrCtl"), math=$("nrMath"), tbl=$("nrTbl"), goal=$("nrGoal");
+  const svg=$("nrSvg"), ctl=$("nrCtl"), math=$("nrMath");
   const SUB="₁₂₃";
-  let x=[1,0.5,0], w=[1.2,-0.6,0.8], b=-0.5, act="step", mode="free";
+  let x=[1,0.5,0], w=[1.2,-0.6,0.8], b=-0.5, act="step";
   const F={ step:z=>z>=0?1:0, sig:z=>1/(1+Math.exp(-z)), relu:z=>Math.max(0,z) };
   const NAME={step:"step",sig:"sigmoid",relu:"ReLU"};
   ctl.innerHTML=[0,1,2].map(i=>`<div class="nrGrp"><div class="nrRow"><span class="nrL">input x${SUB[i]}</span><input type="range" min="0" max="1" step="0.1" data-k="x${i}"><span class="nrV" id="nrVx${i}"></span></div>
@@ -1388,8 +1384,6 @@ document.querySelectorAll(".slide.tl").forEach(sl=>{
     if(k==="b") b=v; else if(k[0]==="x") x[+k[1]]=v; else w[+k[1]]=v; update(); });
   ctl.addEventListener("keydown",e=>e.stopPropagation());
   document.querySelectorAll("#nrAct [data-f]").forEach(btn=>btn.onclick=()=>{ act=btn.dataset.f; document.querySelectorAll("#nrAct [data-f]").forEach(o=>o.classList.toggle("on",o===btn)); update(); });
-  document.querySelectorAll('[data-id="neuron"] [data-c]').forEach(btn=>btn.onclick=()=>{ mode=btn.dataset.c; document.querySelectorAll('[data-id="neuron"] [data-c]').forEach(o=>o.classList.toggle("on",o===btn));
-    if(mode!=="free"){ x[2]=0; } update(); });
   // static drawing
   const IN=[[90,130],[90,280],[90,430]], NX=430, NY=280, AX=560, AW=170, OX=800;
   const gE=svgEl("g",{},svg), gD=svgEl("g",{},svg), gN=svgEl("g",{},svg);
@@ -1416,7 +1410,7 @@ document.querySelectorAll(".slide.tl").forEach(sl=>{
   const ol0=svgEl("text",{x:OX,y:NY-50,"text-anchor":"middle",fill:MUTE,"font-size":15,"font-family":MONO},gN); ol0.textContent="output";
   const zOf=(xx)=>xx[0]*w[0]+xx[1]*w[1]+xx[2]*w[2]+b, f2=v=>(v<0?"−":"")+Math.abs(v).toFixed(1), f2p=v=>v<0?`(−${Math.abs(v).toFixed(1)})`:v.toFixed(1);
   function update(){
-    ctl.querySelectorAll("input").forEach(inp=>{ const k=inp.dataset.k; inp.value=k==="b"?b:k[0]==="x"?x[+k[1]]:w[+k[1]]; inp.disabled=mode!=="free"&&k==="x2"; });
+    ctl.querySelectorAll("input").forEach(inp=>{ const k=inp.dataset.k; inp.value=k==="b"?b:k[0]==="x"?x[+k[1]]:w[+k[1]]; });
     [0,1,2].forEach(i=>{ $("nrVx"+i).textContent=x[i].toFixed(1); $("nrVw"+i).textContent=f2(w[i]); }); $("nrVb").textContent=f2(b);
     const z=zOf(x), o=F[act](z), fire=o>.5;
     edges.forEach((e,i)=>{ e.setAttribute("stroke",w[i]>=0?Y:BLUE); e.setAttribute("stroke-width",1.5+Math.abs(w[i])*4); e.setAttribute("stroke-opacity",.25+.75*Math.min(1,x[i])); });
@@ -1431,11 +1425,6 @@ document.querySelectorAll(".slide.tl").forEach(sl=>{
     out.style.filter=fire?"drop-shadow(0 0 14px rgba(255,194,14,.9))":"none"; neu.style.filter=fire?"drop-shadow(0 0 10px rgba(255,194,14,.6))":"none";
     ol.textContent=fire?"FIRES!":"stays quiet"; ol.setAttribute("fill",fire?Y:MUTE);
     math.innerHTML=`z = ${[0,1,2].map(i=>`${x[i].toFixed(1)}×${f2p(w[i])}`).join(" + ")} + ${f2p(b)} = <b>${f2(z)}</b><br>${NAME[act]}(${f2(z)}) = <b>${o.toFixed(2)}</b> → ${fire?"<b>fires</b>":"quiet"} (fires when output &gt; 0.5)`;
-    if(mode==="free"){ tbl.innerHTML=""; goal.innerHTML="Drag the sliders. Positive weights (yellow) push the neuron toward firing, negative weights (blue) hold it back. The bias shifts how easy it is to fire."; return; }
-    const want=mode==="and"?(a,c)=>a&&c:(a,c)=>a||c; let ok=0;
-    tbl.innerHTML=`<tr><th>x₁</th><th>x₂</th><th>output</th><th>want</th><th></th></tr>`+[[0,0],[0,1],[1,0],[1,1]].map(([a,c])=>{ const oo=F[act](zOf([a,c,0])), f=oo>.5, wt=!!want(a,c), good=f===wt; ok+=good;
-      return `<tr><td>${a}</td><td>${c}</td><td>${oo.toFixed(2)}</td><td>${wt?"fire":"quiet"}</td><td class="${good?"ok":"no"}">${good?"✓":"✗"}</td></tr>`; }).join("");
-    goal.innerHTML=ok===4?`<b class="y">✓ You built an ${mode.toUpperCase()} gate from one neuron.</b> George Boole would approve.`:`Set weights and bias so it fires only when x₁ ${mode==="and"?"<b>and</b>":"<b>or</b>"} x₂ is 1 (x₃ is off). ${ok}/4 correct.`;
   }
   update();
   A.neuron={ enter(){ update(); } };
