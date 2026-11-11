@@ -459,13 +459,25 @@ document.querySelectorAll(".slide.tl").forEach(sl=>{
   const fill=wrap.querySelector(".tlfill");
   const prev = k>0 ? xp(k-1) : 0;
   const snow = sl.querySelector(".snow");
-  let flakes=[];
+  let flakes=[], winter=0, pile=null, cap=null;
+  // the winter slide gets a second step: the timeline fades, the snow thickens and piles up
+  if(snow){ cap=document.createElement("div"); cap.className="winterCap"; cap.innerHTML=`<div class="wt">The first AI Winter</div><div class="ws">1970s · unmet expectations, reduced funding</div>`; sl.appendChild(cap); }
+  const flake=()=>({x:rnd(0,1600),y:rnd(-900,0),r:rnd(1,3.2),v:rnd(.4,1.3),s:rnd(0,6)});
+  function setWinter(v){ winter=v; sl.classList.toggle("winterOnly",!!v);
+    if(v) while(flakes.length<520) flakes.push(flake()); else flakes.length=Math.min(flakes.length,160); }
   A[sl.dataset.id]={
-    enter(){ fill.style.transition="none"; fill.style.width=prev+"%"; void fill.offsetWidth; fill.style.transition=""; fill.style.width=xp(k)+"%";
-      if(snow) flakes=Array.from({length:160},()=>({x:rnd(0,1600),y:rnd(-900,900),r:rnd(1,3.2),v:rnd(.4,1.3),s:rnd(0,6)})); },
+    enter(dir){ fill.style.transition="none"; fill.style.width=prev+"%"; void fill.offsetWidth; fill.style.transition=""; fill.style.width=xp(k)+"%";
+      if(snow){ flakes=Array.from({length:160},()=>({...flake(),y:rnd(-900,900)})); pile=new Float32Array(161); setWinter(dir<0?1:0); } },
+    step(){ if(!snow||winter) return false; setWinter(1); return true; },
+    back(){ if(!snow||!winter) return false; setWinter(0); return true; },
     tick(dt,now){ if(!snow) return; const x=ctxOf(snow), f=dt/16.7; x.clearRect(0,0,1600,900);
-      for(const p of flakes){ p.y+=p.v*f; p.x+=Math.sin(now*.001+p.s)*.4*f; if(p.y>910){ p.y=-10; p.x=rnd(0,1600); }
-        x.fillStyle=`rgba(200,225,255,${.35+p.r*.15})`; x.beginPath(); x.arc(p.x,p.y,p.r,0,7); x.fill(); } }
+      for(const p of flakes){ p.y+=p.v*f*(winter?1.25:1); p.x+=Math.sin(now*.001+p.s)*.4*f;
+        const col=Math.max(0,Math.min(160,Math.round(p.x/10))), ground=900-(winter?pile[col]:0);
+        if(p.y>ground){ if(winter&&pile[col]<130){ for(let d=-3;d<=3;d++){ const c=col+d; if(c>=0&&c<=160) pile[c]+=p.r*(d?0.9:2.2)*(1-Math.abs(d)*.15); } } p.y=-10; p.x=rnd(0,1600); }
+        x.fillStyle=`rgba(200,225,255,${.35+p.r*.15})`; x.beginPath(); x.arc(p.x,p.y,p.r,0,7); x.fill(); }
+      if(winter){ for(let c=0;c<=160;c++){ const shape=.75+.25*Math.sin(c*.11)+.15*Math.sin(c*.37+1); if(pile[c]<130*shape) pile[c]+=dt*.009*shape; }   // drift builds up over ~12 s
+        x.fillStyle="rgba(225,238,255,.88)"; x.beginPath(); x.moveTo(0,900);
+        for(let c=0;c<=160;c++) x.lineTo(c*10,900-pile[c]); x.lineTo(1600,900); x.closePath(); x.fill(); } }
   };
 });
 

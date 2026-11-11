@@ -413,6 +413,15 @@
   #mmSvg .mnode.pick{cursor:pointer} #mmSvg .mnode.pick:hover path{stroke-width:5}
   #mmSvg .shake{animation:mmshake .4s}
   @keyframes mmshake{20%,60%{transform:translateX(-6px)}40%,80%{transform:translateX(6px)}}
+  /* ai winter step */
+  .slide.tl > div,.slide.tl .tlwrap{transition:opacity .9s ease}
+  .slide.winterOnly > div:not(.winterCap),.slide.winterOnly .tlwrap{opacity:0}
+  .winterCap{position:absolute;left:0;right:0;top:38%;text-align:center;z-index:4;opacity:0;transform:translateY(14px);transition:opacity 1s ease .5s,transform 1s ease .5s;pointer-events:none}
+  .slide.winterOnly .winterCap{opacity:1;transform:none}
+  .winterCap .wt{font-size:84px;font-weight:700;letter-spacing:-.02em;color:#dce9ff;text-shadow:0 0 40px rgba(106,184,255,.35)}
+  .winterCap .ws{font-family:var(--mono);font-size:20px;color:#9fb8d8;margin-top:12px;letter-spacing:.06em}
+  #stage:has(.slide.winterOnly.active) #chrome .nbtn{background:rgba(18,18,20,.9)}
+  #stage:has(.slide.winterOnly.active) #chrome #count,#stage:has(.slide.winterOnly.active) #chrome .ver{background:rgba(18,18,20,.9);padding:4px 8px;border-radius:6px;opacity:1!important}
 </style>
 </head>
 <body>
