@@ -1,0 +1,750 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>AAI101 · AI History · Part 2</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;700&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#121214; --panel:#1c1c20; --panel2:#24242a; --line:#2e2e35;
+    --ink:#f3f1ea; --mute:#9b988f; --y:#ffc20e; --amber:#ff8a1f; --red:#ff5a4e; --green:#5fd68a; --blue:#6ab8ff;
+    --sans:"Space Grotesk",system-ui,-apple-system,"Segoe UI",sans-serif;
+    --mono:"JetBrains Mono",ui-monospace,Consolas,monospace;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  html,body{height:100%;background:#000;overflow:hidden;color:var(--ink);font-family:var(--sans)}
+  #stage{position:absolute;left:50%;top:50%;width:1600px;height:900px;background:var(--bg);overflow:hidden}
+
+  .slide{position:absolute;inset:0;padding:100px 110px 90px;opacity:0;visibility:hidden;transform:scale(1.015);
+    transition:opacity .6s ease,transform .8s cubic-bezier(.2,.7,.2,1),visibility 0s .6s}
+  .slide.active{opacity:1;visibility:visible;transform:none;transition:opacity .6s ease,transform .8s cubic-bezier(.2,.7,.2,1),visibility 0s}
+  .rise{opacity:0;transform:translateY(26px);transition:opacity .7s ease,transform .8s cubic-bezier(.2,.7,.2,1)}
+  .slide.active .rise{opacity:1;transform:none;transition-delay:calc(var(--i,0) * 110ms + 150ms)}
+
+  .bg{position:absolute;inset:0;width:100%;height:100%;display:block}
+  .vignette{position:absolute;inset:0;background:radial-gradient(ellipse at center,rgba(18,18,20,.5) 0%,rgba(18,18,20,.88) 60%,var(--bg) 100%);pointer-events:none}
+  .content{position:relative;z-index:1;height:100%}
+  .center{display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center}
+
+  .eyebrow{font-family:var(--mono);font-size:20px;letter-spacing:.18em;text-transform:uppercase;color:var(--y)}
+  h1{font-size:118px;line-height:.98;font-weight:700;letter-spacing:-.03em;margin:22px 0 34px}
+  h1 span,h2 span.y{color:var(--y)}
+  h2{font-size:56px;font-weight:700;letter-spacing:-.02em;line-height:1.06}
+  h2 .n{font-family:var(--mono);font-size:21px;color:var(--y);font-weight:600;display:block;letter-spacing:.12em;margin-bottom:12px}
+  .lede{font-size:31px;line-height:1.4;color:#d6d3cb;max-width:1100px}
+  p{font-size:25px;line-height:1.45;color:#d6d3cb}
+  b,strong{color:var(--ink)}
+  i.t{font-style:italic;color:var(--ink)}
+  .y{color:var(--y)} .mono{font-family:var(--mono)} .muted{color:var(--mute)}
+  .card{background:var(--panel);border:1px solid var(--line);border-radius:18px}
+
+  .bul{list-style:none;display:flex;flex-direction:column;gap:14px;margin-top:6px}
+  .bul li{font-size:24px;line-height:1.4;color:#d6d3cb;position:relative;padding-left:26px}
+  .bul li::before{content:"";position:absolute;left:0;top:.5em;width:11px;height:11px;background:var(--y);border-radius:3px}
+  .num{list-style:none;counter-reset:n;display:flex;flex-direction:column;gap:14px}
+  .num li{counter-increment:n;font-size:24px;line-height:1.4;color:#d6d3cb;position:relative;padding-left:44px}
+  .num li::before{content:counter(n);position:absolute;left:0;top:.18em;font-family:var(--mono);font-size:16px;line-height:1.4;color:var(--bg);background:var(--y);border-radius:6px;padding:0 9px}
+
+  .two{display:grid;grid-template-columns:1fr 1fr;gap:64px;height:100%;align-items:center}
+  .two.wide-r{grid-template-columns:.85fr 1.15fr}
+  .stack{display:flex;flex-direction:column;gap:26px}
+  .stage-box{position:relative;height:620px;border-radius:20px;overflow:hidden;border:1px solid var(--line);background:#0d0d0f}
+  .stage-box canvas,.stage-box svg{position:absolute;inset:0;width:100%;height:100%}
+  .cap{position:absolute;left:18px;bottom:14px;font-family:var(--mono);font-size:15px;color:var(--mute);background:rgba(13,13,15,.8);padding:6px 10px;border-radius:8px;z-index:2}
+  .callout{border-left:4px solid var(--y);padding:14px 20px;background:rgba(255,194,14,.07);border-radius:0 12px 12px 0;font-size:22px;line-height:1.45;color:#e5e2da}
+  .linkchip{display:inline-flex;align-items:center;gap:10px;font-family:var(--mono);font-size:17px;color:var(--ink);border:1px solid var(--line);background:var(--panel);border-radius:999px;padding:8px 16px;text-decoration:none;width:max-content}
+  .linkchip:hover{border-color:var(--y);color:var(--y)}
+  .linkchip::before{content:"↗";color:var(--y)}
+  .btn{background:var(--panel2);border:1px solid var(--line);color:var(--ink);font:500 19px var(--sans);padding:10px 20px;border-radius:10px;cursor:pointer}
+  .btn:hover{border-color:var(--y);color:var(--y)}
+  .btn.on{background:var(--y);color:var(--bg);border-color:var(--y)}
+  .tag{display:inline-block;font-family:var(--mono);font-size:15px;padding:4px 10px;border-radius:6px;font-weight:600;letter-spacing:.04em}
+  .t-red{background:rgba(255,90,78,.15);color:var(--red)} .t-green{background:rgba(95,214,138,.15);color:var(--green)} .t-blue{background:rgba(106,184,255,.15);color:var(--blue)} .t-y{background:rgba(255,194,14,.15);color:var(--y)}
+
+  /* chrome */
+  #chrome{position:absolute;left:0;right:0;bottom:0;height:56px;display:flex;align-items:center;gap:18px;padding:0 32px;z-index:10;font-family:var(--mono);font-size:16px;color:var(--mute);pointer-events:none}
+  #chrome button{pointer-events:auto}
+  #chrome .sp{flex:1}
+  #brand{position:absolute;left:32px;top:28px;z-index:10;font-family:var(--mono);font-size:15px;letter-spacing:.14em;color:var(--mute);text-transform:uppercase}
+  #brand b{color:var(--y);font-weight:600}
+  #logo{position:absolute;right:32px;top:22px;height:44px;z-index:10;pointer-events:none;filter:drop-shadow(0 2px 8px rgba(0,0,0,.5))}
+  #progress{position:absolute;left:0;bottom:0;height:4px;background:var(--y);transition:width .5s cubic-bezier(.2,.7,.2,1);z-index:11}
+  .nbtn{background:transparent;border:1px solid var(--line);color:var(--ink);font:inherit;width:40px;height:34px;border-radius:8px;cursor:pointer}
+  .nbtn:hover{border-color:var(--y);color:var(--y)}
+
+  /* timeline */
+  .tlwrap{position:absolute;left:90px;right:90px;top:250px;height:520px}
+  .tlaxis{position:absolute;left:0;right:0;top:50%;height:3px;background:var(--line);border-radius:2px}
+  .tlfill{position:absolute;left:0;top:50%;height:3px;background:linear-gradient(90deg,var(--amber),var(--y));border-radius:2px;width:0;transition:width 1.2s cubic-bezier(.4,0,.2,1) .2s}
+  .tlarrow{position:absolute;right:-6px;top:calc(50% - 7px);width:0;height:0;border-left:14px solid var(--line);border-top:8px solid transparent;border-bottom:8px solid transparent}
+  .ev{position:absolute;width:300px;transform:translateX(-50%)}
+  .ev .dot{position:absolute;left:50%;width:22px;height:22px;margin-left:-11px;border-radius:50%;background:var(--bg);border:3px solid var(--mute)}
+  .ev .stem{position:absolute;left:50%;width:2px;margin-left:-1px;background:var(--line)}
+  .ev .box{position:absolute;left:0;right:0;padding:16px 18px;border-radius:14px;background:var(--panel);border:1px solid var(--line)}
+  .ev .yr{font-family:var(--mono);font-size:22px;color:var(--y);font-weight:600}
+  .ev .tx{font-size:18px;line-height:1.4;color:#c9c6be;margin-top:6px}
+  .ev.up .box{bottom:calc(260px + 46px)} .ev.up .stem{bottom:260px;height:46px} .ev.up .dot{top:249px}
+  .ev.dn .box{top:calc(260px + 46px)} .ev.dn .stem{top:260px;height:46px} .ev.dn .dot{top:249px}
+  .ev.done .dot{border-color:var(--y);background:var(--y)}
+  .ev.done{opacity:.55}
+  .ev.now{opacity:1}
+  .ev.now .box{border-color:var(--y);box-shadow:0 0 0 4px rgba(255,194,14,.1),0 20px 50px rgba(0,0,0,.5)}
+  .ev.now .dot{box-shadow:0 0 0 8px rgba(255,194,14,.18)}
+  .ev.now .tx{color:var(--ink)}
+  .ev.new{opacity:0;transform:translateX(-50%) translateY(20px);transition:opacity .7s ease .9s,transform .8s cubic-bezier(.2,.7,.2,1) .9s}
+  .slide.active .ev.new{opacity:1;transform:translateX(-50%)}
+  .ev.future{opacity:.12}
+  .ev.future .box{background:transparent;border-style:dashed}
+  .ev.future .tx,.ev.future .yr{visibility:hidden}
+  .ev.winter .box{border-color:var(--blue);box-shadow:0 0 0 4px rgba(106,184,255,.12)} .ev.winter .yr{color:var(--blue)} .ev.winter .dot{background:var(--blue);border-color:var(--blue)}
+
+  /* live class sync */
+  #livewrap{position:absolute;left:32px;bottom:11px;z-index:12;display:flex;gap:12px;align-items:center;font-family:var(--mono);font-size:15px}
+  #livebar,#liveauth{display:flex;gap:12px;align-items:center}
+  #liveauth:empty,#livebar:empty{display:none}
+  .lv{display:inline-flex;align-items:center;gap:9px;background:var(--panel);border:1px solid var(--line);color:var(--mute);border-radius:999px;padding:6px 14px;font:inherit}
+  button.lv{cursor:pointer} button.lv:hover{border-color:var(--y)}
+  .lv.on{border-color:var(--y);color:var(--y)}
+  .lv .dot{width:9px;height:9px;border-radius:50%;background:#55534d}
+  .lv.on .dot{background:var(--red);box-shadow:0 0 0 0 rgba(255,90,78,.6);animation:lvp 1.6s infinite}
+  @keyframes lvp{70%{box-shadow:0 0 0 8px rgba(255,90,78,0)}100%{box-shadow:0 0 0 0 rgba(255,90,78,0)}}
+  .lvc{color:var(--mute)}
+  .nbtn:disabled{opacity:.25;cursor:not-allowed;border-color:var(--line);color:var(--ink)}
+  #toast{position:absolute;left:50%;bottom:76px;z-index:20;transform:translate(-50%,16px);opacity:0;pointer-events:none;background:var(--panel2);border:1px solid var(--y);color:var(--ink);font-size:20px;padding:12px 22px;border-radius:12px;transition:opacity .3s,transform .3s;box-shadow:0 12px 40px rgba(0,0,0,.5)}
+  #toast.on{opacity:1;transform:translate(-50%,0)}
+  /* portraits */
+  .who{display:flex;gap:20px;align-items:center}
+  .ph{position:relative;flex:none;width:104px;height:130px;border-radius:12px;overflow:hidden;border:1px solid var(--line);background:#222}
+  .ph img{width:100%;height:100%;object-fit:cover;display:block;filter:grayscale(1) contrast(1.06) brightness(.96)}
+  .ph::after{content:"";position:absolute;inset:0;background:var(--y);mix-blend-mode:color;opacity:.16;pointer-events:none}
+  .who .nm{font-size:25px;font-weight:700;line-height:1.15}
+  .who .dt{font-family:var(--mono);font-size:16px;color:var(--y);margin-top:4px}
+  .who .rl{font-size:17px;color:var(--mute);margin-top:6px;line-height:1.35}
+  .who.tall .ph{width:200px;height:250px}
+  .photo{position:relative;border-radius:14px;overflow:hidden;border:1px solid var(--line)}
+  .photo img{width:100%;height:210px;object-fit:cover;object-position:center 30%;display:block;filter:grayscale(1) contrast(1.05)}
+  .photo::after{content:"";position:absolute;inset:0;background:var(--y);mix-blend-mode:color;opacity:.14;pointer-events:none}
+  .photo figcaption{position:absolute;left:12px;bottom:10px;font-family:var(--mono);font-size:14px;color:var(--ink);background:rgba(13,13,15,.8);padding:4px 9px;border-radius:7px;z-index:1}
+  .ev .av{width:40px;height:40px;border-radius:50%;object-fit:cover;filter:grayscale(1);border:2px solid var(--line);flex:none}
+  .ev .yrow{display:flex;align-items:center;gap:10px}
+  .ev.now .av{border-color:var(--y)}
+  /* shared bits for part 2 */
+  .two.wide-l{grid-template-columns:1.15fr .85fr}
+  .two.top{align-items:start}
+  .ctl{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+  .ctl .btn{font-size:16px;padding:8px 15px}
+  .hint{font-size:16px;color:var(--mute);line-height:1.4}
+  .stat{font-family:var(--mono);font-size:16px;color:var(--mute)}
+  .stat b{color:var(--y);font-weight:600}
+  .vid{position:relative;border-radius:14px;overflow:hidden;border:1px solid var(--line);background:#000}
+  .vid video{display:block;width:100%;height:100%;object-fit:cover}
+  .vid figcaption{position:absolute;left:12px;bottom:10px;font-family:var(--mono);font-size:14px;color:var(--ink);background:rgba(13,13,15,.8);padding:4px 9px;border-radius:7px}
+  .pill{display:inline-block;font-family:var(--mono);font-size:15px;border:1px solid var(--line);border-radius:999px;padding:5px 12px;color:var(--mute)}
+  .note{font-size:15px;color:var(--mute);line-height:1.4}
+  .shake{animation:shk .4s}
+  @keyframes shk{20%,60%{transform:translateX(-6px)}40%,80%{transform:translateX(6px)}}
+
+  /* roomba */
+  #rmCv{cursor:crosshair}
+  .rmTop{position:absolute;left:14px;right:14px;top:12px;display:flex;gap:10px;align-items:center;z-index:2}
+  .rmTop .sp{flex:1}
+  .rmPhotos{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+  .rmPhotos .photo img{height:170px;filter:none;object-fit:contain;background:#fff}
+  .rmPhotos .vid{height:172px}
+
+  /* robots */
+  .rbView{position:relative;height:540px;border-radius:20px;overflow:hidden;border:1px solid var(--line);background:#000}
+  .rbView video{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
+  .rbBar{display:flex;align-items:center;gap:14px;margin-top:14px}
+  .rbBar .amTitle{text-align:left}
+  .rbArr{width:48px;height:48px;border-radius:50%;border:1px solid var(--line);background:var(--panel2);color:var(--ink);font-size:26px;line-height:1;cursor:pointer;flex:none}
+  .rbArr:hover{border-color:var(--y);color:var(--y)}
+  .rbName{font-size:24px;font-weight:700}
+  .rbWho{font-family:var(--mono);font-size:15px;color:var(--y);margin-top:3px}
+  .rbDots{display:flex;gap:6px;margin-left:auto}
+  .rbDots i{width:9px;height:9px;border-radius:50%;background:#3a3a42;cursor:pointer}
+  .rbDots i.on{background:var(--y)}
+  .co{display:flex;flex-direction:column;gap:10px}
+  .co .card{padding:16px 20px}
+  .co .card b{font-size:22px}
+  .co .card p{font-size:19px;margin-top:4px}
+
+  /* ai > ml > dl */
+  #nestSvg text{font-family:var(--sans)}
+  #nestSvg .ring{cursor:pointer;transition:fill .3s,stroke .3s}
+  .defs{display:flex;flex-direction:column;gap:10px}
+  .def{padding:12px 16px;border-radius:12px;border:1px solid var(--line);background:var(--panel);transition:border-color .3s,background .3s}
+  .def > b{font-family:var(--mono);font-size:15px;letter-spacing:.08em}
+  .def p{font-size:18px;margin-top:3px}
+  .def.hi{border-color:var(--y);background:rgba(255,194,14,.06)}
+  .chips{display:flex;flex-wrap:wrap;gap:9px}
+  .chip{font:500 17px var(--sans);color:var(--ink);background:var(--panel2);border:1px solid var(--line);border-radius:999px;padding:7px 14px;cursor:pointer;user-select:none;transition:background .2s,border-color .2s,opacity .3s}
+  .chip:hover{border-color:var(--y)}
+  .chip.sel{background:var(--y);color:var(--bg);border-color:var(--y)}
+  .chip.used{opacity:0;pointer-events:none;position:absolute}
+  .nestPlaced{position:absolute;transform:translate(-50%,-50%);font:500 15px var(--sans);color:var(--bg);background:var(--y);border-radius:999px;padding:4px 11px;white-space:nowrap;animation:pop .45s cubic-bezier(.3,1.5,.5,1);pointer-events:none}
+  @keyframes pop{0%{transform:translate(-50%,-50%) scale(.3);opacity:0}100%{transform:translate(-50%,-50%) scale(1);opacity:1}}
+  .fb{font-size:18px;line-height:1.4;min-height:50px}
+  .fb.good{color:var(--green)} .fb.bad{color:var(--red)}
+
+  /* imagenet */
+  .inMosaic{position:relative;height:300px;border-radius:16px;overflow:hidden;border:1px solid var(--line)}
+  .inMosaic img{position:absolute;left:0;top:0;height:100%;width:auto;min-width:100%;transform:translateX(0);transition:transform 30s linear}
+  .slide.active .inMosaic img{transform:translateX(-22%)}
+  .bignum{font-family:var(--mono);font-size:76px;font-weight:600;color:var(--y);letter-spacing:-.02em;line-height:1}
+  .labeler{padding:18px 22px;display:flex;flex-direction:column;gap:10px}
+  .labeler input[type=range]{width:100%;accent-color:#ffc20e}
+  .labeler .big{font-size:30px;font-weight:700}
+
+  /* pipeline */
+  .pl{display:flex;gap:8px;margin-bottom:6px}
+  .pl button{flex:1;font:500 16px var(--sans);color:var(--mute);background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:9px 6px;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:2px}
+  .pl button span{font-family:var(--mono);font-size:13px;color:var(--mute)}
+  .pl button.on{color:var(--bg);background:var(--y);border-color:var(--y)} .pl button.on span{color:var(--bg)}
+  .pl button.done{color:var(--ink);border-color:rgba(255,194,14,.5)}
+  .plText{min-height:150px}
+  .plText h3{font-size:30px;margin-bottom:8px}
+
+  /* fully connected */
+  .lyr{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-top:10px}
+  .lyr .card{padding:10px;display:flex;flex-direction:column;align-items:center;gap:6px}
+  .lyr .nm{font-family:var(--mono);font-size:13px;color:var(--mute);letter-spacing:.06em}
+  .lyr .row{display:flex;align-items:center;gap:8px}
+  .lyr .row button{width:30px;height:30px;border-radius:8px;border:1px solid var(--line);background:var(--panel2);color:var(--ink);cursor:pointer;font:600 18px var(--mono);line-height:1}
+  .lyr .row button:hover{border-color:var(--y);color:var(--y)}
+  .lyr .v{font-family:var(--mono);font-size:22px;min-width:52px;text-align:center}
+  .count{font-family:var(--mono);font-size:56px;font-weight:600;color:var(--y);line-height:1}
+  #fcSvg .nd{cursor:pointer}
+
+  /* doodle */
+  #ddCv{cursor:crosshair;background:#f6f3ea;touch-action:none}
+  .ddTop{position:absolute;left:0;right:0;top:0;padding:14px 18px;display:flex;align-items:center;gap:14px;z-index:2;background:linear-gradient(#f6f3ea,rgba(246,243,234,0));pointer-events:none}
+  .ddTop .p{font-size:28px;font-weight:700;color:#18181b}
+  .ddTop .p span{color:#c58a00}
+  .ddTop .btn{pointer-events:auto;background:#fff;color:#18181b;border-color:#d6d2c6}
+  .ddTop .sp{flex:1}
+  .ddSay{position:absolute;left:18px;right:18px;bottom:14px;z-index:2;font-family:var(--mono);font-size:20px;color:#18181b;pointer-events:none}
+  .guess{display:flex;flex-direction:column;gap:8px}
+  .gRow{display:grid;grid-template-columns:120px 1fr 56px;gap:10px;align-items:center;font-size:19px}
+  .gRow .bar{height:16px;border-radius:8px;background:#2a2a30;overflow:hidden}
+  .gRow .bar i{display:block;height:100%;width:0;background:var(--y);transition:width .4s}
+  .gRow .pc{font-family:var(--mono);font-size:15px;color:var(--mute);text-align:right}
+
+  /* backprop */
+  .bpSteps{display:flex;flex-direction:column;gap:8px}
+  .bpSteps li{transition:color .3s}
+  .bpSteps li.on{color:var(--y)}
+
+  /* recipe */
+  .ing{display:grid;grid-template-columns:repeat(3,1fr);gap:18px}
+  .ing .card{padding:18px;display:flex;flex-direction:column;align-items:center;gap:10px;text-align:center}
+  .ing svg{width:96px;height:80px}
+  .ing .t{font-size:24px;font-weight:700}
+  .ing .s{font-size:15px;color:var(--mute);line-height:1.35;min-height:40px}
+  .ing input[type=range]{width:100%;accent-color:#ffc20e}
+  .years{display:flex;gap:10px}
+  .model{display:grid;grid-template-columns:260px 1fr;gap:26px;align-items:center;padding:18px 24px}
+  .gauge{height:22px;border-radius:12px;background:#2a2a30;overflow:hidden}
+  .gauge i{display:block;height:100%;width:0;background:linear-gradient(90deg,var(--red),var(--amber),var(--y),var(--green));background-size:400px 100%;transition:width .5s}
+  .verdict2{font-size:22px;margin-top:10px;min-height:62px;line-height:1.4}
+
+  /* gpu race */
+  .race{display:grid;grid-template-columns:1fr 1fr;gap:18px;height:100%}
+  .lane{display:flex;flex-direction:column;gap:8px}
+  .lane .hd{display:flex;align-items:baseline;gap:10px}
+  .lane .hd b{font-size:24px}
+  .lane .hd .tm{margin-left:auto;font-family:var(--mono);font-size:22px;color:var(--y)}
+  .stage-box .lane canvas{position:static;width:100%;height:auto;flex:1;min-height:0;border-radius:10px;background:#0d0d0f;border:1px solid var(--line)}
+
+  /* tokens */
+  .tokIn{width:100%;font:500 22px var(--sans);color:var(--ink);background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:14px 16px;outline:none}
+  .tokIn:focus{border-color:var(--y)}
+  .toks{display:flex;flex-wrap:wrap;gap:6px 4px;align-content:flex-start}
+  .tok{display:flex;flex-direction:column;align-items:center;border-radius:8px;padding:5px 7px 4px;animation:pop2 .35s ease both}
+  .tok .w{font-family:var(--mono);font-size:19px;white-space:pre}
+  .tok .id{font-family:var(--mono);font-size:12px;opacity:.7;margin-top:2px}
+  @keyframes pop2{0%{opacity:0;transform:translateY(8px)}100%{opacity:1;transform:none}}
+  .tasks{display:flex;flex-wrap:wrap;gap:8px}
+
+  /* embeddings */
+  #emCv{cursor:pointer}
+  .emTop{position:absolute;left:14px;right:14px;top:12px;display:flex;gap:8px;flex-wrap:wrap;z-index:2}
+  .emTop .btn{font-size:15px;padding:7px 12px}
+  .emSay{position:absolute;left:16px;right:16px;bottom:14px;z-index:2;font-size:20px;color:var(--ink);background:rgba(13,13,15,.85);padding:10px 14px;border-radius:10px;min-height:46px}
+  .emSay b{color:var(--y)}
+
+  /* gpt */
+  .gptRow{display:grid;grid-template-columns:120px 1fr;gap:26px;align-items:start;opacity:.18;transition:opacity .5s}
+  .gptRow.on{opacity:1}
+  .gptRow .L{font-size:120px;font-weight:700;line-height:.85;color:var(--y)}
+  .gptRow .w{font-size:40px;font-weight:700;line-height:1}
+  .gptRow .w span{color:var(--mute);font-weight:500}
+  .gptRow p{font-size:21px;margin-top:8px;max-height:0;overflow:hidden;transition:max-height .6s ease}
+  .gptRow.on p{max-height:140px}
+
+  /* attention */
+  .atBox{position:relative;height:560px}
+  .atBox svg{position:absolute;inset:0;width:100%;height:100%;overflow:visible}
+  .atWords{position:absolute;left:0;right:0;top:330px;display:flex;justify-content:center;gap:8px;flex-wrap:nowrap}
+  .atW{font:500 25px var(--sans);color:var(--ink);background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:8px 11px;cursor:pointer;transition:background .25s,border-color .25s,color .25s}
+  .atW:hover{border-color:var(--y)}
+  .atW.sel{background:var(--y);color:var(--bg);border-color:var(--y)}
+  .paper{padding:20px 24px}
+  .paper .tt{font-family:Georgia,"Times New Roman",serif;font-size:30px;color:var(--ink)}
+  .paper .au{font-size:16px;color:var(--mute);margin-top:6px;line-height:1.4}
+
+  /* next word */
+  .nwSent{font-size:44px;font-weight:700;min-height:60px;letter-spacing:-.01em}
+  .nwSent .new{color:var(--y);animation:pop2 .4s ease both;display:inline-block}
+  .nwSent .cur{display:inline-block;width:3px;height:42px;background:var(--y);vertical-align:-6px;margin-left:6px;animation:blink 1s steps(1) infinite}
+  @keyframes blink{50%{opacity:0}}
+  .probs{display:flex;flex-direction:column;gap:7px}
+  .prow{display:grid;grid-template-columns:120px 1fr 60px;gap:12px;align-items:center;font-size:20px;cursor:pointer;border-radius:8px;padding:2px 6px}
+  .prow:hover{background:rgba(255,255,255,.04)}
+  .prow .bar{height:18px;border-radius:9px;background:#2a2a30;overflow:hidden}
+  .prow .bar i{display:block;height:100%;background:var(--blue);transition:width .45s}
+  .prow.top .bar i{background:var(--y)}
+  .prow.pk{background:rgba(255,194,14,.12)}
+  .prow .pc{font-family:var(--mono);font-size:16px;color:var(--mute);text-align:right}
+  .cow{border-radius:16px;overflow:hidden;border:1px solid var(--line);height:250px}
+  .cow img{width:100%;height:100%;object-fit:cover;display:block}
+
+  /* be the model */
+  .tabs{display:flex;gap:8px}
+  .bank{display:flex;flex-wrap:wrap;gap:14px}
+  .wb{position:relative;font:500 30px var(--sans);color:var(--ink);background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:16px 24px 22px;cursor:pointer;overflow:hidden;min-width:70px}
+  .wb:hover{border-color:var(--y)}
+  .wb .p{position:absolute;left:0;bottom:0;height:7px;background:var(--y);transition:width .35s}
+  .wb .n{position:absolute;right:7px;top:3px;font-family:var(--mono);font-size:13px;color:var(--mute)}
+  .wb.stop{color:var(--red)}
+  .wb.flash{background:rgba(255,194,14,.25);border-color:var(--y)}
+  .btmSent{font-size:44px;font-weight:700;min-height:130px;line-height:1.3;padding:18px 22px}
+  .btmSent .u{color:var(--ink)} .btmSent .m{color:var(--y)}
+
+  /* training data */
+  #dtCv{width:100%;height:100%}
+  .units{display:flex;gap:8px}
+
+  /* chatgpt */
+  .chat{position:relative;height:640px;display:grid;grid-template-rows:auto minmax(0,1fr) auto;gap:12px;padding:18px}
+  .chat .msgs{display:flex;flex-direction:column;gap:12px;overflow:hidden;justify-content:flex-end;min-height:0}
+  .bub{max-width:88%;padding:12px 16px;border-radius:14px;font-size:20px;line-height:1.45}
+  .bub.u{align-self:flex-end;background:var(--panel2)}
+  .bub.a{align-self:flex-start;background:rgba(255,194,14,.07);border:1px solid rgba(255,194,14,.25)}
+  .bub.a .t{animation:fadeT .25s ease both}
+  @keyframes fadeT{0%{opacity:0;background:rgba(255,194,14,.4)}100%{opacity:1;background:transparent}}
+  .nextp{display:flex;gap:10px;align-items:center;font-family:var(--mono);font-size:15px;color:var(--mute);min-height:34px}
+  .nextp .c{border:1px solid var(--line);border-radius:7px;padding:3px 8px;white-space:pre}
+  .nextp .c.w{border-color:var(--y);color:var(--y)}
+  .prompts{display:flex;gap:8px;flex-wrap:wrap}
+  .prompts .btn{font-size:15px;padding:7px 12px}
+
+  /* wrap */
+  .bigq{font-size:68px;line-height:1.08;font-weight:700;letter-spacing:-.02em}
+  .bigq span{color:var(--y)}
+  .vs{display:grid;grid-template-columns:1fr auto 1fr;gap:30px;align-items:stretch}
+  .vs .card{padding:26px 28px;display:flex;flex-direction:column;gap:12px}
+  .vs .mid{align-self:center;font-family:var(--mono);font-size:22px;color:var(--mute)}
+  .vs h3{font-size:30px}
+</style>
+</head>
+<body>
+<div id="stage">
+  <img id="logo" src="{{LOGO}}" alt="Neumont University">
+  <div id="brand"><b>AAI101</b> &nbsp;·&nbsp; AI History · Part 2</div>
+
+  <!-- title -->
+  <section class="slide" data-id="title">
+    <canvas class="bg" id="bgNet"></canvas>
+    <div class="vignette"></div>
+    <div class="content center">
+      <div class="eyebrow rise" style="--i:0">AAI101 · AI History · Part 2</div>
+      <h1 class="rise" style="--i:1">From learning machines<br>to <span>ChatGPT</span></h1>
+      <p class="lede rise" style="--i:2">How neural networks came back: home robots, ImageNet, deep learning, transformers and large language models.</p>
+    </div>
+  </section>
+
+  <section class="slide tl" data-id="tl-1" data-upto="2"></section>
+
+  <!-- roomba -->
+  <section class="slide" data-id="roomba">
+    <div class="two wide-r">
+      <div class="stack" style="gap:20px">
+        <h2 class="rise" style="--i:0"><span class="n">2002 · iRobot Roomba</span>AI moves <span class="y">into the house</span></h2>
+        <p class="rise" style="--i:1">The first mass-produced home robot vacuum. No camera and no map, just a few simple behaviors reacting to its sensors:</p>
+        <ul class="bul rise" style="--i:2">
+          <li><b>Bump</b> into something? Turn and try a new direction.</li>
+          <li><b>Spiral</b> outward to cover open floor.</li>
+          <li><b>Cliff sensors</b> keep it from falling down stairs.</li>
+        </ul>
+        <div class="rmPhotos rise" style="--i:3">
+          <figure class="photo"><img src="{{IMG:roomba.png}}" alt="A Roomba robot vacuum"><figcaption>Roomba</figcaption></figure>
+          <figure class="vid"><video src="{{IMG:roomba-shark.mp4}}" muted loop playsinline autoplay></video><figcaption>Its most famous passenger</figcaption></figure>
+        </div>
+      </div>
+      <div class="stage-box rise" style="--i:2;height:680px">
+        <canvas id="rmCv"></canvas>
+        <div class="rmTop">
+          <button class="btn on" id="rmBounce">2002: bump &amp; turn</button>
+          <button class="btn" id="rmMap">Today: map &amp; plan</button>
+          <span class="sp"></span>
+          <button class="btn" id="rmFast">Speed ×1</button>
+          <button class="btn" id="rmReset">Reset</button>
+        </div>
+        <div class="cap" id="rmCap">cleaned 0% · click the floor to drop a sock</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- robots -->
+  <section class="slide" data-id="robots">
+    <div class="two wide-l">
+      <div>
+        <div class="rbView rise" style="--i:1"><video id="rbVid" muted loop playsinline autoplay></video></div>
+        <div class="rbBar rise" style="--i:2">
+          <button class="rbArr" id="rbPrev" aria-label="Previous clip">‹</button>
+          <button class="rbArr" id="rbNext" aria-label="Next clip">›</button>
+          <div><div class="rbName" id="rbName"></div><div class="rbWho" id="rbWho"></div></div>
+          <div class="rbDots" id="rbDots"></div>
+        </div>
+      </div>
+      <div class="stack" style="gap:18px">
+        <h2 class="rise" style="--i:0"><span class="n">Robots today</span>AI gets a <span class="y">body</span></h2>
+        <div class="co rise" style="--i:2">
+          <div class="card"><b>Boston Dynamics</b><p><b>Spot</b> (a four-legged robot) and <b>Atlas</b> (a humanoid) balance, climb, open doors and get back up when pushed.</p></div>
+          <div class="card"><b>Tesla Optimus</b><p>A humanoid robot built for repetitive, boring or dangerous jobs. Gen 2 (2023) can handle delicate objects like eggs.</p></div>
+        </div>
+        <div class="callout rise" style="--i:3"><b>Moravec’s paradox:</b> chess is easy for computers, but walking across a messy room or picking up an egg (easy for a toddler) is very hard.</div>
+      </div>
+    </div>
+  </section>
+
+  <section class="slide tl" data-id="tl-2" data-upto="3"></section>
+
+  <!-- ai > ml > dl -->
+  <section class="slide" data-id="nest">
+    <div class="two" style="grid-template-columns:1fr .95fr;gap:50px">
+      <div class="stage-box rise" style="--i:1;height:680px">
+        <svg id="nestSvg" viewBox="0 0 760 680"></svg>
+        <div id="nestDrop" style="position:absolute;inset:0;pointer-events:none"></div>
+      </div>
+      <div class="stack" style="gap:16px">
+        <h2 class="rise" style="--i:0"><span class="n">Words you’ll hear a lot</span>AI ⊃ ML ⊃ <span class="y">DL</span></h2>
+        <div class="defs rise" style="--i:2">
+          <div class="def" data-k="ai"><b class="y">ARTIFICIAL INTELLIGENCE</b><p>The broad field: machines doing tasks that usually need human intelligence.</p></div>
+          <div class="def" data-k="ml"><b style="color:var(--blue)">MACHINE LEARNING</b><p>AI that <b>learns patterns from data</b> instead of being explicitly programmed.</p></div>
+          <div class="def" data-k="dl"><b style="color:var(--green)">DEEP LEARNING</b><p>Machine learning with neural networks that have <b>many layers</b>.</p></div>
+        </div>
+        <div class="rise" style="--i:3">
+          <div class="eyebrow" style="font-size:15px;margin-bottom:10px">Sort it · pick a chip, then click the right circle</div>
+          <div class="chips" id="nestChips"></div>
+        </div>
+        <div class="fb rise" style="--i:4" id="nestFb"></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- imagenet -->
+  <section class="slide" data-id="imagenet">
+    <div class="stack" style="height:100%;gap:22px">
+      <h2 class="rise" style="--i:0"><span class="n">The data that changed everything</span>ImageNet &amp; the <span class="y">ILSVRC</span> challenge</h2>
+      <div class="inMosaic rise" style="--i:1"><img src="{{IMG:imagenet.jpg}}" alt="A mosaic of thousands of small labeled photos from ImageNet"></div>
+      <div class="two" style="grid-template-columns:1fr 1fr;gap:40px;height:auto;align-items:start">
+        <div class="stack rise" style="--i:2;gap:12px">
+          <div><div class="bignum" id="inNum">0</div><div class="stat" style="margin-top:6px">hand-labeled images in ImageNet</div></div>
+          <p style="font-size:21px">The <b>ImageNet Large Scale Visual Recognition Challenge</b> (2010–2017) asked: can your program name what’s in a photo? It used <b>1,000 categories</b> and about <b>1.2 million</b> training images.</p>
+          <div class="ctl"><a class="linkchip" href="https://image-net.org/" target="_blank" rel="noopener">image-net.org</a><a class="linkchip" href="https://www.kaggle.com/datasets/ifigotin/imagenetmini-1000" target="_blank" rel="noopener">ImageNet mini on Kaggle</a></div>
+        </div>
+        <div class="card labeler rise" style="--i:3">
+          <div class="eyebrow" style="font-size:15px">Could you label it yourself?</div>
+          <div style="font-size:19px">Seconds per image: <b class="y" id="inSec">2</b></div>
+          <input type="range" id="inRange" min="1" max="10" step="1" value="2">
+          <div class="big" id="inOut"></div>
+          <div class="note">Working nonstop, no sleep. ImageNet was labeled by thousands of crowd workers online (Amazon Mechanical Turk).</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- pipeline -->
+  <section class="slide" data-id="pipeline">
+    <div class="two" style="grid-template-columns:.8fr 1.2fr;gap:50px">
+      <div class="stack" style="gap:18px">
+        <h2 class="rise" style="--i:0"><span class="n">Image classification</span>How a network <span class="y">sees</span> a cat</h2>
+        <div class="plText rise" style="--i:1" id="plText"></div>
+        <div class="ctl rise" style="--i:2"><button class="btn" id="plBack">← Back</button><button class="btn on" id="plNext">Next step →</button></div>
+      </div>
+      <div class="rise" style="--i:1">
+        <div class="pl" id="plTabs"></div>
+        <div class="stage-box" style="height:600px"><canvas id="plCv"></canvas><div class="cap" id="plCap">hover the pixels</div></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- fully connected -->
+  <section class="slide" data-id="fcn">
+    <div class="two" style="grid-template-columns:.85fr 1.15fr;gap:46px">
+      <div class="stack" style="gap:18px">
+        <h2 class="rise" style="--i:0"><span class="n">Inside the network</span>Fully <span class="y">connected</span></h2>
+        <p class="rise" style="--i:1">Every neuron in one layer connects to <b>every</b> neuron in the next. Each connection has its own <b>weight</b>, and each neuron adds a <b>bias</b>. Those numbers are what the network learns.</p>
+        <p class="rise hint" style="--i:2">Hover a neuron to see its connections. Change the layer sizes and watch the count.</p>
+        <div class="card rise" style="--i:3;padding:18px 22px">
+          <div class="count" id="fcCount">0</div>
+          <div class="stat" style="margin-top:6px" id="fcSub">weights + biases to learn</div>
+        </div>
+        <div class="ctl rise" style="--i:4"><button class="btn on" data-fc="3,5,5,2">Small (3·5·5·2)</button><button class="btn" data-fc="784,128,64,10">Digit reader (28×28 image)</button></div>
+        <div class="note rise" style="--i:5">AlexNet had about <b>60 million</b> of these numbers. Today’s large language models have <b>billions</b>.</div>
+      </div>
+      <div class="rise" style="--i:2">
+        <div class="stage-box" style="height:560px"><svg id="fcSvg" viewBox="0 0 860 560"></svg></div>
+        <div class="lyr" id="fcLyr"></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- alexnet chart -->
+  <section class="slide" data-id="alexnet" style="cursor:pointer">
+    <div class="two" style="grid-template-columns:.8fr 1.2fr;gap:46px">
+      <div class="stack" style="gap:18px">
+        <h2 class="rise" style="--i:0"><span class="n">2012 · AlexNet</span>The <span class="y">deep learning</span> moment</h2>
+        <p class="rise" style="--i:1">Before 2012, image recognition used <b>hand-crafted features</b>: people wrote code to find edges, corners and textures.</p>
+        <p class="rise" style="--i:2"><b>AlexNet</b> (Krizhevsky, Sutskever &amp; Hinton) was a deep <b>convolutional neural network</b> that learned its own features. It won with a top-5 error of <b class="y">15.3%</b>. Second place: <b>26.2%</b>.</p>
+        <div class="callout rise" style="--i:3" id="axNote">Click to step through the years.</div>
+      </div>
+      <div class="stage-box rise" style="--i:2;height:640px"><svg id="axSvg" viewBox="0 0 900 640"></svg></div>
+    </div>
+  </section>
+
+  <!-- doodle -->
+  <section class="slide" data-id="doodle">
+    <div class="two" style="grid-template-columns:1.1fr .9fr;gap:46px">
+      <div class="stage-box rise" style="--i:1;height:680px;border-color:#d6d2c6">
+        <canvas id="ddCv"></canvas>
+        <div class="ddTop"><div class="p">Draw: <span id="ddWord">a circle</span></div><span class="sp"></span><button class="btn" id="ddClear">Clear</button><button class="btn" id="ddSkip">Skip</button></div>
+        <div class="ddSay" id="ddSay"></div>
+      </div>
+      <div class="stack" style="gap:18px">
+        <h2 class="rise" style="--i:0"><span class="n">Quick, Draw!</span>Can a computer recognize <span class="y">doodles</span>?</h2>
+        <div class="card rise" style="--i:2;padding:18px 22px"><div class="eyebrow" style="font-size:14px;margin-bottom:12px">What it thinks you drew</div><div class="guess" id="ddGuess"></div></div>
+        <p class="rise note" style="--i:3;font-size:17px">This little demo compares your stroke to a few stored shapes. Google’s <b>Quick, Draw!</b> uses a real neural network trained on <b>50 million</b> doodles from players around the world.</p>
+        <a class="linkchip rise" style="--i:4" href="https://quickdraw.withgoogle.com/" target="_blank" rel="noopener">quickdraw.withgoogle.com</a>
+      </div>
+    </div>
+  </section>
+
+  <!-- backprop -->
+  <section class="slide" data-id="backprop">
+    <div class="two" style="grid-template-columns:.78fr 1.22fr;gap:46px">
+      <div class="stack" style="gap:16px">
+        <h2 class="rise" style="--i:0"><span class="n">1986 · flashback</span>How networks <span class="y">learn</span>: backpropagation</h2>
+        <ol class="num bpSteps rise" style="--i:1" id="bpSteps">
+          <li><b>Forward:</b> the network makes a guess.</li>
+          <li><b>Loss:</b> measure how wrong the guess was.</li>
+          <li><b>Backward:</b> send the error back through the layers to find how much each weight is to blame.</li>
+          <li><b>Nudge:</b> adjust every weight a tiny bit to reduce the error. Repeat thousands of times.</li>
+        </ol>
+        <p class="rise hint" style="--i:2">Goal: color the map so yellow dots land on yellow and blue on blue. The diagonal pattern is impossible for a single perceptron.</p>
+        <div class="ctl rise" style="--i:3"><button class="btn" id="bpStep">One step</button><button class="btn on" id="bpRun">Train ▶</button><button class="btn" id="bpReset">New random weights</button></div>
+      </div>
+      <div class="stage-box rise" style="--i:2;height:640px"><canvas id="bpCv"></canvas><div class="cap" id="bpCap">epoch 0</div></div>
+    </div>
+  </section>
+
+  <!-- recipe -->
+  <section class="slide" data-id="recipe">
+    <div class="stack" style="gap:22px;height:100%">
+      <h2 class="rise" style="--i:0"><span class="n">Why 2012 and not 1986?</span>The recipe: <span class="y">data + algorithm + compute</span></h2>
+      <div class="ing rise" style="--i:1" id="ing"></div>
+      <div class="ctl rise" style="--i:2"><span class="stat">Try a year:</span><div class="years" id="years"></div></div>
+      <div class="card model rise" style="--i:3">
+        <svg id="rcNet" viewBox="0 0 260 150" style="width:260px;height:150px"></svg>
+        <div><div class="eyebrow" style="font-size:15px">Model training</div><div class="gauge" style="margin-top:10px"><i id="rcG"></i></div><div class="verdict2" id="rcV"></div></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- gpu -->
+  <section class="slide" data-id="gpu">
+    <div class="two" style="grid-template-columns:.8fr 1.2fr;gap:46px">
+      <div class="stack" style="gap:18px">
+        <h2 class="rise" style="--i:0"><span class="n">The compute</span>Thank <span class="y">video games</span></h2>
+        <p class="rise" style="--i:1">GPUs were built to shade millions of pixels <b>at the same time</b> for games. Training a neural network is the same kind of math: huge grids of multiply-and-add.</p>
+        <p class="rise" style="--i:2">AlexNet was trained on <b>two NVIDIA GTX 580</b> gaming cards in about <b>five to six days</b>.</p>
+        <div class="callout rise" style="--i:3">A CPU has a few fast cores. A GPU has <b>hundreds or thousands</b> of simpler ones.</div>
+        <div class="ctl rise" style="--i:4"><button class="btn on" id="gpGo">Race ▶</button></div>
+      </div>
+      <div class="stage-box rise" style="--i:2;height:640px;padding:18px;background:var(--panel)">
+        <div class="race">
+          <div class="lane"><div class="hd"><b>CPU</b><span class="stat">8 cores</span><span class="tm" id="gpT0">0.0 s</span></div><canvas id="gpC0"></canvas></div>
+          <div class="lane"><div class="hd"><b>GPU</b><span class="stat">512 cores (GTX 580)</span><span class="tm" id="gpT1">0.0 s</span></div><canvas id="gpC1"></canvas></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="slide tl" data-id="tl-3" data-upto="4"></section>
+
+  <!-- nlp tokens -->
+  <section class="slide" data-id="nlp">
+    <div class="two" style="grid-template-columns:.8fr 1.2fr;gap:50px">
+      <div class="stack" style="gap:18px">
+        <h2 class="rise" style="--i:0"><span class="n">Natural Language Processing</span>Text becomes <span class="y">tokens</span></h2>
+        <p class="rise" style="--i:1"><b>NLP</b> is the part of AI that understands and generates human language. Step one: chop text into <b>tokens</b> (words or pieces of words) and turn each into a number.</p>
+        <div class="tasks rise" style="--i:2"><span class="pill">text generation</span><span class="pill">question answering</span><span class="pill">summarizing</span><span class="pill">translation</span><span class="pill">sentiment</span><span class="pill">finding names &amp; dates</span></div>
+        <p class="rise note" style="--i:3">Rule of thumb: in English, one token is about <b>4 characters</b>. Simplified tokenizer for this demo.</p>
+      </div>
+      <div class="stack rise" style="--i:2;gap:16px">
+        <input class="tokIn" id="tokIn" value="The dog chased the ball across the yard and brought it back to its owner." spellcheck="false" aria-label="Type a sentence">
+        <div class="card" style="padding:18px;min-height:250px"><div class="eyebrow" style="font-size:14px;margin-bottom:12px">Tokens · <span id="tokN"></span></div><div class="toks" id="toks"></div></div>
+        <div class="card" style="padding:16px 18px"><div class="eyebrow" style="font-size:14px;margin-bottom:10px">What the model actually sees</div><div class="mono" style="font-size:18px;color:var(--mute);line-height:1.5;word-break:break-all" id="tokIds"></div></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- embeddings -->
+  <section class="slide" data-id="embed">
+    <div class="two" style="grid-template-columns:.72fr 1.28fr;gap:46px">
+      <div class="stack" style="gap:18px">
+        <h2 class="rise" style="--i:0"><span class="n">Word embeddings</span>Words as <span class="y">points</span> in space</h2>
+        <p class="rise" style="--i:1">Each token becomes a list of numbers: a position in “meaning space”. Words with similar meanings end up <b>close together</b>.</p>
+        <p class="rise" style="--i:2">Directions mean something too: <b>man → woman</b> points the same way as <b>king → queen</b>.</p>
+        <p class="rise note" style="--i:3">Real models use hundreds or thousands of dimensions. This map is a hand-made 2D sketch.</p>
+        <a class="linkchip rise" style="--i:4" href="https://projector.tensorflow.org/" target="_blank" rel="noopener">projector.tensorflow.org</a>
+      </div>
+      <div class="stage-box rise" style="--i:2;height:680px">
+        <canvas id="emCv"></canvas>
+        <div class="emTop"><button class="btn" data-an="king,man,woman">king − man + woman</button><button class="btn" data-an="puppy,dog,cat">puppy − dog + cat</button><button class="btn" data-an="prince,boy,girl">prince − boy + girl</button></div>
+        <div class="emSay" id="emSay">Click a word to see its nearest neighbors.</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- gpt -->
+  <section class="slide" data-id="gpt" style="cursor:pointer">
+    <div class="two" style="grid-template-columns:1fr 1fr;gap:60px">
+      <div class="stack" style="gap:30px" id="gptRows">
+        <div class="gptRow"><div class="L">G</div><div><div class="w">enerative</div><p>It <b>creates</b> new text by predicting the next word, again and again.</p></div></div>
+        <div class="gptRow"><div class="L">P</div><div><div class="w">re-trained</div><p>It first reads a <b>massive</b> amount of text (books, articles, websites) to learn how language works. Later it can be fine-tuned for a job, like chatting.</p></div></div>
+        <div class="gptRow"><div class="L">T</div><div><div class="w">ransformer</div><p>The network design from 2017. It uses <b>self-attention</b> to look at every word at once, so it can follow long sentences and train fast on GPUs.</p></div></div>
+      </div>
+      <div class="stack" style="gap:18px">
+        <h2 class="rise" style="--i:0"><span class="n">What does GPT stand for?</span>Three words, <span class="y">one idea</span></h2>
+        <div class="stage-box rise" style="--i:1;height:470px"><canvas id="gptCv"></canvas></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- attention -->
+  <section class="slide" data-id="attention">
+    <div class="stack" style="gap:14px;height:100%">
+      <div class="two" style="grid-template-columns:1fr 1fr;gap:40px;height:auto;align-items:start">
+        <h2 class="rise" style="--i:0"><span class="n">2017 · Google</span>Attention: every word looks at <span class="y">every other word</span></h2>
+        <div class="card paper rise" style="--i:1"><div class="tt">Attention Is All You Need</div><div class="au">Vaswani, Shazeer, Parmar, Uszkoreit, Jones, Gomez, Kaiser &amp; Polosukhin · Google Brain / Google Research · 2017</div></div>
+      </div>
+      <div class="atBox rise" style="--i:2">
+        <svg id="atSvg"></svg>
+        <div class="atWords" id="atWords"></div>
+        <div style="position:absolute;left:0;right:0;top:420px;display:flex;flex-direction:column;align-items:center;gap:14px">
+          <div class="ctl"><button class="btn on" id="atAll">Attention (look at everything)</button><button class="btn" id="atNear">Old way (only nearby words)</button></div>
+          <div class="fb" id="atSay" style="text-align:center;font-size:21px;max-width:1100px"></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- next word -->
+  <section class="slide" data-id="nextword">
+    <div class="two" style="grid-template-columns:.9fr 1.1fr;gap:50px">
+      <div class="stack" style="gap:20px">
+        <h2 class="rise" style="--i:0"><span class="n">The core trick</span>Predict the <span class="y">next word</span></h2>
+        <div class="cow rise" style="--i:1"><img src="{{IMG:cow-moon.jpg}}" alt="A cow leaping over a full moon"></div>
+        <p class="rise" style="--i:2">A language model looks at the words so far and gives every possible next word a <b>probability</b>. Pick one, add it, repeat.</p>
+      </div>
+      <div class="stack rise" style="--i:2;gap:18px">
+        <div class="card" style="padding:20px 24px"><div class="nwSent" id="nwSent"></div></div>
+        <div class="card" style="padding:18px 22px"><div class="eyebrow" style="font-size:14px;margin-bottom:12px" id="nwHead">Next word after “the”</div><div class="probs" id="nwProbs"></div></div>
+        <div class="ctl"><button class="btn on" id="nwTop">Pick most likely</button><button class="btn" id="nwRoll">Roll the dice 🎲</button><button class="btn" id="nwReset">Start over</button><span class="hint">or click any word</span></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- be the model -->
+  <section class="slide" data-id="bethe">
+    <div class="stack" style="gap:18px;height:100%">
+      <div style="display:flex;align-items:flex-end;gap:30px">
+        <h2 class="rise" style="--i:0;flex:1"><span class="n">Class activity</span>You are the <span class="y">language model</span></h2>
+        <div class="tabs rise" style="--i:1" id="btTabs"></div>
+      </div>
+      <p class="rise" style="--i:1">Build a sentence one word at a time, then let the model try. The yellow bar under each word is how likely the model thinks it comes next.</p>
+      <div class="card btmSent rise" style="--i:2" id="btSent"></div>
+      <div class="bank rise" style="--i:3" id="btBank"></div>
+      <div class="ctl rise" style="--i:4"><button class="btn on" id="btModel">Let the model write one ▶</button><button class="btn" id="btClear">Clear</button><span class="hint" id="btHint"></span></div>
+    </div>
+  </section>
+
+  <!-- training data -->
+  <section class="slide" data-id="data" style="cursor:pointer">
+    <div class="two" style="grid-template-columns:.7fr 1.3fr;gap:46px">
+      <div class="stack" style="gap:16px">
+        <h2 class="rise" style="--i:0"><span class="n">Pre-trained on…</span>How much did it <span class="y">read</span>?</h2>
+        <p class="rise" style="--i:1">1 GB of text ≈ <b>500,000 pages</b> ≈ <b>1,000 books</b>.</p>
+        <div class="units rise" style="--i:2" id="dtUnits"><button class="btn on" data-u="books">Books</button><button class="btn" data-u="pages">Pages</button><button class="btn" data-u="gb">GB</button></div>
+        <p class="rise" style="--i:3">For comparison, reading <b>one book a week for 70 years</b> is about <b>3,640 books</b>.</p>
+        <p class="rise note" style="--i:4">GPT-4’s training data size was never published; 2 TB is an assumption for this example.</p>
+        <div class="hint rise" style="--i:5">Click to stack the next model.</div>
+      </div>
+      <div class="stage-box rise" style="--i:2;height:680px"><canvas id="dtCv"></canvas></div>
+    </div>
+  </section>
+
+  <section class="slide tl" data-id="tl-4" data-upto="5"></section>
+
+  <!-- chatgpt -->
+  <section class="slide" data-id="chatgpt">
+    <div class="two" style="grid-template-columns:.8fr 1.2fr;gap:46px">
+      <div class="stack" style="gap:18px">
+        <h2 class="rise" style="--i:0"><span class="n">November 30, 2022</span>ChatGPT goes <span class="y">public</span></h2>
+        <ul class="bul rise" style="--i:1">
+          <li>Built on <b>GPT-3.5</b>, then trained with <b>human feedback</b> to follow instructions and hold a conversation.</li>
+          <li>Over <b>1 million users</b> in its first 5 days.</li>
+          <li>Under the hood it’s still the same loop: <b>predict the next token</b>, add it, repeat.</li>
+        </ul>
+        <p class="rise note" style="--i:2">Demo: pick a prompt and watch the answer appear one token at a time, with the runner-up choices underneath. (An illustration: real models choose from about 100,000 tokens.)</p>
+      </div>
+      <div class="card chat rise" style="--i:2">
+        <div class="prompts" id="cgPrompts"></div>
+        <div class="msgs" id="cgMsgs"></div>
+        <div class="nextp" id="cgNext"></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- wrap -->
+  <section class="slide" data-id="wrap">
+    <div class="stack" style="gap:34px;height:100%;justify-content:center">
+      <div>
+        <div class="eyebrow rise" style="--i:0">Back to the big question</div>
+        <div class="bigq rise" style="--i:1;font-size:58px;margin-top:14px">Can human thought be replicated by <span>logic</span> and <span>rules</span>?</div>
+      </div>
+      <div class="vs rise" style="--i:2">
+        <div class="card"><div class="eyebrow" style="font-size:15px">1950s – 1990s</div><h3>Write the rules</h3><ul class="bul"><li>Logic, search and expert knowledge typed in by people</li><li>ELIZA, MYCIN, Deep Blue</li><li>Breaks when the world is messy</li></ul></div>
+        <div class="mid">→</div>
+        <div class="card" style="border-color:rgba(255,194,14,.5)"><div class="eyebrow" style="font-size:15px">2010s – today</div><h3>Learn from <span class="y">data</span></h3><ul class="bul"><li>Neural networks find the patterns themselves</li><li>AlexNet, Transformers, ChatGPT</li><li>Powered by huge data and GPU compute</li></ul></div>
+      </div>
+      <p class="rise lede" style="--i:3;font-size:27px">Discuss: is predicting the next word the same as <b>thinking</b>? What’s missing?</p>
+    </div>
+  </section>
+
+  <div id="chrome"><span class="sp"></span><button class="nbtn" id="prev" aria-label="Previous">←</button><span id="count"></span><button class="nbtn" id="next" aria-label="Next">→</button><button class="nbtn" id="fs" aria-label="Fullscreen" title="Fullscreen (F)">⤢</button></div>
+  <div id="progress"></div>
+  <div id="livewrap"><span id="liveauth"></span><div id="livebar"></div></div>
+  <div id="toast" role="status"></div>
+</div>
+<script>
+{{APP}}
+</script>
+</body>
+</html>

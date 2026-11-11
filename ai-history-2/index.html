@@ -1,0 +1,1717 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta name="deck-id" content="ai-history-2">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>AAI101 · AI History · Part 2</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;700&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#121214; --panel:#1c1c20; --panel2:#24242a; --line:#2e2e35;
+    --ink:#f3f1ea; --mute:#9b988f; --y:#ffc20e; --amber:#ff8a1f; --red:#ff5a4e; --green:#5fd68a; --blue:#6ab8ff;
+    --sans:"Space Grotesk",system-ui,-apple-system,"Segoe UI",sans-serif;
+    --mono:"JetBrains Mono",ui-monospace,Consolas,monospace;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  html,body{height:100%;background:#000;overflow:hidden;color:var(--ink);font-family:var(--sans)}
+  #stage{position:absolute;left:50%;top:50%;width:1600px;height:900px;background:var(--bg);overflow:hidden}
+
+  .slide{position:absolute;inset:0;padding:100px 110px 90px;opacity:0;visibility:hidden;transform:scale(1.015);
+    transition:opacity .6s ease,transform .8s cubic-bezier(.2,.7,.2,1),visibility 0s .6s}
+  .slide.active{opacity:1;visibility:visible;transform:none;transition:opacity .6s ease,transform .8s cubic-bezier(.2,.7,.2,1),visibility 0s}
+  .rise{opacity:0;transform:translateY(26px);transition:opacity .7s ease,transform .8s cubic-bezier(.2,.7,.2,1)}
+  .slide.active .rise{opacity:1;transform:none;transition-delay:calc(var(--i,0) * 110ms + 150ms)}
+
+  .bg{position:absolute;inset:0;width:100%;height:100%;display:block}
+  .vignette{position:absolute;inset:0;background:radial-gradient(ellipse at center,rgba(18,18,20,.5) 0%,rgba(18,18,20,.88) 60%,var(--bg) 100%);pointer-events:none}
+  .content{position:relative;z-index:1;height:100%}
+  .center{display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center}
+
+  .eyebrow{font-family:var(--mono);font-size:20px;letter-spacing:.18em;text-transform:uppercase;color:var(--y)}
+  h1{font-size:118px;line-height:.98;font-weight:700;letter-spacing:-.03em;margin:22px 0 34px}
+  h1 span,h2 span.y{color:var(--y)}
+  h2{font-size:56px;font-weight:700;letter-spacing:-.02em;line-height:1.06}
+  h2 .n{font-family:var(--mono);font-size:21px;color:var(--y);font-weight:600;display:block;letter-spacing:.12em;margin-bottom:12px}
+  .lede{font-size:31px;line-height:1.4;color:#d6d3cb;max-width:1100px}
+  p{font-size:25px;line-height:1.45;color:#d6d3cb}
+  b,strong{color:var(--ink)}
+  i.t{font-style:italic;color:var(--ink)}
+  .y{color:var(--y)} .mono{font-family:var(--mono)} .muted{color:var(--mute)}
+  .card{background:var(--panel);border:1px solid var(--line);border-radius:18px}
+
+  .bul{list-style:none;display:flex;flex-direction:column;gap:14px;margin-top:6px}
+  .bul li{font-size:24px;line-height:1.4;color:#d6d3cb;position:relative;padding-left:26px}
+  .bul li::before{content:"";position:absolute;left:0;top:.5em;width:11px;height:11px;background:var(--y);border-radius:3px}
+  .num{list-style:none;counter-reset:n;display:flex;flex-direction:column;gap:14px}
+  .num li{counter-increment:n;font-size:24px;line-height:1.4;color:#d6d3cb;position:relative;padding-left:44px}
+  .num li::before{content:counter(n);position:absolute;left:0;top:.18em;font-family:var(--mono);font-size:16px;line-height:1.4;color:var(--bg);background:var(--y);border-radius:6px;padding:0 9px}
+
+  .two{display:grid;grid-template-columns:1fr 1fr;gap:64px;height:100%;align-items:center}
+  .two.wide-r{grid-template-columns:.85fr 1.15fr}
+  .stack{display:flex;flex-direction:column;gap:26px}
+  .stage-box{position:relative;height:620px;border-radius:20px;overflow:hidden;border:1px solid var(--line);background:#0d0d0f}
+  .stage-box canvas,.stage-box svg{position:absolute;inset:0;width:100%;height:100%}
+  .cap{position:absolute;left:18px;bottom:14px;font-family:var(--mono);font-size:15px;color:var(--mute);background:rgba(13,13,15,.8);padding:6px 10px;border-radius:8px;z-index:2}
+  .callout{border-left:4px solid var(--y);padding:14px 20px;background:rgba(255,194,14,.07);border-radius:0 12px 12px 0;font-size:22px;line-height:1.45;color:#e5e2da}
+  .linkchip{display:inline-flex;align-items:center;gap:10px;font-family:var(--mono);font-size:17px;color:var(--ink);border:1px solid var(--line);background:var(--panel);border-radius:999px;padding:8px 16px;text-decoration:none;width:max-content}
+  .linkchip:hover{border-color:var(--y);color:var(--y)}
+  .linkchip::before{content:"↗";color:var(--y)}
+  .btn{background:var(--panel2);border:1px solid var(--line);color:var(--ink);font:500 19px var(--sans);padding:10px 20px;border-radius:10px;cursor:pointer}
+  .btn:hover{border-color:var(--y);color:var(--y)}
+  .btn.on{background:var(--y);color:var(--bg);border-color:var(--y)}
+  .tag{display:inline-block;font-family:var(--mono);font-size:15px;padding:4px 10px;border-radius:6px;font-weight:600;letter-spacing:.04em}
+  .t-red{background:rgba(255,90,78,.15);color:var(--red)} .t-green{background:rgba(95,214,138,.15);color:var(--green)} .t-blue{background:rgba(106,184,255,.15);color:var(--blue)} .t-y{background:rgba(255,194,14,.15);color:var(--y)}
+
+  /* chrome */
+  #chrome{position:absolute;left:0;right:0;bottom:0;height:56px;display:flex;align-items:center;gap:18px;padding:0 32px;z-index:10;font-family:var(--mono);font-size:16px;color:var(--mute);pointer-events:none}
+  #chrome button{pointer-events:auto}
+  #chrome .sp{flex:1}
+  #brand{position:absolute;left:32px;top:28px;z-index:10;font-family:var(--mono);font-size:15px;letter-spacing:.14em;color:var(--mute);text-transform:uppercase}
+  #brand b{color:var(--y);font-weight:600}
+  #logo{position:absolute;right:32px;top:22px;height:44px;z-index:10;pointer-events:none;filter:drop-shadow(0 2px 8px rgba(0,0,0,.5))}
+  #progress{position:absolute;left:0;bottom:0;height:4px;background:var(--y);transition:width .5s cubic-bezier(.2,.7,.2,1);z-index:11}
+  .nbtn{background:transparent;border:1px solid var(--line);color:var(--ink);font:inherit;width:40px;height:34px;border-radius:8px;cursor:pointer}
+  .nbtn:hover{border-color:var(--y);color:var(--y)}
+
+  /* timeline */
+  .tlwrap{position:absolute;left:90px;right:90px;top:250px;height:520px}
+  .tlaxis{position:absolute;left:0;right:0;top:50%;height:3px;background:var(--line);border-radius:2px}
+  .tlfill{position:absolute;left:0;top:50%;height:3px;background:linear-gradient(90deg,var(--amber),var(--y));border-radius:2px;width:0;transition:width 1.2s cubic-bezier(.4,0,.2,1) .2s}
+  .tlarrow{position:absolute;right:-6px;top:calc(50% - 7px);width:0;height:0;border-left:14px solid var(--line);border-top:8px solid transparent;border-bottom:8px solid transparent}
+  .ev{position:absolute;width:300px;transform:translateX(-50%)}
+  .ev .dot{position:absolute;left:50%;width:22px;height:22px;margin-left:-11px;border-radius:50%;background:var(--bg);border:3px solid var(--mute)}
+  .ev .stem{position:absolute;left:50%;width:2px;margin-left:-1px;background:var(--line)}
+  .ev .box{position:absolute;left:0;right:0;padding:16px 18px;border-radius:14px;background:var(--panel);border:1px solid var(--line)}
+  .ev .yr{font-family:var(--mono);font-size:22px;color:var(--y);font-weight:600}
+  .ev .tx{font-size:18px;line-height:1.4;color:#c9c6be;margin-top:6px}
+  .ev.up .box{bottom:calc(260px + 46px)} .ev.up .stem{bottom:260px;height:46px} .ev.up .dot{top:249px}
+  .ev.dn .box{top:calc(260px + 46px)} .ev.dn .stem{top:260px;height:46px} .ev.dn .dot{top:249px}
+  .ev.done .dot{border-color:var(--y);background:var(--y)}
+  .ev.done{opacity:.55}
+  .ev.now{opacity:1}
+  .ev.now .box{border-color:var(--y);box-shadow:0 0 0 4px rgba(255,194,14,.1),0 20px 50px rgba(0,0,0,.5)}
+  .ev.now .dot{box-shadow:0 0 0 8px rgba(255,194,14,.18)}
+  .ev.now .tx{color:var(--ink)}
+  .ev.new{opacity:0;transform:translateX(-50%) translateY(20px);transition:opacity .7s ease .9s,transform .8s cubic-bezier(.2,.7,.2,1) .9s}
+  .slide.active .ev.new{opacity:1;transform:translateX(-50%)}
+  .ev.future{opacity:.12}
+  .ev.future .box{background:transparent;border-style:dashed}
+  .ev.future .tx,.ev.future .yr{visibility:hidden}
+  .ev.winter .box{border-color:var(--blue);box-shadow:0 0 0 4px rgba(106,184,255,.12)} .ev.winter .yr{color:var(--blue)} .ev.winter .dot{background:var(--blue);border-color:var(--blue)}
+
+  /* live class sync */
+  #livewrap{position:absolute;left:32px;bottom:11px;z-index:12;display:flex;gap:12px;align-items:center;font-family:var(--mono);font-size:15px}
+  #livebar,#liveauth{display:flex;gap:12px;align-items:center}
+  #liveauth:empty,#livebar:empty{display:none}
+  .lv{display:inline-flex;align-items:center;gap:9px;background:var(--panel);border:1px solid var(--line);color:var(--mute);border-radius:999px;padding:6px 14px;font:inherit}
+  button.lv{cursor:pointer} button.lv:hover{border-color:var(--y)}
+  .lv.on{border-color:var(--y);color:var(--y)}
+  .lv .dot{width:9px;height:9px;border-radius:50%;background:#55534d}
+  .lv.on .dot{background:var(--red);box-shadow:0 0 0 0 rgba(255,90,78,.6);animation:lvp 1.6s infinite}
+  @keyframes lvp{70%{box-shadow:0 0 0 8px rgba(255,90,78,0)}100%{box-shadow:0 0 0 0 rgba(255,90,78,0)}}
+  .lvc{color:var(--mute)}
+  .nbtn:disabled{opacity:.25;cursor:not-allowed;border-color:var(--line);color:var(--ink)}
+  #toast{position:absolute;left:50%;bottom:76px;z-index:20;transform:translate(-50%,16px);opacity:0;pointer-events:none;background:var(--panel2);border:1px solid var(--y);color:var(--ink);font-size:20px;padding:12px 22px;border-radius:12px;transition:opacity .3s,transform .3s;box-shadow:0 12px 40px rgba(0,0,0,.5)}
+  #toast.on{opacity:1;transform:translate(-50%,0)}
+  /* portraits */
+  .who{display:flex;gap:20px;align-items:center}
+  .ph{position:relative;flex:none;width:104px;height:130px;border-radius:12px;overflow:hidden;border:1px solid var(--line);background:#222}
+  .ph img{width:100%;height:100%;object-fit:cover;display:block;filter:grayscale(1) contrast(1.06) brightness(.96)}
+  .ph::after{content:"";position:absolute;inset:0;background:var(--y);mix-blend-mode:color;opacity:.16;pointer-events:none}
+  .who .nm{font-size:25px;font-weight:700;line-height:1.15}
+  .who .dt{font-family:var(--mono);font-size:16px;color:var(--y);margin-top:4px}
+  .who .rl{font-size:17px;color:var(--mute);margin-top:6px;line-height:1.35}
+  .who.tall .ph{width:200px;height:250px}
+  .photo{position:relative;border-radius:14px;overflow:hidden;border:1px solid var(--line)}
+  .photo img{width:100%;height:210px;object-fit:cover;object-position:center 30%;display:block;filter:grayscale(1) contrast(1.05)}
+  .photo::after{content:"";position:absolute;inset:0;background:var(--y);mix-blend-mode:color;opacity:.14;pointer-events:none}
+  .photo figcaption{position:absolute;left:12px;bottom:10px;font-family:var(--mono);font-size:14px;color:var(--ink);background:rgba(13,13,15,.8);padding:4px 9px;border-radius:7px;z-index:1}
+  .ev .av{width:40px;height:40px;border-radius:50%;object-fit:cover;filter:grayscale(1);border:2px solid var(--line);flex:none}
+  .ev .yrow{display:flex;align-items:center;gap:10px}
+  .ev.now .av{border-color:var(--y)}
+  /* shared bits for part 2 */
+  .two.wide-l{grid-template-columns:1.15fr .85fr}
+  .two.top{align-items:start}
+  .ctl{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+  .ctl .btn{font-size:16px;padding:8px 15px}
+  .hint{font-size:16px;color:var(--mute);line-height:1.4}
+  .stat{font-family:var(--mono);font-size:16px;color:var(--mute)}
+  .stat b{color:var(--y);font-weight:600}
+  .vid{position:relative;border-radius:14px;overflow:hidden;border:1px solid var(--line);background:#000}
+  .vid video{display:block;width:100%;height:100%;object-fit:cover}
+  .vid figcaption{position:absolute;left:12px;bottom:10px;font-family:var(--mono);font-size:14px;color:var(--ink);background:rgba(13,13,15,.8);padding:4px 9px;border-radius:7px}
+  .pill{display:inline-block;font-family:var(--mono);font-size:15px;border:1px solid var(--line);border-radius:999px;padding:5px 12px;color:var(--mute)}
+  .note{font-size:15px;color:var(--mute);line-height:1.4}
+  .shake{animation:shk .4s}
+  @keyframes shk{20%,60%{transform:translateX(-6px)}40%,80%{transform:translateX(6px)}}
+
+  /* roomba */
+  #rmCv{cursor:crosshair}
+  .rmTop{position:absolute;left:14px;right:14px;top:12px;display:flex;gap:10px;align-items:center;z-index:2}
+  .rmTop .sp{flex:1}
+  .rmPhotos{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+  .rmPhotos .photo img{height:170px;filter:none;object-fit:contain;background:#fff}
+  .rmPhotos .vid{height:172px}
+
+  /* robots */
+  .rbView{position:relative;height:540px;border-radius:20px;overflow:hidden;border:1px solid var(--line);background:#000}
+  .rbView video{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
+  .rbBar{display:flex;align-items:center;gap:14px;margin-top:14px}
+  .rbBar .amTitle{text-align:left}
+  .rbArr{width:48px;height:48px;border-radius:50%;border:1px solid var(--line);background:var(--panel2);color:var(--ink);font-size:26px;line-height:1;cursor:pointer;flex:none}
+  .rbArr:hover{border-color:var(--y);color:var(--y)}
+  .rbName{font-size:24px;font-weight:700}
+  .rbWho{font-family:var(--mono);font-size:15px;color:var(--y);margin-top:3px}
+  .rbDots{display:flex;gap:6px;margin-left:auto}
+  .rbDots i{width:9px;height:9px;border-radius:50%;background:#3a3a42;cursor:pointer}
+  .rbDots i.on{background:var(--y)}
+  .co{display:flex;flex-direction:column;gap:10px}
+  .co .card{padding:16px 20px}
+  .co .card b{font-size:22px}
+  .co .card p{font-size:19px;margin-top:4px}
+
+  /* ai > ml > dl */
+  #nestSvg text{font-family:var(--sans)}
+  #nestSvg .ring{cursor:pointer;transition:fill .3s,stroke .3s}
+  .defs{display:flex;flex-direction:column;gap:10px}
+  .def{padding:12px 16px;border-radius:12px;border:1px solid var(--line);background:var(--panel);transition:border-color .3s,background .3s}
+  .def > b{font-family:var(--mono);font-size:15px;letter-spacing:.08em}
+  .def p{font-size:18px;margin-top:3px}
+  .def.hi{border-color:var(--y);background:rgba(255,194,14,.06)}
+  .chips{display:flex;flex-wrap:wrap;gap:9px}
+  .chip{font:500 17px var(--sans);color:var(--ink);background:var(--panel2);border:1px solid var(--line);border-radius:999px;padding:7px 14px;cursor:pointer;user-select:none;transition:background .2s,border-color .2s,opacity .3s}
+  .chip:hover{border-color:var(--y)}
+  .chip.sel{background:var(--y);color:var(--bg);border-color:var(--y)}
+  .chip.used{opacity:0;pointer-events:none;position:absolute}
+  .nestPlaced{position:absolute;transform:translate(-50%,-50%);font:500 15px var(--sans);color:var(--bg);background:var(--y);border-radius:999px;padding:4px 11px;white-space:nowrap;animation:pop .45s cubic-bezier(.3,1.5,.5,1);pointer-events:none}
+  @keyframes pop{0%{transform:translate(-50%,-50%) scale(.3);opacity:0}100%{transform:translate(-50%,-50%) scale(1);opacity:1}}
+  .fb{font-size:18px;line-height:1.4;min-height:50px}
+  .fb.good{color:var(--green)} .fb.bad{color:var(--red)}
+
+  /* imagenet */
+  .inMosaic{position:relative;height:300px;border-radius:16px;overflow:hidden;border:1px solid var(--line)}
+  .inMosaic img{position:absolute;left:0;top:0;height:100%;width:auto;min-width:100%;transform:translateX(0);transition:transform 30s linear}
+  .slide.active .inMosaic img{transform:translateX(-22%)}
+  .bignum{font-family:var(--mono);font-size:76px;font-weight:600;color:var(--y);letter-spacing:-.02em;line-height:1}
+  .labeler{padding:18px 22px;display:flex;flex-direction:column;gap:10px}
+  .labeler input[type=range]{width:100%;accent-color:#ffc20e}
+  .labeler .big{font-size:30px;font-weight:700}
+
+  /* pipeline */
+  .pl{display:flex;gap:8px;margin-bottom:6px}
+  .pl button{flex:1;font:500 16px var(--sans);color:var(--mute);background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:9px 6px;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:2px}
+  .pl button span{font-family:var(--mono);font-size:13px;color:var(--mute)}
+  .pl button.on{color:var(--bg);background:var(--y);border-color:var(--y)} .pl button.on span{color:var(--bg)}
+  .pl button.done{color:var(--ink);border-color:rgba(255,194,14,.5)}
+  .plText{min-height:150px}
+  .plText h3{font-size:30px;margin-bottom:8px}
+
+  /* fully connected */
+  .lyr{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-top:10px}
+  .lyr .card{padding:10px;display:flex;flex-direction:column;align-items:center;gap:6px}
+  .lyr .nm{font-family:var(--mono);font-size:13px;color:var(--mute);letter-spacing:.06em}
+  .lyr .row{display:flex;align-items:center;gap:8px}
+  .lyr .row button{width:30px;height:30px;border-radius:8px;border:1px solid var(--line);background:var(--panel2);color:var(--ink);cursor:pointer;font:600 18px var(--mono);line-height:1}
+  .lyr .row button:hover{border-color:var(--y);color:var(--y)}
+  .lyr .v{font-family:var(--mono);font-size:22px;min-width:52px;text-align:center}
+  .count{font-family:var(--mono);font-size:56px;font-weight:600;color:var(--y);line-height:1}
+  #fcSvg .nd{cursor:pointer}
+
+  /* doodle */
+  #ddCv{cursor:crosshair;background:#f6f3ea;touch-action:none}
+  .ddTop{position:absolute;left:0;right:0;top:0;padding:14px 18px;display:flex;align-items:center;gap:14px;z-index:2;background:linear-gradient(#f6f3ea,rgba(246,243,234,0));pointer-events:none}
+  .ddTop .p{font-size:28px;font-weight:700;color:#18181b}
+  .ddTop .p span{color:#c58a00}
+  .ddTop .btn{pointer-events:auto;background:#fff;color:#18181b;border-color:#d6d2c6}
+  .ddTop .sp{flex:1}
+  .ddSay{position:absolute;left:18px;right:18px;bottom:14px;z-index:2;font-family:var(--mono);font-size:20px;color:#18181b;pointer-events:none}
+  .guess{display:flex;flex-direction:column;gap:8px}
+  .gRow{display:grid;grid-template-columns:120px 1fr 56px;gap:10px;align-items:center;font-size:19px}
+  .gRow .bar{height:16px;border-radius:8px;background:#2a2a30;overflow:hidden}
+  .gRow .bar i{display:block;height:100%;width:0;background:var(--y);transition:width .4s}
+  .gRow .pc{font-family:var(--mono);font-size:15px;color:var(--mute);text-align:right}
+
+  /* backprop */
+  .bpSteps{display:flex;flex-direction:column;gap:8px}
+  .bpSteps li{transition:color .3s}
+  .bpSteps li.on{color:var(--y)}
+
+  /* recipe */
+  .ing{display:grid;grid-template-columns:repeat(3,1fr);gap:18px}
+  .ing .card{padding:18px;display:flex;flex-direction:column;align-items:center;gap:10px;text-align:center}
+  .ing svg{width:96px;height:80px}
+  .ing .t{font-size:24px;font-weight:700}
+  .ing .s{font-size:15px;color:var(--mute);line-height:1.35;min-height:40px}
+  .ing input[type=range]{width:100%;accent-color:#ffc20e}
+  .years{display:flex;gap:10px}
+  .model{display:grid;grid-template-columns:260px 1fr;gap:26px;align-items:center;padding:18px 24px}
+  .gauge{height:22px;border-radius:12px;background:#2a2a30;overflow:hidden}
+  .gauge i{display:block;height:100%;width:0;background:linear-gradient(90deg,var(--red),var(--amber),var(--y),var(--green));background-size:400px 100%;transition:width .5s}
+  .verdict2{font-size:22px;margin-top:10px;min-height:62px;line-height:1.4}
+
+  /* gpu race */
+  .race{display:grid;grid-template-columns:1fr 1fr;gap:18px;height:100%}
+  .lane{display:flex;flex-direction:column;gap:8px}
+  .lane .hd{display:flex;align-items:baseline;gap:10px}
+  .lane .hd b{font-size:24px}
+  .lane .hd .tm{margin-left:auto;font-family:var(--mono);font-size:22px;color:var(--y)}
+  .stage-box .lane canvas{position:static;width:100%;height:auto;flex:1;min-height:0;border-radius:10px;background:#0d0d0f;border:1px solid var(--line)}
+
+  /* tokens */
+  .tokIn{width:100%;font:500 22px var(--sans);color:var(--ink);background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:14px 16px;outline:none}
+  .tokIn:focus{border-color:var(--y)}
+  .toks{display:flex;flex-wrap:wrap;gap:6px 4px;align-content:flex-start}
+  .tok{display:flex;flex-direction:column;align-items:center;border-radius:8px;padding:5px 7px 4px;animation:pop2 .35s ease both}
+  .tok .w{font-family:var(--mono);font-size:19px;white-space:pre}
+  .tok .id{font-family:var(--mono);font-size:12px;opacity:.7;margin-top:2px}
+  @keyframes pop2{0%{opacity:0;transform:translateY(8px)}100%{opacity:1;transform:none}}
+  .tasks{display:flex;flex-wrap:wrap;gap:8px}
+
+  /* embeddings */
+  #emCv{cursor:pointer}
+  .emTop{position:absolute;left:14px;right:14px;top:12px;display:flex;gap:8px;flex-wrap:wrap;z-index:2}
+  .emTop .btn{font-size:15px;padding:7px 12px}
+  .emSay{position:absolute;left:16px;right:16px;bottom:14px;z-index:2;font-size:20px;color:var(--ink);background:rgba(13,13,15,.85);padding:10px 14px;border-radius:10px;min-height:46px}
+  .emSay b{color:var(--y)}
+
+  /* gpt */
+  .gptRow{display:grid;grid-template-columns:120px 1fr;gap:26px;align-items:start;opacity:.18;transition:opacity .5s}
+  .gptRow.on{opacity:1}
+  .gptRow .L{font-size:120px;font-weight:700;line-height:.85;color:var(--y)}
+  .gptRow .w{font-size:40px;font-weight:700;line-height:1}
+  .gptRow .w span{color:var(--mute);font-weight:500}
+  .gptRow p{font-size:21px;margin-top:8px;max-height:0;overflow:hidden;transition:max-height .6s ease}
+  .gptRow.on p{max-height:140px}
+
+  /* attention */
+  .atBox{position:relative;height:560px}
+  .atBox svg{position:absolute;inset:0;width:100%;height:100%;overflow:visible}
+  .atWords{position:absolute;left:0;right:0;top:330px;display:flex;justify-content:center;gap:8px;flex-wrap:nowrap}
+  .atW{font:500 25px var(--sans);color:var(--ink);background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:8px 11px;cursor:pointer;transition:background .25s,border-color .25s,color .25s}
+  .atW:hover{border-color:var(--y)}
+  .atW.sel{background:var(--y);color:var(--bg);border-color:var(--y)}
+  .paper{padding:20px 24px}
+  .paper .tt{font-family:Georgia,"Times New Roman",serif;font-size:30px;color:var(--ink)}
+  .paper .au{font-size:16px;color:var(--mute);margin-top:6px;line-height:1.4}
+
+  /* next word */
+  .nwSent{font-size:44px;font-weight:700;min-height:60px;letter-spacing:-.01em}
+  .nwSent .new{color:var(--y);animation:pop2 .4s ease both;display:inline-block}
+  .nwSent .cur{display:inline-block;width:3px;height:42px;background:var(--y);vertical-align:-6px;margin-left:6px;animation:blink 1s steps(1) infinite}
+  @keyframes blink{50%{opacity:0}}
+  .probs{display:flex;flex-direction:column;gap:7px}
+  .prow{display:grid;grid-template-columns:120px 1fr 60px;gap:12px;align-items:center;font-size:20px;cursor:pointer;border-radius:8px;padding:2px 6px}
+  .prow:hover{background:rgba(255,255,255,.04)}
+  .prow .bar{height:18px;border-radius:9px;background:#2a2a30;overflow:hidden}
+  .prow .bar i{display:block;height:100%;background:var(--blue);transition:width .45s}
+  .prow.top .bar i{background:var(--y)}
+  .prow.pk{background:rgba(255,194,14,.12)}
+  .prow .pc{font-family:var(--mono);font-size:16px;color:var(--mute);text-align:right}
+  .cow{border-radius:16px;overflow:hidden;border:1px solid var(--line);height:250px}
+  .cow img{width:100%;height:100%;object-fit:cover;display:block}
+
+  /* be the model */
+  .tabs{display:flex;gap:8px}
+  .bank{display:flex;flex-wrap:wrap;gap:14px}
+  .wb{position:relative;font:500 30px var(--sans);color:var(--ink);background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:16px 24px 22px;cursor:pointer;overflow:hidden;min-width:70px}
+  .wb:hover{border-color:var(--y)}
+  .wb .p{position:absolute;left:0;bottom:0;height:7px;background:var(--y);transition:width .35s}
+  .wb .n{position:absolute;right:7px;top:3px;font-family:var(--mono);font-size:13px;color:var(--mute)}
+  .wb.stop{color:var(--red)}
+  .wb.flash{background:rgba(255,194,14,.25);border-color:var(--y)}
+  .btmSent{font-size:44px;font-weight:700;min-height:130px;line-height:1.3;padding:18px 22px}
+  .btmSent .u{color:var(--ink)} .btmSent .m{color:var(--y)}
+
+  /* training data */
+  #dtCv{width:100%;height:100%}
+  .units{display:flex;gap:8px}
+
+  /* chatgpt */
+  .chat{position:relative;height:640px;display:grid;grid-template-rows:auto minmax(0,1fr) auto;gap:12px;padding:18px}
+  .chat .msgs{display:flex;flex-direction:column;gap:12px;overflow:hidden;justify-content:flex-end;min-height:0}
+  .bub{max-width:88%;padding:12px 16px;border-radius:14px;font-size:20px;line-height:1.45}
+  .bub.u{align-self:flex-end;background:var(--panel2)}
+  .bub.a{align-self:flex-start;background:rgba(255,194,14,.07);border:1px solid rgba(255,194,14,.25)}
+  .bub.a .t{animation:fadeT .25s ease both}
+  @keyframes fadeT{0%{opacity:0;background:rgba(255,194,14,.4)}100%{opacity:1;background:transparent}}
+  .nextp{display:flex;gap:10px;align-items:center;font-family:var(--mono);font-size:15px;color:var(--mute);min-height:34px}
+  .nextp .c{border:1px solid var(--line);border-radius:7px;padding:3px 8px;white-space:pre}
+  .nextp .c.w{border-color:var(--y);color:var(--y)}
+  .prompts{display:flex;gap:8px;flex-wrap:wrap}
+  .prompts .btn{font-size:15px;padding:7px 12px}
+
+  /* wrap */
+  .bigq{font-size:68px;line-height:1.08;font-weight:700;letter-spacing:-.02em}
+  .bigq span{color:var(--y)}
+  .vs{display:grid;grid-template-columns:1fr auto 1fr;gap:30px;align-items:stretch}
+  .vs .card{padding:26px 28px;display:flex;flex-direction:column;gap:12px}
+  .vs .mid{align-self:center;font-family:var(--mono);font-size:22px;color:var(--mute)}
+  .vs h3{font-size:30px}
+</style>
+</head>
+<body>
+<div id="stage">
+  <img id="logo" src="data:image/png;base64,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" alt="Neumont University">
+  <a id="brand" href="../" title="All slide decks" style="text-decoration:none">← <b>AAI101</b> &nbsp;·&nbsp; AI History · Part 2</a>
+
+  <!-- title -->
+  <section class="slide" data-id="title">
+    <canvas class="bg" id="bgNet"></canvas>
+    <div class="vignette"></div>
+    <div class="content center">
+      <div class="eyebrow rise" style="--i:0">AAI101 · AI History · Part 2</div>
+      <h1 class="rise" style="--i:1">From learning machines<br>to <span>ChatGPT</span></h1>
+      <p class="lede rise" style="--i:2">How neural networks came back: home robots, ImageNet, deep learning, transformers and large language models.</p>
+    </div>
+  </section>
+
+  <section class="slide tl" data-id="tl-1" data-upto="2"></section>
+
+  <!-- roomba -->
+  <section class="slide" data-id="roomba">
+    <div class="two wide-r">
+      <div class="stack" style="gap:20px">
+        <h2 class="rise" style="--i:0"><span class="n">2002 · iRobot Roomba</span>AI moves <span class="y">into the house</span></h2>
+        <p class="rise" style="--i:1">The first mass-produced home robot vacuum. No camera and no map, just a few simple behaviors reacting to its sensors:</p>
+        <ul class="bul rise" style="--i:2">
+          <li><b>Bump</b> into something? Turn and try a new direction.</li>
+          <li><b>Spiral</b> outward to cover open floor.</li>
+          <li><b>Cliff sensors</b> keep it from falling down stairs.</li>
+        </ul>
+        <div class="rmPhotos rise" style="--i:3">
+          <figure class="photo"><img src="img/roomba.png" alt="A Roomba robot vacuum"><figcaption>Roomba</figcaption></figure>
+          <figure class="vid"><video src="img/roomba-shark.mp4" muted loop playsinline autoplay></video><figcaption>Its most famous passenger</figcaption></figure>
+        </div>
+      </div>
+      <div class="stage-box rise" style="--i:2;height:680px">
+        <canvas id="rmCv"></canvas>
+        <div class="rmTop">
+          <button class="btn on" id="rmBounce">2002: bump &amp; turn</button>
+          <button class="btn" id="rmMap">Today: map &amp; plan</button>
+          <span class="sp"></span>
+          <button class="btn" id="rmFast">Speed ×1</button>
+          <button class="btn" id="rmReset">Reset</button>
+        </div>
+        <div class="cap" id="rmCap">cleaned 0% · click the floor to drop a sock</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- robots -->
+  <section class="slide" data-id="robots">
+    <div class="two wide-l">
+      <div>
+        <div class="rbView rise" style="--i:1"><video id="rbVid" muted loop playsinline autoplay></video></div>
+        <div class="rbBar rise" style="--i:2">
+          <button class="rbArr" id="rbPrev" aria-label="Previous clip">‹</button>
+          <button class="rbArr" id="rbNext" aria-label="Next clip">›</button>
+          <div><div class="rbName" id="rbName"></div><div class="rbWho" id="rbWho"></div></div>
+          <div class="rbDots" id="rbDots"></div>
+        </div>
+      </div>
+      <div class="stack" style="gap:18px">
+        <h2 class="rise" style="--i:0"><span class="n">Robots today</span>AI gets a <span class="y">body</span></h2>
+        <div class="co rise" style="--i:2">
+          <div class="card"><b>Boston Dynamics</b><p><b>Spot</b> (a four-legged robot) and <b>Atlas</b> (a humanoid) balance, climb, open doors and get back up when pushed.</p></div>
+          <div class="card"><b>Tesla Optimus</b><p>A humanoid robot built for repetitive, boring or dangerous jobs. Gen 2 (2023) can handle delicate objects like eggs.</p></div>
+        </div>
+        <div class="callout rise" style="--i:3"><b>Moravec’s paradox:</b> chess is easy for computers, but walking across a messy room or picking up an egg (easy for a toddler) is very hard.</div>
+      </div>
+    </div>
+  </section>
+
+  <section class="slide tl" data-id="tl-2" data-upto="3"></section>
+
+  <!-- ai > ml > dl -->
+  <section class="slide" data-id="nest">
+    <div class="two" style="grid-template-columns:1fr .95fr;gap:50px">
+      <div class="stage-box rise" style="--i:1;height:680px">
+        <svg id="nestSvg" viewBox="0 0 760 680"></svg>
+        <div id="nestDrop" style="position:absolute;inset:0;pointer-events:none"></div>
+      </div>
+      <div class="stack" style="gap:16px">
+        <h2 class="rise" style="--i:0"><span class="n">Words you’ll hear a lot</span>AI ⊃ ML ⊃ <span class="y">DL</span></h2>
+        <div class="defs rise" style="--i:2">
+          <div class="def" data-k="ai"><b class="y">ARTIFICIAL INTELLIGENCE</b><p>The broad field: machines doing tasks that usually need human intelligence.</p></div>
+          <div class="def" data-k="ml"><b style="color:var(--blue)">MACHINE LEARNING</b><p>AI that <b>learns patterns from data</b> instead of being explicitly programmed.</p></div>
+          <div class="def" data-k="dl"><b style="color:var(--green)">DEEP LEARNING</b><p>Machine learning with neural networks that have <b>many layers</b>.</p></div>
+        </div>
+        <div class="rise" style="--i:3">
+          <div class="eyebrow" style="font-size:15px;margin-bottom:10px">Sort it · pick a chip, then click the right circle</div>
+          <div class="chips" id="nestChips"></div>
+        </div>
+        <div class="fb rise" style="--i:4" id="nestFb"></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- imagenet -->
+  <section class="slide" data-id="imagenet">
+    <div class="stack" style="height:100%;gap:22px">
+      <h2 class="rise" style="--i:0"><span class="n">The data that changed everything</span>ImageNet &amp; the <span class="y">ILSVRC</span> challenge</h2>
+      <div class="inMosaic rise" style="--i:1"><img src="img/imagenet.jpg" alt="A mosaic of thousands of small labeled photos from ImageNet"></div>
+      <div class="two" style="grid-template-columns:1fr 1fr;gap:40px;height:auto;align-items:start">
+        <div class="stack rise" style="--i:2;gap:12px">
+          <div><div class="bignum" id="inNum">0</div><div class="stat" style="margin-top:6px">hand-labeled images in ImageNet</div></div>
+          <p style="font-size:21px">The <b>ImageNet Large Scale Visual Recognition Challenge</b> (2010–2017) asked: can your program name what’s in a photo? It used <b>1,000 categories</b> and about <b>1.2 million</b> training images.</p>
+          <div class="ctl"><a class="linkchip" href="https://image-net.org/" target="_blank" rel="noopener">image-net.org</a><a class="linkchip" href="https://www.kaggle.com/datasets/ifigotin/imagenetmini-1000" target="_blank" rel="noopener">ImageNet mini on Kaggle</a></div>
+        </div>
+        <div class="card labeler rise" style="--i:3">
+          <div class="eyebrow" style="font-size:15px">Could you label it yourself?</div>
+          <div style="font-size:19px">Seconds per image: <b class="y" id="inSec">2</b></div>
+          <input type="range" id="inRange" min="1" max="10" step="1" value="2">
+          <div class="big" id="inOut"></div>
+          <div class="note">Working nonstop, no sleep. ImageNet was labeled by thousands of crowd workers online (Amazon Mechanical Turk).</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- pipeline -->
+  <section class="slide" data-id="pipeline">
+    <div class="two" style="grid-template-columns:.8fr 1.2fr;gap:50px">
+      <div class="stack" style="gap:18px">
+        <h2 class="rise" style="--i:0"><span class="n">Image classification</span>How a network <span class="y">sees</span> a cat</h2>
+        <div class="plText rise" style="--i:1" id="plText"></div>
+        <div class="ctl rise" style="--i:2"><button class="btn" id="plBack">← Back</button><button class="btn on" id="plNext">Next step →</button></div>
+      </div>
+      <div class="rise" style="--i:1">
+        <div class="pl" id="plTabs"></div>
+        <div class="stage-box" style="height:600px"><canvas id="plCv"></canvas><div class="cap" id="plCap">hover the pixels</div></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- fully connected -->
+  <section class="slide" data-id="fcn">
+    <div class="two" style="grid-template-columns:.85fr 1.15fr;gap:46px">
+      <div class="stack" style="gap:18px">
+        <h2 class="rise" style="--i:0"><span class="n">Inside the network</span>Fully <span class="y">connected</span></h2>
+        <p class="rise" style="--i:1">Every neuron in one layer connects to <b>every</b> neuron in the next. Each connection has its own <b>weight</b>, and each neuron adds a <b>bias</b>. Those numbers are what the network learns.</p>
+        <p class="rise hint" style="--i:2">Hover a neuron to see its connections. Change the layer sizes and watch the count.</p>
+        <div class="card rise" style="--i:3;padding:18px 22px">
+          <div class="count" id="fcCount">0</div>
+          <div class="stat" style="margin-top:6px" id="fcSub">weights + biases to learn</div>
+        </div>
+        <div class="ctl rise" style="--i:4"><button class="btn on" data-fc="3,5,5,2">Small (3·5·5·2)</button><button class="btn" data-fc="784,128,64,10">Digit reader (28×28 image)</button></div>
+        <div class="note rise" style="--i:5">AlexNet had about <b>60 million</b> of these numbers. Today’s large language models have <b>billions</b>.</div>
+      </div>
+      <div class="rise" style="--i:2">
+        <div class="stage-box" style="height:560px"><svg id="fcSvg" viewBox="0 0 860 560"></svg></div>
+        <div class="lyr" id="fcLyr"></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- alexnet chart -->
+  <section class="slide" data-id="alexnet" style="cursor:pointer">
+    <div class="two" style="grid-template-columns:.8fr 1.2fr;gap:46px">
+      <div class="stack" style="gap:18px">
+        <h2 class="rise" style="--i:0"><span class="n">2012 · AlexNet</span>The <span class="y">deep learning</span> moment</h2>
+        <p class="rise" style="--i:1">Before 2012, image recognition used <b>hand-crafted features</b>: people wrote code to find edges, corners and textures.</p>
+        <p class="rise" style="--i:2"><b>AlexNet</b> (Krizhevsky, Sutskever &amp; Hinton) was a deep <b>convolutional neural network</b> that learned its own features. It won with a top-5 error of <b class="y">15.3%</b>. Second place: <b>26.2%</b>.</p>
+        <div class="callout rise" style="--i:3" id="axNote">Click to step through the years.</div>
+      </div>
+      <div class="stage-box rise" style="--i:2;height:640px"><svg id="axSvg" viewBox="0 0 900 640"></svg></div>
+    </div>
+  </section>
+
+  <!-- doodle -->
+  <section class="slide" data-id="doodle">
+    <div class="two" style="grid-template-columns:1.1fr .9fr;gap:46px">
+      <div class="stage-box rise" style="--i:1;height:680px;border-color:#d6d2c6">
+        <canvas id="ddCv"></canvas>
+        <div class="ddTop"><div class="p">Draw: <span id="ddWord">a circle</span></div><span class="sp"></span><button class="btn" id="ddClear">Clear</button><button class="btn" id="ddSkip">Skip</button></div>
+        <div class="ddSay" id="ddSay"></div>
+      </div>
+      <div class="stack" style="gap:18px">
+        <h2 class="rise" style="--i:0"><span class="n">Quick, Draw!</span>Can a computer recognize <span class="y">doodles</span>?</h2>
+        <div class="card rise" style="--i:2;padding:18px 22px"><div class="eyebrow" style="font-size:14px;margin-bottom:12px">What it thinks you drew</div><div class="guess" id="ddGuess"></div></div>
+        <p class="rise note" style="--i:3;font-size:17px">This little demo compares your stroke to a few stored shapes. Google’s <b>Quick, Draw!</b> uses a real neural network trained on <b>50 million</b> doodles from players around the world.</p>
+        <a class="linkchip rise" style="--i:4" href="https://quickdraw.withgoogle.com/" target="_blank" rel="noopener">quickdraw.withgoogle.com</a>
+      </div>
+    </div>
+  </section>
+
+  <!-- backprop -->
+  <section class="slide" data-id="backprop">
+    <div class="two" style="grid-template-columns:.78fr 1.22fr;gap:46px">
+      <div class="stack" style="gap:16px">
+        <h2 class="rise" style="--i:0"><span class="n">1986 · flashback</span>How networks <span class="y">learn</span>: backpropagation</h2>
+        <ol class="num bpSteps rise" style="--i:1" id="bpSteps">
+          <li><b>Forward:</b> the network makes a guess.</li>
+          <li><b>Loss:</b> measure how wrong the guess was.</li>
+          <li><b>Backward:</b> send the error back through the layers to find how much each weight is to blame.</li>
+          <li><b>Nudge:</b> adjust every weight a tiny bit to reduce the error. Repeat thousands of times.</li>
+        </ol>
+        <p class="rise hint" style="--i:2">Goal: color the map so yellow dots land on yellow and blue on blue. The diagonal pattern is impossible for a single perceptron.</p>
+        <div class="ctl rise" style="--i:3"><button class="btn" id="bpStep">One step</button><button class="btn on" id="bpRun">Train ▶</button><button class="btn" id="bpReset">New random weights</button></div>
+      </div>
+      <div class="stage-box rise" style="--i:2;height:640px"><canvas id="bpCv"></canvas><div class="cap" id="bpCap">epoch 0</div></div>
+    </div>
+  </section>
+
+  <!-- recipe -->
+  <section class="slide" data-id="recipe">
+    <div class="stack" style="gap:22px;height:100%">
+      <h2 class="rise" style="--i:0"><span class="n">Why 2012 and not 1986?</span>The recipe: <span class="y">data + algorithm + compute</span></h2>
+      <div class="ing rise" style="--i:1" id="ing"></div>
+      <div class="ctl rise" style="--i:2"><span class="stat">Try a year:</span><div class="years" id="years"></div></div>
+      <div class="card model rise" style="--i:3">
+        <svg id="rcNet" viewBox="0 0 260 150" style="width:260px;height:150px"></svg>
+        <div><div class="eyebrow" style="font-size:15px">Model training</div><div class="gauge" style="margin-top:10px"><i id="rcG"></i></div><div class="verdict2" id="rcV"></div></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- gpu -->
+  <section class="slide" data-id="gpu">
+    <div class="two" style="grid-template-columns:.8fr 1.2fr;gap:46px">
+      <div class="stack" style="gap:18px">
+        <h2 class="rise" style="--i:0"><span class="n">The compute</span>Thank <span class="y">video games</span></h2>
+        <p class="rise" style="--i:1">GPUs were built to shade millions of pixels <b>at the same time</b> for games. Training a neural network is the same kind of math: huge grids of multiply-and-add.</p>
+        <p class="rise" style="--i:2">AlexNet was trained on <b>two NVIDIA GTX 580</b> gaming cards in about <b>five to six days</b>.</p>
+        <div class="callout rise" style="--i:3">A CPU has a few fast cores. A GPU has <b>hundreds or thousands</b> of simpler ones.</div>
+        <div class="ctl rise" style="--i:4"><button class="btn on" id="gpGo">Race ▶</button></div>
+      </div>
+      <div class="stage-box rise" style="--i:2;height:640px;padding:18px;background:var(--panel)">
+        <div class="race">
+          <div class="lane"><div class="hd"><b>CPU</b><span class="stat">8 cores</span><span class="tm" id="gpT0">0.0 s</span></div><canvas id="gpC0"></canvas></div>
+          <div class="lane"><div class="hd"><b>GPU</b><span class="stat">512 cores (GTX 580)</span><span class="tm" id="gpT1">0.0 s</span></div><canvas id="gpC1"></canvas></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="slide tl" data-id="tl-3" data-upto="4"></section>
+
+  <!-- nlp tokens -->
+  <section class="slide" data-id="nlp">
+    <div class="two" style="grid-template-columns:.8fr 1.2fr;gap:50px">
+      <div class="stack" style="gap:18px">
+        <h2 class="rise" style="--i:0"><span class="n">Natural Language Processing</span>Text becomes <span class="y">tokens</span></h2>
+        <p class="rise" style="--i:1"><b>NLP</b> is the part of AI that understands and generates human language. Step one: chop text into <b>tokens</b> (words or pieces of words) and turn each into a number.</p>
+        <div class="tasks rise" style="--i:2"><span class="pill">text generation</span><span class="pill">question answering</span><span class="pill">summarizing</span><span class="pill">translation</span><span class="pill">sentiment</span><span class="pill">finding names &amp; dates</span></div>
+        <p class="rise note" style="--i:3">Rule of thumb: in English, one token is about <b>4 characters</b>. Simplified tokenizer for this demo.</p>
+      </div>
+      <div class="stack rise" style="--i:2;gap:16px">
+        <input class="tokIn" id="tokIn" value="The dog chased the ball across the yard and brought it back to its owner." spellcheck="false" aria-label="Type a sentence">
+        <div class="card" style="padding:18px;min-height:250px"><div class="eyebrow" style="font-size:14px;margin-bottom:12px">Tokens · <span id="tokN"></span></div><div class="toks" id="toks"></div></div>
+        <div class="card" style="padding:16px 18px"><div class="eyebrow" style="font-size:14px;margin-bottom:10px">What the model actually sees</div><div class="mono" style="font-size:18px;color:var(--mute);line-height:1.5;word-break:break-all" id="tokIds"></div></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- embeddings -->
+  <section class="slide" data-id="embed">
+    <div class="two" style="grid-template-columns:.72fr 1.28fr;gap:46px">
+      <div class="stack" style="gap:18px">
+        <h2 class="rise" style="--i:0"><span class="n">Word embeddings</span>Words as <span class="y">points</span> in space</h2>
+        <p class="rise" style="--i:1">Each token becomes a list of numbers: a position in “meaning space”. Words with similar meanings end up <b>close together</b>.</p>
+        <p class="rise" style="--i:2">Directions mean something too: <b>man → woman</b> points the same way as <b>king → queen</b>.</p>
+        <p class="rise note" style="--i:3">Real models use hundreds or thousands of dimensions. This map is a hand-made 2D sketch.</p>
+        <a class="linkchip rise" style="--i:4" href="https://projector.tensorflow.org/" target="_blank" rel="noopener">projector.tensorflow.org</a>
+      </div>
+      <div class="stage-box rise" style="--i:2;height:680px">
+        <canvas id="emCv"></canvas>
+        <div class="emTop"><button class="btn" data-an="king,man,woman">king − man + woman</button><button class="btn" data-an="puppy,dog,cat">puppy − dog + cat</button><button class="btn" data-an="prince,boy,girl">prince − boy + girl</button></div>
+        <div class="emSay" id="emSay">Click a word to see its nearest neighbors.</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- gpt -->
+  <section class="slide" data-id="gpt" style="cursor:pointer">
+    <div class="two" style="grid-template-columns:1fr 1fr;gap:60px">
+      <div class="stack" style="gap:30px" id="gptRows">
+        <div class="gptRow"><div class="L">G</div><div><div class="w">enerative</div><p>It <b>creates</b> new text by predicting the next word, again and again.</p></div></div>
+        <div class="gptRow"><div class="L">P</div><div><div class="w">re-trained</div><p>It first reads a <b>massive</b> amount of text (books, articles, websites) to learn how language works. Later it can be fine-tuned for a job, like chatting.</p></div></div>
+        <div class="gptRow"><div class="L">T</div><div><div class="w">ransformer</div><p>The network design from 2017. It uses <b>self-attention</b> to look at every word at once, so it can follow long sentences and train fast on GPUs.</p></div></div>
+      </div>
+      <div class="stack" style="gap:18px">
+        <h2 class="rise" style="--i:0"><span class="n">What does GPT stand for?</span>Three words, <span class="y">one idea</span></h2>
+        <div class="stage-box rise" style="--i:1;height:470px"><canvas id="gptCv"></canvas></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- attention -->
+  <section class="slide" data-id="attention">
+    <div class="stack" style="gap:14px;height:100%">
+      <div class="two" style="grid-template-columns:1fr 1fr;gap:40px;height:auto;align-items:start">
+        <h2 class="rise" style="--i:0"><span class="n">2017 · Google</span>Attention: every word looks at <span class="y">every other word</span></h2>
+        <div class="card paper rise" style="--i:1"><div class="tt">Attention Is All You Need</div><div class="au">Vaswani, Shazeer, Parmar, Uszkoreit, Jones, Gomez, Kaiser &amp; Polosukhin · Google Brain / Google Research · 2017</div></div>
+      </div>
+      <div class="atBox rise" style="--i:2">
+        <svg id="atSvg"></svg>
+        <div class="atWords" id="atWords"></div>
+        <div style="position:absolute;left:0;right:0;top:420px;display:flex;flex-direction:column;align-items:center;gap:14px">
+          <div class="ctl"><button class="btn on" id="atAll">Attention (look at everything)</button><button class="btn" id="atNear">Old way (only nearby words)</button></div>
+          <div class="fb" id="atSay" style="text-align:center;font-size:21px;max-width:1100px"></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- next word -->
+  <section class="slide" data-id="nextword">
+    <div class="two" style="grid-template-columns:.9fr 1.1fr;gap:50px">
+      <div class="stack" style="gap:20px">
+        <h2 class="rise" style="--i:0"><span class="n">The core trick</span>Predict the <span class="y">next word</span></h2>
+        <div class="cow rise" style="--i:1"><img src="img/cow-moon.jpg" alt="A cow leaping over a full moon"></div>
+        <p class="rise" style="--i:2">A language model looks at the words so far and gives every possible next word a <b>probability</b>. Pick one, add it, repeat.</p>
+      </div>
+      <div class="stack rise" style="--i:2;gap:18px">
+        <div class="card" style="padding:20px 24px"><div class="nwSent" id="nwSent"></div></div>
+        <div class="card" style="padding:18px 22px"><div class="eyebrow" style="font-size:14px;margin-bottom:12px" id="nwHead">Next word after “the”</div><div class="probs" id="nwProbs"></div></div>
+        <div class="ctl"><button class="btn on" id="nwTop">Pick most likely</button><button class="btn" id="nwRoll">Roll the dice 🎲</button><button class="btn" id="nwReset">Start over</button><span class="hint">or click any word</span></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- be the model -->
+  <section class="slide" data-id="bethe">
+    <div class="stack" style="gap:18px;height:100%">
+      <div style="display:flex;align-items:flex-end;gap:30px">
+        <h2 class="rise" style="--i:0;flex:1"><span class="n">Class activity</span>You are the <span class="y">language model</span></h2>
+        <div class="tabs rise" style="--i:1" id="btTabs"></div>
+      </div>
+      <p class="rise" style="--i:1">Build a sentence one word at a time, then let the model try. The yellow bar under each word is how likely the model thinks it comes next.</p>
+      <div class="card btmSent rise" style="--i:2" id="btSent"></div>
+      <div class="bank rise" style="--i:3" id="btBank"></div>
+      <div class="ctl rise" style="--i:4"><button class="btn on" id="btModel">Let the model write one ▶</button><button class="btn" id="btClear">Clear</button><span class="hint" id="btHint"></span></div>
+    </div>
+  </section>
+
+  <!-- training data -->
+  <section class="slide" data-id="data" style="cursor:pointer">
+    <div class="two" style="grid-template-columns:.7fr 1.3fr;gap:46px">
+      <div class="stack" style="gap:16px">
+        <h2 class="rise" style="--i:0"><span class="n">Pre-trained on…</span>How much did it <span class="y">read</span>?</h2>
+        <p class="rise" style="--i:1">1 GB of text ≈ <b>500,000 pages</b> ≈ <b>1,000 books</b>.</p>
+        <div class="units rise" style="--i:2" id="dtUnits"><button class="btn on" data-u="books">Books</button><button class="btn" data-u="pages">Pages</button><button class="btn" data-u="gb">GB</button></div>
+        <p class="rise" style="--i:3">For comparison, reading <b>one book a week for 70 years</b> is about <b>3,640 books</b>.</p>
+        <p class="rise note" style="--i:4">GPT-4’s training data size was never published; 2 TB is an assumption for this example.</p>
+        <div class="hint rise" style="--i:5">Click to stack the next model.</div>
+      </div>
+      <div class="stage-box rise" style="--i:2;height:680px"><canvas id="dtCv"></canvas></div>
+    </div>
+  </section>
+
+  <section class="slide tl" data-id="tl-4" data-upto="5"></section>
+
+  <!-- chatgpt -->
+  <section class="slide" data-id="chatgpt">
+    <div class="two" style="grid-template-columns:.8fr 1.2fr;gap:46px">
+      <div class="stack" style="gap:18px">
+        <h2 class="rise" style="--i:0"><span class="n">November 30, 2022</span>ChatGPT goes <span class="y">public</span></h2>
+        <ul class="bul rise" style="--i:1">
+          <li>Built on <b>GPT-3.5</b>, then trained with <b>human feedback</b> to follow instructions and hold a conversation.</li>
+          <li>Over <b>1 million users</b> in its first 5 days.</li>
+          <li>Under the hood it’s still the same loop: <b>predict the next token</b>, add it, repeat.</li>
+        </ul>
+        <p class="rise note" style="--i:2">Demo: pick a prompt and watch the answer appear one token at a time, with the runner-up choices underneath. (An illustration: real models choose from about 100,000 tokens.)</p>
+      </div>
+      <div class="card chat rise" style="--i:2">
+        <div class="prompts" id="cgPrompts"></div>
+        <div class="msgs" id="cgMsgs"></div>
+        <div class="nextp" id="cgNext"></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- wrap -->
+  <section class="slide" data-id="wrap">
+    <div class="stack" style="gap:34px;height:100%;justify-content:center">
+      <div>
+        <div class="eyebrow rise" style="--i:0">Back to the big question</div>
+        <div class="bigq rise" style="--i:1;font-size:58px;margin-top:14px">Can human thought be replicated by <span>logic</span> and <span>rules</span>?</div>
+      </div>
+      <div class="vs rise" style="--i:2">
+        <div class="card"><div class="eyebrow" style="font-size:15px">1950s – 1990s</div><h3>Write the rules</h3><ul class="bul"><li>Logic, search and expert knowledge typed in by people</li><li>ELIZA, MYCIN, Deep Blue</li><li>Breaks when the world is messy</li></ul></div>
+        <div class="mid">→</div>
+        <div class="card" style="border-color:rgba(255,194,14,.5)"><div class="eyebrow" style="font-size:15px">2010s – today</div><h3>Learn from <span class="y">data</span></h3><ul class="bul"><li>Neural networks find the patterns themselves</li><li>AlexNet, Transformers, ChatGPT</li><li>Powered by huge data and GPU compute</li></ul></div>
+      </div>
+      <p class="rise lede" style="--i:3;font-size:27px">Discuss: is predicting the next word the same as <b>thinking</b>? What’s missing?</p>
+    </div>
+  </section>
+
+  <div id="chrome"><span class="sp"></span><button class="nbtn" id="prev" aria-label="Previous">←</button><span class="ver" style="font-size:12px;opacity:.6;margin-right:8px">updated Nov 10, 9:19 PM</span><span id="count"></span><button class="nbtn" id="next" aria-label="Next">→</button><button class="nbtn" id="fs" aria-label="Fullscreen" title="Fullscreen (F)">⤢</button></div>
+  <div id="progress"></div>
+  <div id="livewrap"><span id="liveauth"></span><div id="livebar"></div></div>
+  <div id="toast" role="status"></div>
+</div>
+<script>
+(() => {
+"use strict";
+const Y="#ffc20e", BLUE="#6ab8ff", GREEN="#5fd68a", RED="#ff5a4e", AMBER="#ff8a1f", INK="#f3f1ea", MUTE="#9b988f", LINE="#2e2e35";
+const SANS='"Space Grotesk",system-ui,-apple-system,"Segoe UI",sans-serif', MONO='"JetBrains Mono",ui-monospace,Consolas,monospace';
+const stage=document.getElementById("stage");
+const slides=[...document.querySelectorAll(".slide")];
+const $=id=>document.getElementById(id);
+const NS="http://www.w3.org/2000/svg";
+const svgEl=(tag,attrs={},parent)=>{ const e=document.createElementNS(NS,tag); for(const k in attrs) e.setAttribute(k,attrs[k]); if(parent) parent.appendChild(e); return e; };
+const rnd=(a,b)=>a+Math.random()*(b-a), pick=a=>a[(Math.random()*a.length)|0];
+const ease=t=>1-Math.pow(1-Math.min(1,Math.max(0,t)),3);
+const clamp=(v,a,b)=>Math.max(a,Math.min(b,v));
+const fmt=n=>Math.round(n).toLocaleString("en-US");
+let cur=-1;
+
+/* ---------- stage + canvas sizing ---------- */
+function fitStage(){
+  const s=Math.min(innerWidth/1600,innerHeight/900);
+  stage.style.transform=`translate(-50%,-50%) scale(${s})`;
+  document.querySelectorAll("canvas").forEach(fitCanvas);
+}
+function fitCanvas(c){
+  if(!c.offsetWidth) return;
+  const r=c.getBoundingClientRect(), dpr=devicePixelRatio||1;
+  const w=Math.max(1,Math.round(r.width*dpr)), h=Math.max(1,Math.round(r.height*dpr));
+  if(c.width!==w||c.height!==h){ c.width=w; c.height=h; }
+  c._k=c.width/c.offsetWidth;
+}
+function ctxOf(c){ const x=c.getContext("2d"); x.setTransform(c._k||1,0,0,c._k||1,0,0); return x; }
+// pointer position in a canvas's css pixels (the stage is scaled, so divide by the scale)
+function ptr(e,c){ const r=c.getBoundingClientRect(), s=r.width/c.offsetWidth; return {x:(e.clientX-r.left)/s, y:(e.clientY-r.top)/s}; }
+const A={};
+
+/* ---------- title: drifting network ---------- */
+(() => {
+  const cv=$("bgNet"); let N=[], P=[];
+  A.title={
+    enter(){ N=Array.from({length:80},()=>({x:rnd(0,1600),y:rnd(0,900),vx:rnd(-.25,.25),vy:rnd(-.25,.25),g:0})); P=[]; },
+    tick(dt){
+      const x=ctxOf(cv), f=dt/16.7; x.fillStyle="#121214"; x.fillRect(0,0,1600,900);
+      for(const n of N){ n.x+=n.vx*f; n.y+=n.vy*f; if(n.x<0||n.x>1600) n.vx*=-1; if(n.y<0||n.y>900) n.vy*=-1; n.g*=.95; }
+      x.lineWidth=1;
+      for(let i=0;i<N.length;i++) for(let j=i+1;j<N.length;j++){
+        const a=N[i], b=N[j], d=Math.hypot(a.x-b.x,a.y-b.y);
+        if(d<190){ x.strokeStyle=`rgba(255,194,14,${(1-d/190)*.22})`; x.beginPath(); x.moveTo(a.x,a.y); x.lineTo(b.x,b.y); x.stroke();
+          if(Math.random()<.0008*f) P.push({a,b,t:0}); }
+      }
+      P=P.filter(p=>{ p.t+=dt/700; if(p.t>=1){ p.b.g=1; return false; } const px=p.a.x+(p.b.x-p.a.x)*p.t, py=p.a.y+(p.b.y-p.a.y)*p.t;
+        x.fillStyle=Y; x.beginPath(); x.arc(px,py,3,0,7); x.fill(); return true; });
+      for(const n of N){ x.fillStyle=n.g>.05?`rgba(255,194,14,${.4+n.g*.6})`:"rgba(243,241,234,.35)"; x.beginPath(); x.arc(n.x,n.y,2.5+n.g*4,0,7); x.fill(); }
+    }
+  };
+})();
+
+/* ---------- timeline ---------- */
+const EVENTS=[
+  ["1986","Rumelhart, Hinton & Williams publish backpropagation, a breakthrough for training neural networks."],
+  ["1997","IBM’s Deep Blue defeats world chess champion Garry Kasparov."],
+  ["2002","iRobot introduces Roomba, the first mass-produced home robot vacuum that navigates on its own."],
+  ["2012","AlexNet (Krizhevsky, Sutskever & Hinton) wins the ImageNet challenge by a huge margin. Deep learning takes off."],
+  ["2017","Google researchers publish “Attention Is All You Need”, introducing the Transformer."],
+  ["2022","OpenAI releases ChatGPT (GPT-3.5) to the public on November 30."],
+];
+document.querySelectorAll(".slide.tl").forEach(sl=>{
+  const k=+sl.dataset.upto, n=EVENTS.length, xp=i=>(i+.5)/n*100;
+  const hd=document.createElement("div");
+  hd.innerHTML=`<h2 class="rise" style="--i:0"><span class="n">TIMELINE</span>${k<=2?"Where we left off":"The road to AI"}</h2>`;
+  sl.appendChild(hd);
+  const wrap=document.createElement("div"); wrap.className="tlwrap";
+  wrap.innerHTML=`<div class="tlaxis"></div><div class="tlfill"></div><div class="tlarrow"></div>`;
+  EVENTS.forEach(([yr,tx],i)=>{
+    const e=document.createElement("div");
+    e.className="ev "+(i%2?"dn":"up")+" "+(i<k?"done":i===k?"now new":"future");
+    e.style.left=xp(i)+"%"; e.style.top="0"; e.style.height="100%";
+    e.innerHTML=`<div class="stem"></div><div class="dot"></div><div class="box"><div class="yr">${yr}</div><div class="tx">${tx}</div></div>`;
+    wrap.appendChild(e);
+  });
+  sl.appendChild(wrap);
+  const fill=wrap.querySelector(".tlfill"), prev=k>0?xp(k-1):0;
+  A[sl.dataset.id]={ enter(){ fill.style.transition="none"; fill.style.width=prev+"%"; void fill.offsetWidth; fill.style.transition=""; fill.style.width=xp(k)+"%"; } };
+});
+
+/* ---------- roomba: bump-and-turn vs map-and-plan ---------- */
+(() => {
+  const cv=$("rmCv"), cap=$("rmCap"), R=17, G=8;   // robot radius, coverage cell size
+  let W=0,H=0, obs=[], cov=null, cols=0, rows=0, free=0, done=0, bot=null, mode="bounce", speed=1, trail=[];
+  const furniture=()=>{ // x,y,w,h as fractions of the room (room starts below the buttons)
+    const T=70, rw=W-40, rh=H-T-60;
+    const f=(x,y,w,h,label)=>({x:20+x*rw,y:T+y*rh,w:w*rw,h:h*rh,label});
+    return [f(0,0,.42,.16,"couch"),f(.36,.42,.26,.22,"table"),f(.8,0,.2,.3,"bookshelf"),f(.04,.78,.14,.22,"plant"),f(.74,.74,.18,.1,"dog bed")];
+  };
+  function room(){ return {x:20,y:70,w:W-40,h:H-130}; }
+  function hits(x,y,r=R){
+    const rm=room();
+    if(x-r<rm.x||x+r>rm.x+rm.w||y-r<rm.y||y+r>rm.y+rm.h) return true;
+    for(const o of obs){ const cx=clamp(x,o.x,o.x+o.w), cy=clamp(y,o.y,o.y+o.h); if((x-cx)**2+(y-cy)**2<r*r) return true; }
+    return false;
+  }
+  function reset(){
+    fitCanvas(cv); W=cv.offsetWidth; H=cv.offsetHeight;
+    obs=furniture(); cols=Math.ceil(W/G); rows=Math.ceil(H/G); cov=new Uint8Array(cols*rows);
+    free=0; done=0;
+    for(let j=0;j<rows;j++) for(let i=0;i<cols;i++){ const x=i*G+G/2, y=j*G+G/2; if(hits(x,y,1)) cov[j*cols+i]=2; else free++; }
+    bot={x:room().x+room().w*.5, y:room().y+room().h-40, a:-Math.PI/2, st:"spiral", t:0, sp:0, path:[], plan:null};
+    while(hits(bot.x,bot.y)) bot.x+=10;
+    trail=[]; planGrid=null;
+  }
+  function paint(x,y){
+    const r=R-2;
+    for(let j=Math.max(0,((y-r)/G)|0);j<=Math.min(rows-1,((y+r)/G)|0);j++) for(let i=Math.max(0,((x-r)/G)|0);i<=Math.min(cols-1,((x+r)/G)|0);i++){
+      const k=j*cols+i; if(cov[k]===0&&((i*G+G/2-x)**2+(j*G+G/2-y)**2)<r*r){ cov[k]=1; done++; } }
+  }
+  // map & plan: a coarse grid of robot-sized cells, visit the nearest unvisited one with a breadth-first search
+  const C=2*R-6; let planGrid=null, pc=0, pr=0;
+  function buildPlan(){
+    pc=Math.floor((W-40)/C); pr=Math.floor((H-130)/C); planGrid=[];
+    for(let j=0;j<pr;j++) for(let i=0;i<pc;i++){ const x=20+i*C+C/2, y=70+j*C+C/2; planGrid.push({x,y,ok:!hits(x,y,R-4),seen:false}); }
+  }
+  function nearestPath(){
+    const start=planGrid.reduce((b,c,k)=>c.ok&&(b<0||Math.hypot(c.x-bot.x,c.y-bot.y)<Math.hypot(planGrid[b].x-bot.x,planGrid[b].y-bot.y))?k:b,-1);
+    if(start<0) return null;
+    const prev=new Int32Array(planGrid.length).fill(-2); prev[start]=-1; const q=[start];
+    // prefer moving up/down first so the result looks like neat lawnmower rows
+    const dirs=[[0,-1],[0,1],[-1,0],[1,0]];
+    while(q.length){ const k=q.shift(); const c=planGrid[k];
+      if(!c.seen&&k!==start){ const p=[]; for(let t=k;t>=0;t=prev[t]) p.unshift(planGrid[t]); return p; }
+      const i=k%pc, j=(k/pc)|0;
+      for(const [di,dj] of dirs){ const ni=i+di, nj=j+dj; if(ni<0||nj<0||ni>=pc||nj>=pr) continue; const nk=nj*pc+ni; if(prev[nk]!==-2||!planGrid[nk].ok) continue; prev[nk]=k; q.push(nk); } }
+    return null;
+  }
+  function stepBot(dt){
+    const v=.11*dt;   // px per ms
+    if(mode==="map"){
+      if(!planGrid) buildPlan();
+      planGrid.forEach(c=>{ if(Math.hypot(c.x-bot.x,c.y-bot.y)<C*.5) c.seen=true; });
+      if(!bot.path.length){ const p=nearestPath(); if(!p) return; bot.path=p.slice(1); }
+      const t=bot.path[0]; if(!t) return; const dx=t.x-bot.x, dy=t.y-bot.y, d=Math.hypot(dx,dy);
+      bot.a=Math.atan2(dy,dx);
+      if(d<=v){ bot.x=t.x; bot.y=t.y; t.seen=true; bot.path.shift(); } else { bot.x+=dx/d*v; bot.y+=dy/d*v; }
+      return;
+    }
+    bot.t+=dt;
+    if(bot.st==="spiral"){ bot.sp+=dt; bot.a+=dt*.0042/(1+bot.sp/900); if(bot.sp>9000) bot.st="go"; }
+    const nx=bot.x+Math.cos(bot.a)*v, ny=bot.y+Math.sin(bot.a)*v;
+    if(hits(nx,ny)){ bot.st="go"; bot.bump=1; let tries=0; do{ bot.a+=rnd(Math.PI*.55,Math.PI*1.45); tries++; } while(hits(bot.x+Math.cos(bot.a)*v*2,bot.y+Math.sin(bot.a)*v*2)&&tries<20); }
+    else { bot.x=nx; bot.y=ny; if(bot.st==="go"&&Math.random()<dt/26000){ bot.st="spiral"; bot.sp=0; } }
+  }
+  function draw(){
+    const x=ctxOf(cv), rm=room();
+    x.fillStyle="#0d0d0f"; x.fillRect(0,0,W,H);
+    x.fillStyle="#1a1916"; x.fillRect(rm.x,rm.y,rm.w,rm.h);
+    for(let j=0;j<rows;j++) for(let i=0;i<cols;i++) if(cov[j*cols+i]===1){ x.fillStyle="rgba(255,194,14,.2)"; x.fillRect(i*G,j*G,G,G); }
+    x.strokeStyle="#3a3a42"; x.lineWidth=2; x.strokeRect(rm.x,rm.y,rm.w,rm.h);
+    for(const o of obs){ x.fillStyle=o.sock?"#c94f8a":"#2c2c33"; x.strokeStyle=o.sock?"#ff7ab8":"#45454f"; x.lineWidth=1.5;
+      x.beginPath(); x.roundRect?x.roundRect(o.x,o.y,o.w,o.h,o.sock?6:8):x.rect(o.x,o.y,o.w,o.h); x.fill(); x.stroke();
+      if(o.label){ x.fillStyle=MUTE; x.font=`15px ${MONO}`; x.textAlign="center"; x.textBaseline="middle"; x.fillText(o.label,o.x+o.w/2,o.y+o.h/2); } }
+    if(mode==="map"&&planGrid){ for(const c of bot.path){ x.fillStyle="rgba(106,184,255,.5)"; x.beginPath(); x.arc(c.x,c.y,2.5,0,7); x.fill(); } }
+    // robot
+    x.save(); x.translate(bot.x,bot.y); x.rotate(bot.a);
+    x.fillStyle="#bdbab3"; x.beginPath(); x.arc(0,0,R,0,7); x.fill();
+    x.fillStyle="#3b3b40"; x.beginPath(); x.arc(0,0,R-5,0,7); x.fill();
+    x.strokeStyle=bot.bump>0?RED:Y; x.lineWidth=4; x.beginPath(); x.arc(0,0,R-1,-1.1,1.1); x.stroke();
+    x.fillStyle=mode==="map"?BLUE:GREEN; x.beginPath(); x.arc(5,0,3,0,7); x.fill();
+    x.restore();
+    if(bot.bump>0) bot.bump-=.06;
+    const pct=free?done/free*100:0;
+    cap.textContent=`cleaned ${pct.toFixed(0)}% · ${(bot.clock/1000|0)} s · click the floor to drop a sock`;
+  }
+  const setMode=m=>{ mode=m; $("rmBounce").classList.toggle("on",m==="bounce"); $("rmMap").classList.toggle("on",m==="map"); reset(); bot.clock=0; };
+  $("rmBounce").onclick=()=>setMode("bounce");
+  $("rmMap").onclick=()=>setMode("map");
+  $("rmReset").onclick=()=>{ reset(); bot.clock=0; };
+  $("rmFast").onclick=()=>{ speed=speed===1?4:speed===4?12:1; $("rmFast").textContent=`Speed ×${speed}`; };
+  cv.addEventListener("pointerdown",e=>{ const p=ptr(e,cv); const rm=room();
+    if(p.x<rm.x||p.y<rm.y||p.x>rm.x+rm.w||p.y>rm.y+rm.h) return;
+    const s={x:p.x-14,y:p.y-9,w:28,h:18,sock:true}; if(Math.hypot(p.x-bot.x,p.y-bot.y)<R+20) return;
+    obs.push(s);
+    for(let j=0;j<rows;j++) for(let i=0;i<cols;i++){ const k=j*cols+i, cx=i*G+G/2, cy=j*G+G/2; if(cx>s.x&&cx<s.x+s.w&&cy>s.y&&cy<s.y+s.h){ if(cov[k]===1) done--; if(cov[k]!==2){ cov[k]=2; free--; } } }
+    if(planGrid) planGrid.forEach(c=>{ if(c.ok&&hits(c.x,c.y,R-4)) c.ok=false; }); bot.path=[];
+  });
+  A.roomba={
+    enter(){ reset(); bot.clock=0; document.querySelectorAll('[data-id="roomba"] video').forEach(v=>{ try{ v.play().catch(()=>{}); }catch(e){} }); },
+    tick(dt){ if(!cov) return; const n=Math.ceil(speed*dt/8), h=speed*dt/n; for(let i=0;i<n;i++){ stepBot(h); paint(bot.x,bot.y); } bot.clock+=dt*speed; draw(); }
+  };
+})();
+
+/* ---------- robots: clip viewer ---------- */
+(() => {
+  const CLIPS=[
+    ["img/atlas-electric.mp4","Atlas (electric)","Boston Dynamics · humanoid"],
+    ["img/atlas-boxes.mp4","Atlas does parkour","Boston Dynamics · balance and planning"],
+    ["img/spot-door.mp4","Spot opens a door","Boston Dynamics · four-legged robot"],
+    ["img/bd-dance.mp4","Robots dancing","Boston Dynamics · Atlas, Spot and Handle"],
+    ["img/optimus-hands.mp4","Optimus Gen 2","Tesla · delicate hands"],
+    ["img/optimus-gym.mp4","Optimus walking","Tesla · humanoid"],
+  ];
+  let i=0; const vid=$("rbVid"), dots=$("rbDots");
+  dots.innerHTML=CLIPS.map((_,k)=>`<i data-k="${k}"></i>`).join("");
+  function show(k){ i=(k+CLIPS.length)%CLIPS.length; const [src,nm,who]=CLIPS[i];
+    vid.src=src; try{ vid.play().catch(()=>{}); }catch(e){}
+    $("rbName").textContent=nm; $("rbWho").textContent=who;
+    [...dots.children].forEach((d,j)=>d.classList.toggle("on",j===i)); }
+  $("rbPrev").onclick=()=>show(i-1); $("rbNext").onclick=()=>show(i+1);
+  dots.onclick=e=>{ const k=e.target.dataset.k; if(k!=null) show(+k); };
+  A.robots={ enter(){ show(i); } };
+})();
+
+/* ---------- ai > ml > dl: sort the examples ---------- */
+(() => {
+  const svg=$("nestSvg"), drop=$("nestDrop"), fb=$("nestFb"), chipsEl=$("nestChips");
+  const RINGS={
+    ai:{cx:380,cy:340,rx:360,ry:325,col:Y,label:"ARTIFICIAL INTELLIGENCE",ly:52},
+    ml:{cx:430,cy:400,rx:255,ry:245,col:BLUE,label:"MACHINE LEARNING",ly:190},
+    dl:{cx:475,cy:470,rx:140,ry:150,col:GREEN,label:"DEEP LEARNING",ly:355},
+  };
+  // where placed chips sit inside each ring (only in the part not covered by the inner ring)
+  const SLOTS={ai:[[150,230],[110,360],[170,480],[230,590],[250,140]],ml:[[310,300],[300,420],[560,250],[410,250],[300,540]],dl:[[475,410],[475,460],[475,510],[475,560]]};
+  const ITEMS=[ // chip text, ring, short name once placed, explanation
+    ["Deep Blue (1997)","ai","Deep Blue","Deep Blue used hand-written rules and search. Smart, but it didn’t learn from data."],
+    ["MYCIN expert system","ai","MYCIN","MYCIN’s knowledge was typed in by experts as IF-THEN rules. AI, but not machine learning."],
+    ["Pac-Man ghosts","ai","Pac-Man ghosts","Classic game AI is hand-coded rules. No learning from data."],
+    ["Spam filter that learns from what you mark","ml","Spam filter","It learns patterns from examples, so it’s machine learning, but it doesn’t need a deep network."],
+    ["Decision tree learned from data","ml","Learned decision tree","A learned decision tree is classic machine learning, with no neural network."],
+    ["Netflix recommendations","ml","Netflix picks","Recommendations learn from viewing data: machine learning."],
+    ["AlexNet","dl","AlexNet","AlexNet is a neural network with 8 learned layers: deep learning."],
+    ["ChatGPT","dl","ChatGPT","ChatGPT is a huge transformer neural network: deep learning."],
+    ["Face unlock on your phone","dl","Face unlock","Face recognition uses deep convolutional networks: deep learning."],
+  ];
+  const NAMES={ai:"AI (but not machine learning)",ml:"machine learning (but not deep learning)",dl:"deep learning"};
+  let sel=null, used={ai:0,ml:0,dl:0};
+  for(const k of ["ai","ml","dl"]){ const r=RINGS[k];
+    const g=svgEl("g",{class:"ring","data-k":k},svg);
+    svgEl("ellipse",{cx:r.cx,cy:r.cy,rx:r.rx,ry:r.ry,fill:r.col,"fill-opacity":.06,stroke:r.col,"stroke-width":2.5},g);
+    const t=svgEl("text",{x:r.cx,y:r.ly,"text-anchor":"middle",fill:r.col,"font-size":19,"font-weight":700,"letter-spacing":2.5},g); t.textContent=r.label;
+    g.addEventListener("mouseenter",()=>hi(k)); g.addEventListener("mouseleave",()=>hi(null));
+    g.addEventListener("click",e=>{ e.stopPropagation(); place(k); });
+  }
+  function hi(k){ document.querySelectorAll('[data-id="nest"] .def').forEach(d=>d.classList.toggle("hi",d.dataset.k===k)); }
+  // clicks on the inner ring bubble to the outer ones; stopPropagation above handles the innermost first
+  function place(k){
+    if(!sel){ fb.className="fb"; fb.textContent="Pick a chip first, then click a circle."; return; }
+    const it=ITEMS[+sel.dataset.i];
+    if(it[1]!==k){ fb.className="fb bad"; fb.textContent=`Not quite: “${it[0]}” isn’t ${NAMES[k]}. Try again.`; sel.classList.remove("shake"); void sel.offsetWidth; sel.classList.add("shake"); return; }
+    const [sx,sy]=SLOTS[k][used[k]++%SLOTS[k].length];
+    const el=document.createElement("div"); el.className="nestPlaced"; el.textContent=it[2];
+    if(k==="ml") el.style.background=BLUE; if(k==="dl") el.style.background=GREEN;
+    el.style.left=(sx/760*100)+"%"; el.style.top=(sy/680*100)+"%"; drop.appendChild(el);
+    sel.classList.add("used"); sel.classList.remove("sel"); sel=null;
+    fb.className="fb good"; fb.textContent="✓ "+it[3];
+    if(!chipsEl.querySelector(".chip:not(.used)")) fb.textContent+=" All sorted!";
+  }
+  function build(){
+    drop.innerHTML=""; used={ai:0,ml:0,dl:0}; sel=null; fb.className="fb"; fb.textContent="";
+    const order=ITEMS.map((_,i)=>i).sort(()=>Math.random()-.5);
+    chipsEl.innerHTML=order.map(i=>`<span class="chip" data-i="${i}">${ITEMS[i][0]}</span>`).join("");
+  }
+  chipsEl.onclick=e=>{ const c=e.target.closest(".chip"); if(!c||c.classList.contains("used")) return;
+    if(sel) sel.classList.remove("sel"); sel=c===sel?null:c; if(sel) sel.classList.add("sel"); fb.className="fb"; fb.textContent=sel?"Now click the circle where it belongs.":""; };
+  build();
+  A.nest={ enter(){ if(!chipsEl.querySelector(".chip.used")) build(); } };
+})();
+
+/* ---------- imagenet: count up + labeling calculator ---------- */
+(() => {
+  const N=14197122, num=$("inNum"), rng=$("inRange"); let t0=0, on=false;
+  function calc(){ const s=+rng.value; $("inSec").textContent=s; const days=N*s/86400;
+    $("inOut").textContent = days<365 ? `${fmt(days)} days` : `${(days/365).toFixed(1)} years`; }
+  rng.oninput=calc; calc();
+  A.imagenet={ enter(){ t0=performance.now(); on=true; }, tick(dt,now){ if(!on) return; const p=ease((now-t0-500)/2200); num.textContent=fmt(N*p); if(p>=1) on=false; } };
+})();
+
+/* ---------- pipeline: how a network sees a cat ---------- */
+(() => {
+  const cv=$("plCv"), tabs=$("plTabs"), txt=$("plText"), cap=$("plCap");
+  const STAGES=[
+    ["Label","1","Every image in the dataset comes with a <b>label</b> that says what it is. The label is the answer the network is checked against."],
+    ["Grayscale","2","A color pixel is 3 numbers (red, green, blue). A gray pixel is just <b>1</b>, so there’s a third as much data to process."],
+    ["Less noise","3","Smooth out random specks so the network pays attention to real shapes, not camera grain."],
+    ["Numbers","4","Shrink to <b>28 × 28 = 784 pixels</b>. Each pixel is a brightness from 0 (black) to 255 (white). Each number is one <b>input</b>."],
+    ["Network","5","Each neuron multiplies its inputs by <b>weights</b>, adds a <b>bias</b> and applies an <b>activation</b>. The last layer gives the answer."],
+  ];
+  tabs.innerHTML=STAGES.map((s,i)=>`<button data-k="${i}">${s[0]}<span>step ${s[1]}</span></button>`).join("");
+  const img=new Image(); let ready=false, S=280, color, gray, noisy, clean, small, vals;
+  img.onload=()=>{
+    const mk=()=>{ const c=document.createElement("canvas"); c.width=c.height=S; return c; };
+    color=mk(); const cx=color.getContext("2d"); cx.drawImage(img,0,0,S,S);
+    let d; try{ d=cx.getImageData(0,0,S,S); }catch(e){ return; }
+    const g=new Float32Array(S*S); for(let i=0;i<S*S;i++) g[i]=.299*d.data[i*4]+.587*d.data[i*4+1]+.114*d.data[i*4+2];
+    const toCanvas=arr=>{ const c=mk(), x=c.getContext("2d"), o=x.createImageData(S,S); for(let i=0;i<S*S;i++){ const v=clamp(arr[i],0,255); o.data[i*4]=o.data[i*4+1]=o.data[i*4+2]=v; o.data[i*4+3]=255; } x.putImageData(o,0,0); return c; };
+    gray=toCanvas(g);
+    const nz=g.map(v=>Math.random()<.08?(Math.random()<.5?0:255):v+rnd(-28,28)); noisy=toCanvas(nz);
+    // a median-ish clean up: 3x3 box blur of the noisy image, then a light blend back to the original detail
+    const bl=new Float32Array(S*S); for(let y=0;y<S;y++) for(let x=0;x<S;x++){ let s=0,n=0; for(let j=-2;j<=2;j++) for(let i=-2;i<=2;i++){ const xx=x+i, yy=y+j; if(xx>=0&&yy>=0&&xx<S&&yy<S){ s+=nz[yy*S+xx]; n++; } } bl[y*S+x]=s/n*.75+g[y*S+x]*.25; }
+    clean=toCanvas(bl);
+    vals=new Uint8Array(28*28); const cell=S/28;
+    for(let j=0;j<28;j++) for(let i=0;i<28;i++){ let s=0,n=0; for(let y=Math.floor(j*cell);y<Math.floor((j+1)*cell);y++) for(let x=Math.floor(i*cell);x<Math.floor((i+1)*cell);x++){ s+=bl[y*S+x]; n++; } vals[j*28+i]=Math.round(s/n); }
+    small=document.createElement("canvas"); small.width=small.height=28; const sx=small.getContext("2d"), so=sx.createImageData(28,28);
+    for(let i=0;i<784;i++){ so.data[i*4]=so.data[i*4+1]=so.data[i*4+2]=vals[i]; so.data[i*4+3]=255; } sx.putImageData(so,0,0);
+    ready=true;
+  };
+  img.src="img/cat.jpg";
+  let st=0, t0=0, hover=null, dots=[];
+  function setStage(k){ st=clamp(k,0,4); t0=performance.now(); dots=[];
+    [...tabs.children].forEach((b,i)=>{ b.classList.toggle("on",i===st); b.classList.toggle("done",i<st); });
+    txt.innerHTML=`<h3>${STAGES[st][1]} · ${STAGES[st][0]}</h3><p>${STAGES[st][2]}</p>`;
+    cap.style.display="none"; $("plBack").disabled=st===0; $("plNext").textContent=st===4?"Again ↺":"Next step →"; }
+  tabs.onclick=e=>{ const b=e.target.closest("button"); if(b) setStage(+b.dataset.k); };
+  $("plNext").onclick=()=>setStage(st===4?0:st+1); $("plBack").onclick=()=>setStage(st-1);
+  cv.addEventListener("pointermove",e=>{ hover=ptr(e,cv); }); cv.addEventListener("pointerleave",()=>hover=null);
+  function draw(now){
+    const W=cv.offsetWidth, H=cv.offsetHeight, x=ctxOf(cv), p=(now-t0)/900;
+    x.fillStyle="#0d0d0f"; x.fillRect(0,0,W,H);
+    if(!ready){ x.fillStyle=MUTE; x.font=`18px ${SANS}`; x.fillText("loading…",20,30); return; }
+    const sz=460, ix=(W-sz)/2, iy=(H-sz)/2;
+    x.imageSmoothingEnabled=true;
+    if(st===0){ x.drawImage(color,ix,iy,sz,sz);
+      const a=ease(p); x.globalAlpha=a; x.fillStyle=Y; x.beginPath(); x.roundRect?x.roundRect(ix+16,iy+16,150,46,10):x.rect(ix+16,iy+16,150,46); x.fill();
+      x.fillStyle="#121214"; x.font=`700 22px ${MONO}`; x.textBaseline="middle"; x.fillText('label: "cat"',ix+28,iy+39); x.globalAlpha=1;
+      x.fillStyle=MUTE; x.font=`15px ${MONO}`; x.textBaseline="alphabetic"; x.fillText("cat.bmp",ix,iy+sz+24); }
+    else if(st===1||st===2){
+      const from=st===1?color:noisy, to=st===1?gray:clean, w=sz*ease(p);
+      x.drawImage(from,ix,iy,sz,sz);
+      x.save(); x.beginPath(); x.rect(ix,iy,w,sz); x.clip(); x.drawImage(to,ix,iy,sz,sz); x.restore();
+      if(p<1){ x.fillStyle=Y; x.fillRect(ix+w-2,iy,4,sz); }
+      x.fillStyle=MUTE; x.font=`15px ${MONO}`; x.fillText(st===1?"3 numbers per pixel → 1":"noisy → smoothed",ix,iy+sz+24); }
+    else if(st===3){
+      const a=ease(p); x.drawImage(clean,ix,iy,sz,sz); x.globalAlpha=a; x.imageSmoothingEnabled=false; x.drawImage(small,ix,iy,sz,sz); x.imageSmoothingEnabled=true; x.globalAlpha=1;
+      const c=sz/28; x.strokeStyle="rgba(0,0,0,.35)"; x.lineWidth=1; x.globalAlpha=a;
+      for(let i=1;i<28;i++){ x.beginPath(); x.moveTo(ix+i*c,iy); x.lineTo(ix+i*c,iy+sz); x.moveTo(ix,iy+i*c); x.lineTo(ix+sz,iy+i*c); x.stroke(); } x.globalAlpha=1;
+      let hi=null; if(hover){ const i=Math.floor((hover.x-ix)/c), j=Math.floor((hover.y-iy)/c); if(i>=0&&j>=0&&i<28&&j<28) hi=[i,j]; }
+      if(!hi) hi=[13+Math.round(Math.sin(now/1400)*5),11+Math.round(Math.cos(now/1700)*4)];
+      const [hx,hy]=hi; x.strokeStyle=Y; x.lineWidth=2; x.strokeRect(ix+(hx-2)*c,iy+(hy-2)*c,5*c,5*c);
+      // magnifier: 5x5 numbers
+      const mx=ix+sz+14, my=iy+90, mc=26; x.font=`600 11px ${MONO}`; x.textAlign="center"; x.textBaseline="middle";
+      for(let j=-2;j<=2;j++) for(let i=-2;i<=2;i++){ const xi=clamp(hx+i,0,27), yj=clamp(hy+j,0,27), v=vals[yj*28+xi];
+        x.fillStyle=`rgb(${v},${v},${v})`; x.fillRect(mx+(i+2)*mc,my+(j+2)*mc,mc-1,mc-1); x.fillStyle=v>120?"#111":"#eee"; x.fillText(v,mx+(i+2)*mc+mc/2,my+(j+2)*mc+mc/2); }
+      x.strokeStyle=Y; x.strokeRect(mx-1,my-1,5*mc+1,5*mc+1); x.textAlign="left"; x.textBaseline="alphabetic";
+      x.fillStyle=MUTE; x.font=`15px ${MONO}`; x.fillText("zoomed",mx,my-10);
+      x.fillText(`pixel (${hx}, ${hy}) = ${vals[hy*28+hx]}`,ix,iy+sz+24);
+      cap.textContent="hover the pixels to read their values"; }
+    else {
+      // image on the left, a network on the right; numbers fly in as dots
+      const s2=220, gx=40, gy=(H-s2)/2; x.imageSmoothingEnabled=false; x.drawImage(small,gx,gy,s2,s2); x.imageSmoothingEnabled=true;
+      x.fillStyle=MUTE; x.font=`15px ${MONO}`; x.fillText("784 inputs",gx,gy+s2+24);
+      const L=[[320,12],[450,8],[570,8],[W-150,3]], ys=(n,i)=>H/2+(i-(n-1)/2)*(Math.min(42,(H-140)/n));
+      for(let l=0;l<L.length-1;l++) for(let i=0;i<L[l][1];i++) for(let j=0;j<L[l+1][1];j++){ x.strokeStyle="rgba(255,255,255,.07)"; x.beginPath(); x.moveTo(L[l][0],ys(L[l][1],i)); x.lineTo(L[l+1][0],ys(L[l+1][1],j)); x.stroke(); }
+      if(Math.random()<.5&&now-t0<4500){ const i=(Math.random()*784)|0; dots.push({x:gx+(i%28+.5)*s2/28,y:gy+((i/28|0)+.5)*s2/28,l:0,j:(Math.random()*12)|0,t:0,v:vals[i]}); }
+      dots=dots.filter(d=>{ d.t+=1/22; const [tx,n]=L[d.l], ty=ys(n,d.j); const sx=d.sx??d.x, sy=d.sy??d.y; if(d.sx==null){ d.sx=d.x; d.sy=d.y; }
+        const px=sx+(tx-sx)*d.t, py=sy+(ty-sy)*d.t; x.fillStyle=`rgba(255,194,14,${.4+d.v/400})`; x.beginPath(); x.arc(px,py,3,0,7); x.fill();
+        if(d.t>=1){ if(d.l>=L.length-1) return false; d.sx=tx; d.sy=ty; d.l++; d.j=(Math.random()*L[d.l][1])|0; d.t=0; } return true; });
+      for(const [lx,n] of L) for(let i=0;i<n;i++){ x.fillStyle="#24242a"; x.strokeStyle=lx===L[3][0]?Y:"#6a6a74"; x.lineWidth=2; x.beginPath(); x.arc(lx,ys(n,i),9,0,7); x.fill(); x.stroke(); }
+      const out=[["cat",.94],["dog",.04],["toaster",.02]], k=ease((now-t0-1600)/1500);
+      x.font=`600 18px ${SANS}`; x.textBaseline="middle";
+      out.forEach(([nm,v],i)=>{ const yy=ys(3,i); x.fillStyle=i===0?Y:MUTE; x.fillText(`${nm} ${Math.round(v*k*100)}%`,L[3][0]+18,yy);
+        x.fillStyle=i===0?"rgba(255,194,14,.8)":"rgba(155,152,143,.5)"; x.fillRect(L[3][0]+18,yy+12,70*v*k,4); });
+      x.textBaseline="alphabetic"; x.fillStyle=MUTE; x.font=`15px ${MONO}`;
+      ["input","hidden","hidden","output"].forEach((t,i)=>{ x.textAlign="center"; x.fillText(t,L[i][0],H-40); }); x.textAlign="left"; }
+  }
+  A.pipeline={ enter(dir){ setStage(dir<0?4:0); }, tick(dt,now){ draw(now); },
+    step(){ if(st>=4) return false; setStage(st+1); return true; }, back(){ if(st<=0) return false; setStage(st-1); return true; } };
+})();
+
+/* ---------- fully connected: count the weights ---------- */
+(() => {
+  const svg=$("fcSvg"), lyr=$("fcLyr"); let L=[3,5,5,2], nodes=[], edges=[], pulses=[], hov=null;
+  const NAMES=["INPUT","HIDDEN","HIDDEN","OUTPUT"], COLS=[BLUE,Y,Y,"#b07cff"], XS=[110,320,540,750], MAXN=10;
+  function render(){
+    svg.innerHTML=""; nodes=[]; edges=[];
+    const gE=svgEl("g",{},svg), gP=svgEl("g",{id:"fcP"},svg), gN=svgEl("g",{},svg);
+    const shown=L.map(n=>n>MAXN?MAXN:n);
+    const pos=L.map((n,l)=>{ const m=shown[l], gap=Math.min(56,460/m); return Array.from({length:m},(_,i)=>({x:XS[l],y:280+(i-(m-1)/2)*gap,l,i,more:n>MAXN&&i===m-2})); });
+    for(let l=0;l<3;l++) for(const a of pos[l]) for(const b of pos[l+1]){ if(a.more||b.more) continue; const e=svgEl("line",{x1:a.x,y1:a.y,x2:b.x,y2:b.y,stroke:"#fff","stroke-opacity":.22,"stroke-width":1.2},gE); edges.push({a,b,e}); }
+    pos.forEach((col,l)=>col.forEach(p=>{
+      if(p.more){ const t=svgEl("text",{x:p.x,y:p.y+8,"text-anchor":"middle",fill:MUTE,"font-size":26,"font-family":MONO},gN); t.textContent="⋮"; return; }
+      const c=svgEl("circle",{cx:p.x,cy:p.y,r:15,fill:"#1c1c20",stroke:COLS[l],"stroke-width":3,class:"nd"},gN); p.c=c; nodes.push(p);
+      c.addEventListener("mouseenter",()=>{ hov=p; paint(); }); c.addEventListener("mouseleave",()=>{ hov=null; paint(); });
+    }));
+    L.forEach((n,l)=>{ const t=svgEl("text",{x:XS[l],y:540,"text-anchor":"middle",fill:MUTE,"font-size":15,"font-family":MONO,"letter-spacing":1.5},svg); t.textContent=n>MAXN?`${NAMES[l]} · ${fmt(n)}`:NAMES[l]; });
+    const w=L[0]*L[1]+L[1]*L[2]+L[2]*L[3], b=L[1]+L[2]+L[3];
+    $("fcCount").textContent=fmt(w+b); $("fcSub").textContent=`${fmt(w)} weights + ${fmt(b)} biases to learn`;
+    lyr.innerHTML=L.map((n,l)=>`<div class="card"><div class="nm">${NAMES[l]}</div><div class="row"><button data-l="${l}" data-d="-1">−</button><span class="v">${fmt(n)}</span><button data-l="${l}" data-d="1">+</button></div></div>`).join("");
+    document.querySelectorAll('[data-id="fcn"] [data-fc]').forEach(b=>b.classList.toggle("on",b.dataset.fc===L.join(",")));
+    paint();
+  }
+  function paint(){
+    for(const {a,b,e} of edges){ const on=hov&&(a===hov||b===hov); e.setAttribute("stroke",on?Y:"#fff"); e.setAttribute("stroke-opacity",hov?(on?.9:.05):.22); e.setAttribute("stroke-width",on?2.2:1.2); }
+    for(const n of nodes) n.c.setAttribute("fill",n===hov?COLS[n.l]:"#1c1c20");
+  }
+  lyr.onclick=e=>{ const b=e.target.closest("button"); if(!b) return; const l=+b.dataset.l, d=+b.dataset.d, n=L[l];
+    const step=n>=100?Math.max(1,Math.round(n*.25)):n>=12?4:1; L[l]=clamp(n+d*step,1,4096); render(); };
+  document.querySelectorAll('[data-id="fcn"] [data-fc]').forEach(b=>b.onclick=()=>{ L=b.dataset.fc.split(",").map(Number); render(); });
+  render();
+  A.fcn={ enter(){ pulses=[]; },
+    tick(dt){ const g=$("fcP"); if(!g) return;
+      if(Math.random()<dt/120&&edges.length){ const first=edges.filter(e=>e.a.l===0); const e=pick(first); if(e) pulses.push({e,t:0}); }
+      g.innerHTML=""; pulses=pulses.filter(p=>{ p.t+=dt/650; if(p.t>=1){ const nx=edges.filter(e=>e.a===p.e.b); if(nx.length){ p.e=pick(nx); p.t=0; } else return false; }
+        const {a,b}=p.e; svgEl("circle",{cx:a.x+(b.x-a.x)*p.t,cy:a.y+(b.y-a.y)*p.t,r:4,fill:Y},g); return true; }); } };
+})();
+
+/* ---------- alexnet: error by year ---------- */
+(() => {
+  const svg=$("axSvg"), note=$("axNote");
+  const D=[[2010,28.2,"NEC"],[2011,25.8,"XRCE"],[2012,15.3,"AlexNet"],[2013,11.7,"Clarifai"],[2014,6.7,"GoogLeNet"],[2015,3.6,"ResNet"],[2016,3.0,"Trimps-Soushen"],[2017,2.3,"SENet"]];
+  const NOTES=["","",
+    "<b>2010–2011:</b> hand-crafted features. About 1 in 4 photos labeled wrong.",
+    "<b>2012:</b> AlexNet, 8 layers, trained on GPUs: <b class='y'>15.3%</b>. The next best entry was stuck at 26.2%.",
+    "<b>2013:</b> almost every top team switches to deep learning.",
+    "<b>2014:</b> networks get deeper. GoogLeNet has 22 layers.",
+    "<b>2015:</b> ResNet, <b>152 layers</b>: 3.6%. Better than one human expert who tried the test (about 5%).",
+    "<b>2016:</b> 3.0%.",
+    "<b>2017:</b> 2.3%. The challenge ends: the problem is basically solved."];
+  const X0=90, X1=870, Y0=70, Y1=560, ymax=30, yv=v=>Y1-(v/ymax)*(Y1-Y0), bw=60, bx=i=>X0+30+i*((X1-X0-60)/8);
+  let k=2, bars=[];
+  // axes and grid
+  for(let v=0;v<=30;v+=10){ svgEl("line",{x1:X0,x2:X1,y1:yv(v),y2:yv(v),stroke:LINE},svg); const t=svgEl("text",{x:X0-12,y:yv(v)+5,"text-anchor":"end",fill:MUTE,"font-size":15,"font-family":MONO},svg); t.textContent=v+"%"; }
+  const yl=svgEl("text",{x:X0,y:40,fill:MUTE,"font-size":15,"font-family":MONO},svg); yl.textContent="top-5 error (lower is better)";
+  const hum=svgEl("g",{},svg);
+  svgEl("line",{x1:X0,x2:X1,y1:yv(5.1),y2:yv(5.1),stroke:INK,"stroke-dasharray":"8 6","stroke-width":2,"stroke-opacity":.6},hum);
+  const ht=svgEl("text",{x:X1,y:yv(5.1)-10,"text-anchor":"end",fill:INK,"font-size":15,"font-family":MONO,"fill-opacity":.75},hum); ht.textContent="human (one expert) ≈ 5%";
+  const ghost=svgEl("g",{},svg);
+  svgEl("rect",{x:bx(2)+bw/2+6,y:yv(26.2),width:26,height:Y1-yv(26.2),fill:"none",stroke:MUTE,"stroke-dasharray":"4 4"},ghost);
+  const gt=svgEl("text",{x:bx(2)+bw/2+19,y:yv(26.2)-8,"text-anchor":"middle",fill:MUTE,"font-size":13,"font-family":MONO},ghost); gt.textContent="2nd";
+  D.forEach(([yr,v,who],i)=>{ const g=svgEl("g",{},svg);
+    const col=i<2?"#8f87b8":Y;
+    const r=svgEl("rect",{x:bx(i)-bw/2,y:Y1,width:bw,height:0,rx:6,fill:col},g);
+    const t=svgEl("text",{x:bx(i),y:Y1-8,"text-anchor":"middle",fill:INK,"font-size":18,"font-weight":700,"font-family":SANS},g); t.textContent=v+"%";
+    const w=svgEl("text",{x:bx(i),y:Y1-30,"text-anchor":"middle",fill:MUTE,"font-size":13,"font-family":MONO},g); w.textContent=who;
+    const y=svgEl("text",{x:bx(i),y:Y1+26,"text-anchor":"middle",fill:MUTE,"font-size":16,"font-family":MONO},g); y.textContent=yr;
+    bars.push({g,r,t,w,v}); });
+  const leg=svgEl("g",{},svg);
+  [["#8f87b8","traditional computer vision"],[Y,"deep learning"]].forEach(([c,l],i)=>{ svgEl("rect",{x:520,y:96+i*28,width:18,height:18,rx:4,fill:c},leg); const t=svgEl("text",{x:546,y:110+i*28,fill:INK,"font-size":16,"font-family":SANS},leg); t.textContent=l; });
+  function show(n,anim){ k=n;
+    bars.forEach((b,i)=>{ const on=i<k, h=on?Y1-yv(b.v):0;
+      b.r.style.transition=anim?"y .8s cubic-bezier(.2,.7,.2,1),height .8s cubic-bezier(.2,.7,.2,1)":"none";
+      b.r.setAttribute("y",Y1-h); b.r.setAttribute("height",h);
+      [b.t,b.w].forEach(t=>{ t.style.transition=anim?"opacity .5s .4s":"none"; t.style.opacity=on?1:0; });
+      b.t.setAttribute("y",Y1-h-8); b.w.setAttribute("y",Y1-h-30);
+      b.g.style.opacity=on?(i===k-1?1:.75):.15; });
+    ghost.style.opacity=k===3?1:k>3?.4:0; ghost.style.transition="opacity .5s";
+    hum.style.opacity=k>=6?1:.25; hum.style.transition="opacity .6s";
+    note.innerHTML=NOTES[k]+(k<8?" <span class='muted'>Click for the next year.</span>":"");
+  }
+  document.querySelector('[data-id="alexnet"]').addEventListener("click",e=>{ if(e.target.closest("button,a")) return; advance(); });
+  A.alexnet={ enter(dir){ show(dir<0?8:2,false); }, step(){ if(k>=8) return false; show(k+1,true); return true; }, back(){ if(k<=2) return false; show(k-1,true); return true; } };
+})();
+
+/* ---------- doodle: a tiny $1-style shape recognizer ---------- */
+(() => {
+  const cv=$("ddCv"), say=$("ddSay"), gEl=$("ddGuess");
+  const NP=64, SZ=250;
+  const path=(pts,n=NP)=>{ // resample a polyline to n evenly spaced points
+    const P=pts.map(p=>({x:p.x,y:p.y})); let len=0; for(let i=1;i<P.length;i++) len+=Math.hypot(P[i].x-P[i-1].x,P[i].y-P[i-1].y);
+    const I=len/(n-1); let D=0; const out=[P[0]];
+    for(let i=1;i<P.length;i++){ const d=Math.hypot(P[i].x-P[i-1].x,P[i].y-P[i-1].y);
+      if(D+d>=I&&d>0){ const q={x:P[i-1].x+((I-D)/d)*(P[i].x-P[i-1].x),y:P[i-1].y+((I-D)/d)*(P[i].y-P[i-1].y)}; out.push(q); P.splice(i,0,q); D=0; } else D+=d; }
+    while(out.length<n) out.push(P[P.length-1]); return out.slice(0,n); };
+  const cen=P=>({x:P.reduce((s,p)=>s+p.x,0)/P.length,y:P.reduce((s,p)=>s+p.y,0)/P.length});
+  const rot=(P,a)=>{ const c=cen(P), co=Math.cos(a), si=Math.sin(a); return P.map(p=>({x:(p.x-c.x)*co-(p.y-c.y)*si+c.x,y:(p.x-c.x)*si+(p.y-c.y)*co+c.y})); };
+  function norm(pts){ let P=path(pts); const c=cen(P); P=rot(P,-Math.atan2(P[0].y-c.y,P[0].x-c.x));
+    let mnx=1e9,mny=1e9,mxx=-1e9,mxy=-1e9; for(const p of P){ mnx=Math.min(mnx,p.x); mny=Math.min(mny,p.y); mxx=Math.max(mxx,p.x); mxy=Math.max(mxy,p.y); }
+    const w=Math.max(mxx-mnx,1e-3), h=Math.max(mxy-mny,1e-3); P=P.map(p=>({x:p.x*SZ/w,y:p.y*SZ/h})); const c2=cen(P); return P.map(p=>({x:p.x-c2.x,y:p.y-c2.y})); }
+  const pd=(A,B)=>A.reduce((s,p,i)=>s+Math.hypot(p.x-B[i].x,p.y-B[i].y),0)/A.length;
+  function dist(P,T){ let a=-Math.PI/4,b=Math.PI/4; const phi=.5*(Math.sqrt(5)-1);
+    let x1=phi*a+(1-phi)*b, f1=pd(rot(P,x1),T), x2=(1-phi)*a+phi*b, f2=pd(rot(P,x2),T);
+    while(Math.abs(b-a)>.035){ if(f1<f2){ b=x2; x2=x1; f2=f1; x1=phi*a+(1-phi)*b; f1=pd(rot(P,x1),T); } else { a=x1; x1=x2; f1=f2; x2=(1-phi)*a+phi*b; f2=pd(rot(P,x2),T); } }
+    return Math.min(f1,f2); }
+  // templates: closed shapes get every start point in both directions
+  const T=[]; const add=(name,pts,closed)=>{ const n=closed?pts.length:1;
+    for(let s=0;s<n;s++) for(const rev of [false,true]){ let q=closed?[...pts.slice(s),...pts.slice(0,s),pts[s]]:[...pts]; if(rev) q.reverse(); T.push({name,P:norm(q)}); } };
+  const ring=(n,f)=>Array.from({length:n},(_,i)=>f(i/n*Math.PI*2));
+  for(let s=0;s<4;s++) for(const d of [1,-1]) T.push({name:"circle",P:norm(Array.from({length:33},(_,j)=>({x:Math.cos(s*Math.PI/2+d*j/32*Math.PI*2),y:Math.sin(s*Math.PI/2+d*j/32*Math.PI*2)})))});
+  add("square",[{x:0,y:0},{x:1,y:0},{x:1,y:1},{x:0,y:1}],true);
+  add("triangle",[{x:.5,y:0},{x:1,y:.87},{x:0,y:.87}],true);
+  add("star",[0,2,4,1,3].map(i=>({x:Math.cos(-Math.PI/2+i*Math.PI*2/5),y:Math.sin(-Math.PI/2+i*Math.PI*2/5)})),true);
+  const heart=ring(48,t=>({x:16*Math.sin(t)**3,y:-(13*Math.cos(t)-5*Math.cos(2*t)-2*Math.cos(3*t)-Math.cos(4*t))}));
+  for(let s=0;s<48;s+=12) for(const rev of [false,true]){ let q=[...heart.slice(s),...heart.slice(0,s),heart[s]]; if(rev) q.reverse(); T.push({name:"heart",P:norm(q)}); }
+  const zz=[{x:0,y:0},{x:1,y:1},{x:2,y:0},{x:3,y:1},{x:4,y:0}]; add("zigzag",zz,false); add("zigzag",zz.map(p=>({x:p.x,y:1-p.y})),false);
+  const NAMES=["circle","square","triangle","star","heart","zigzag"];
+  let strokes=[], drawing=null, target="circle", timer=0, won=false;
+  function newTarget(){ const o=NAMES.filter(n=>n!==target); target=pick(o); $("ddWord").textContent=(target==="zigzag"?"a ":"a ")+target; clear(); say.textContent=""; }
+  function clear(){ strokes=[]; won=false; showGuess(null); redraw(); }
+  function redraw(){ const x=ctxOf(cv), W=cv.offsetWidth, H=cv.offsetHeight; x.fillStyle="#f6f3ea"; x.fillRect(0,0,W,H);
+    x.strokeStyle="#18181b"; x.lineWidth=7; x.lineCap="round"; x.lineJoin="round";
+    for(const s of [...strokes,drawing].filter(Boolean)){ x.beginPath(); s.forEach((p,i)=>i?x.lineTo(p.x,p.y):x.moveTo(p.x,p.y)); x.stroke(); } }
+  function showGuess(list){
+    gEl.innerHTML=(list||NAMES.map(n=>[n,0])).slice(0,4).map(([n,p])=>`<div class="gRow"><span>${n}</span><span class="bar"><i style="width:${(p*100).toFixed(0)}%"></i></span><span class="pc">${(p*100).toFixed(0)}%</span></div>`).join(""); }
+  function recognize(){
+    const pts=strokes.flat(); if(pts.length<8) return;
+    const P=norm(pts), best={}; for(const t of T){ const d=dist(P,t.P); if(best[t.name]==null||d<best[t.name]) best[t.name]=d; }
+    const e=NAMES.map(n=>[n,Math.exp(-best[n]/9)]), s=e.reduce((a,b)=>a+b[1],0); const list=e.map(([n,v])=>[n,v/s]).sort((a,b)=>b[1]-a[1]);
+    showGuess(list); const [top,p]=list[0];
+    if(top===target&&p>.4){ won=true; say.textContent=`Oh, I know! It’s ${top==="zigzag"?"a":"a"} ${top}!`; setTimeout(()=>{ if(won&&cur>=0&&slides[cur].dataset.id==="doodle") newTarget(); },1700); }
+    else say.textContent=p>.5?`I see… a ${top}?`:`Hmm… ${list[0][0]}? ${list[1][0]}?`;
+  }
+  cv.addEventListener("pointerdown",e=>{ if(won) return; cv.setPointerCapture(e.pointerId); drawing=[ptr(e,cv)]; clearTimeout(timer); });
+  cv.addEventListener("pointermove",e=>{ if(!drawing) return; drawing.push(ptr(e,cv)); redraw(); });
+  const up=()=>{ if(!drawing) return; if(drawing.length>2) strokes.push(drawing); drawing=null; redraw(); clearTimeout(timer); timer=setTimeout(recognize,350); };
+  cv.addEventListener("pointerup",up); cv.addEventListener("pointercancel",up);
+  $("ddClear").onclick=()=>{ clear(); say.textContent=""; }; $("ddSkip").onclick=newTarget;
+  A.doodle={ enter(){ fitCanvas(cv); newTarget(); } };
+})();
+
+/* ---------- backprop: train a tiny network on a diagonal pattern ---------- */
+(() => {
+  const cv=$("bpCv"), cap=$("bpCap"), lis=[...$("bpSteps").children];
+  const H=6, lr=.5; let w1, b1, w2, b2, data=[], losses=[], epoch=0, running=false, anim=null, map=null;
+  function init(){ w1=Array.from({length:H},()=>[rnd(-1,1),rnd(-1,1)]); b1=Array.from({length:H},()=>rnd(-.5,.5)); w2=Array.from({length:H},()=>rnd(-1,1)); b2=0;
+    data=[]; for(const [cx,cy,l] of [[-.55,-.55,0],[.55,.55,0],[-.55,.55,1],[.55,-.55,1]]) for(let i=0;i<10;i++) data.push({x:cx+rnd(-.25,.25),y:cy+rnd(-.25,.25),l});
+    losses=[loss()]; epoch=0; map=null; }
+  const sig=v=>1/(1+Math.exp(-v));
+  function fwd(x,y){ const h=w1.map((w,i)=>Math.tanh(w[0]*x+w[1]*y+b1[i])); const o=sig(h.reduce((s,v,i)=>s+v*w2[i],b2)); return {h,o}; }
+  function loss(){ let L=0; for(const d of data){ const o=clamp(fwd(d.x,d.y).o,1e-6,1-1e-6); L-=d.l?Math.log(o):Math.log(1-o); } return L/data.length; }
+  function train(){ const gw1=w1.map(()=>[0,0]), gb1=b1.map(()=>0), gw2=w2.map(()=>0); let gb2=0;
+    for(const d of data){ const {h,o}=fwd(d.x,d.y), e=o-d.l; gb2+=e;
+      h.forEach((hv,i)=>{ gw2[i]+=e*hv; const dh=e*w2[i]*(1-hv*hv); gb1[i]+=dh; gw1[i][0]+=dh*d.x; gw1[i][1]+=dh*d.y; }); }
+    const n=data.length; b2-=lr*gb2/n; for(let i=0;i<H;i++){ w2[i]-=lr*gw2[i]/n; b1[i]-=lr*gb1[i]/n; w1[i][0]-=lr*gw1[i][0]/n; w1[i][1]-=lr*gw1[i][1]/n; }
+    epoch++; losses.push(loss()); if(losses.length>600) losses.splice(1,1); map=null; }
+  const setRun=v=>{ running=v; $("bpRun").textContent=v?"Pause ❚❚":"Train ▶"; $("bpRun").classList.toggle("on",!v); };
+  $("bpRun").onclick=()=>{ anim=null; setRun(!running); };
+  $("bpStep").onclick=()=>{ setRun(false); anim={t:0}; };
+  $("bpReset").onclick=()=>{ setRun(false); anim=null; init(); };
+  function draw(now){
+    const W=cv.offsetWidth, Ht=cv.offsetHeight, x=ctxOf(cv); x.fillStyle="#0d0d0f"; x.fillRect(0,0,W,Ht);
+    // network diagram
+    const IX=60, HX=210, OX=350, ys=(n,i)=>Ht/2-40+(i-(n-1)/2)*62, inY=[ys(2,0)-40,ys(2,1)+40];
+    const ph=anim?(anim.t<1?0:anim.t<2?1:2):-1;
+    const edge=(x1,y1,x2,y2,w)=>{ x.strokeStyle=w>0?`rgba(255,194,14,${.25+Math.min(.7,Math.abs(w)/3)})`:`rgba(106,184,255,${.25+Math.min(.7,Math.abs(w)/3)})`; x.lineWidth=.6+Math.min(6,Math.abs(w)*1.6); x.beginPath(); x.moveTo(x1,y1); x.lineTo(x2,y2); x.stroke(); };
+    for(let i=0;i<H;i++){ edge(IX,inY[0],HX,ys(H,i),w1[i][0]); edge(IX,inY[1],HX,ys(H,i),w1[i][1]); edge(HX,ys(H,i),OX,Ht/2-40,w2[i]); }
+    if(anim){ const t=anim.t%1, fwdP=anim.t<1, col=fwdP?Y:RED; x.fillStyle=col;
+      for(let i=0;i<H;i++){ for(const yy of inY){ const [ax,ay,bx,by]=fwdP?[IX,yy,HX,ys(H,i)]:[HX,ys(H,i),IX,yy]; const tt=fwdP?clamp(t*2,0,1):clamp(t*2-1,0,1); x.beginPath(); x.arc(ax+(bx-ax)*tt,ay+(by-ay)*tt,4,0,7); x.fill(); }
+        const [ax,ay,bx,by]=fwdP?[HX,ys(H,i),OX,Ht/2-40]:[OX,Ht/2-40,HX,ys(H,i)]; const tt=fwdP?clamp(t*2-1,0,1):clamp(t*2,0,1); x.beginPath(); x.arc(ax+(bx-ax)*tt,ay+(by-ay)*tt,4,0,7); x.fill(); } }
+    const node=(nx,ny,c,l)=>{ x.fillStyle="#1c1c20"; x.strokeStyle=c; x.lineWidth=3; x.beginPath(); x.arc(nx,ny,15,0,7); x.fill(); x.stroke(); if(l){ x.fillStyle=MUTE; x.font=`14px ${MONO}`; x.textAlign="center"; x.fillText(l,nx,ny+36); } };
+    node(IX,inY[0],BLUE,"x"); node(IX,inY[1],BLUE,"y"); for(let i=0;i<H;i++) node(HX,ys(H,i),"#8a8a94"); node(OX,Ht/2-40,ph===1||ph===2?RED:Y,"guess");
+    x.textAlign="left"; x.fillStyle=MUTE; x.font=`14px ${MONO}`; x.fillText("yellow = positive weight · blue = negative",24,30);
+    // decision map
+    const M=360, mx=W-M-30, my=40, G=36;
+    if(!map){ map=[]; for(let j=0;j<G;j++) for(let i=0;i<G;i++) map.push(fwd(-1+2*(i+.5)/G,1-2*(j+.5)/G).o); }
+    for(let j=0;j<G;j++) for(let i=0;i<G;i++){ const o=map[j*G+i]; x.fillStyle=`rgba(${Math.round(106+(255-106)*o)},${Math.round(184+(194-184)*o)},${Math.round(255-(255-14)*o)},.33)`; x.fillRect(mx+i*M/G,my+j*M/G,M/G+.5,M/G+.5); }
+    x.strokeStyle=LINE; x.lineWidth=1; x.strokeRect(mx,my,M,M);
+    let right=0; for(const d of data){ const o=fwd(d.x,d.y).o, ok=(o>.5)===!!d.l; if(ok) right++;
+      x.fillStyle=d.l?Y:BLUE; x.strokeStyle=ok?"#0d0d0f":RED; x.lineWidth=ok?2:3; x.beginPath(); x.arc(mx+(d.x+1)/2*M,my+(1-d.y)/2*M,7,0,7); x.fill(); x.stroke(); }
+    // loss curve
+    const ly=my+M+40, lh=Ht-ly-40, mxL=Math.max(...losses,.01);
+    x.fillStyle=MUTE; x.font=`14px ${MONO}`; x.fillText(`loss ${losses[losses.length-1].toFixed(3)} · ${right}/${data.length} correct`,mx,ly-12);
+    x.strokeStyle=LINE; x.strokeRect(mx,ly,M,lh); x.strokeStyle=RED; x.lineWidth=2; x.beginPath();
+    losses.forEach((l,i)=>{ const px=mx+i/(Math.max(losses.length-1,1))*M, py=ly+lh-(l/mxL)*lh; i?x.lineTo(px,py):x.moveTo(px,py); }); x.stroke();
+    cap.textContent=`epoch ${epoch}`;
+    lis.forEach((li,i)=>li.classList.toggle("on",anim?(ph===0&&i===0)||(ph===1&&(i===1||i===2))||(ph===2&&i===3):running));
+  }
+  init();
+  A.backprop={ enter(){ setRun(false); anim=null; },
+    tick(dt,now){ if(running){ for(let i=0;i<4;i++) train(); if(losses[losses.length-1]<.02) setRun(false); }
+      if(anim){ anim.t+=dt/900; if(anim.t>=2&&!anim.done){ anim.done=1; train(); } if(anim.t>=2.6) anim=null; }
+      draw(now); } };
+})();
+
+/* ---------- recipe: data + algorithm + compute ---------- */
+(() => {
+  const ICONS={
+    data:`<svg viewBox="0 0 96 80"><g fill="none" stroke="#ffc20e" stroke-width="3"><ellipse cx="48" cy="16" rx="30" ry="9"/><path d="M18 16v44c0 5 13 9 30 9s30-4 30-9V16"/><path d="M18 31c0 5 13 9 30 9s30-4 30-9M18 46c0 5 13 9 30 9s30-4 30-9"/></g></svg>`,
+    algo:`<svg viewBox="0 0 96 80"><g stroke="#6ab8ff" stroke-width="2" opacity=".7"><path d="M14 20L48 12M14 20L48 40M14 20L48 68M14 60L48 12M14 60L48 40M14 60L48 68M48 12L82 40M48 40L82 40M48 68L82 40"/></g><g fill="#1c1c20" stroke="#6ab8ff" stroke-width="3"><circle cx="14" cy="20" r="7"/><circle cx="14" cy="60" r="7"/><circle cx="48" cy="12" r="7"/><circle cx="48" cy="40" r="7"/><circle cx="48" cy="68" r="7"/><circle cx="82" cy="40" r="7"/></g></svg>`,
+    comp:`<svg viewBox="0 0 96 80"><g fill="none" stroke="#5fd68a" stroke-width="3"><rect x="8" y="18" width="80" height="40" rx="6"/><circle cx="34" cy="38" r="12"/><circle cx="64" cy="38" r="12"/><path d="M16 58v10M26 58v10M36 58v10M46 58v10M56 58v10M66 58v10M76 58v10"/></g></svg>`,
+  };
+  const ING=[
+    ["data","Data","Examples to learn from",[[0,"a few hundred examples"],[30,"thousands of examples"],[55,"ImageNet: 14 million images"],[85,"a huge slice of the internet"]]],
+    ["algo","Algorithm","How the network learns",[[0,"a single perceptron"],[30,"backprop, small networks"],[55,"deep convolutional networks"],[85,"transformers"]]],
+    ["comp","Compute","Hardware to train on",[[0,"a 1980s desktop"],[30,"a fast PC"],[55,"two gaming GPUs"],[85,"thousands of data-center GPUs"]]],
+  ];
+  const YEARS={ "1986":[8,40,5,"Backprop exists, but data is tiny and computers are slow."], "2012":[62,62,58,"ImageNet + gaming GPUs + deep CNNs = AlexNet."], "2022":[96,94,97,"Internet-scale text + GPU farms + transformers = ChatGPT."] };
+  const box=$("ing"); let v={data:50,algo:50,comp:50}, yr=null;
+  box.innerHTML=ING.map(([k,t,s])=>`<div class="card"><div>${ICONS[k]}</div><div class="t">${t}</div><div class="s" id="rcS_${k}">${s}</div><input type="range" min="0" max="100" value="50" id="rcR_${k}" aria-label="${t}"></div>`).join("");
+  $("years").innerHTML=Object.keys(YEARS).map(y=>`<button class="btn" data-y="${y}">${y}</button>`).join("");
+  const net=$("rcNet"); const NODES=[[30,40],[30,110],[110,25],[110,75],[110,125],[190,50],[190,100],[240,75]], EDG=[[0,2],[0,3],[0,4],[1,2],[1,3],[1,4],[2,5],[2,6],[3,5],[3,6],[4,5],[4,6],[5,7],[6,7]];
+  const eEls=EDG.map(([a,b])=>svgEl("line",{x1:NODES[a][0],y1:NODES[a][1],x2:NODES[b][0],y2:NODES[b][1],stroke:Y,"stroke-width":2},net));
+  const nEls=NODES.map(([x,y])=>svgEl("circle",{cx:x,cy:y,r:9,fill:"#1c1c20",stroke:Y,"stroke-width":3},net));
+  function upd(){
+    ING.forEach(([k,,,lv])=>{ $("rcR_"+k).value=v[k]; $("rcS_"+k).textContent=lv.filter(l=>v[k]>=l[0]).pop()[1]; });
+    const q=Math.cbrt(Math.max(v.data,1)*Math.max(v.algo,1)*Math.max(v.comp,1))/100;
+    $("rcG").style.width=(q*100)+"%"; $("rcG").style.backgroundSize=`${100/Math.max(q,.05)}% 100%`;
+    const low=ING.map(i=>i[0]).sort((a,b)=>v[a]-v[b])[0], nm={data:"data",algo:"a better algorithm",comp:"compute"}[low];
+    const msg=q<.2?"Barely learns anything. Random guesses.":q<.45?`Learns a little, but it’s weak. The bottleneck is ${nm}.`:q<.75?`A useful model! More ${nm} would help most.`:"State of the art. All three ingredients are strong.";
+    $("rcV").innerHTML=(yr?`<b class="y">${yr}:</b> ${YEARS[yr][3]}<br>`:"")+msg;
+    eEls.forEach(e=>e.setAttribute("stroke-opacity",.08+q*.8)); nEls.forEach(n=>n.setAttribute("fill",q>.75?Y:"#1c1c20"));
+    nEls.forEach(n=>n.style.filter=q>.6?`drop-shadow(0 0 ${q*10}px rgba(255,194,14,.8))`:"none");
+    document.querySelectorAll("#years .btn").forEach(b=>b.classList.toggle("on",b.dataset.y===yr));
+  }
+  ING.forEach(([k])=>$("rcR_"+k).oninput=e=>{ v[k]=+e.target.value; yr=null; upd(); });
+  $("years").onclick=e=>{ const b=e.target.closest("[data-y]"); if(!b) return; yr=b.dataset.y; const [d,a,c]=YEARS[yr]; v={data:d,algo:a,comp:c}; upd(); };
+  upd();
+  A.recipe={ enter(){ yr="1986"; const [d,a,c]=YEARS[yr]; v={data:d,algo:a,comp:c}; upd(); } };
+})();
+
+/* ---------- gpu: cpu vs gpu race ---------- */
+(() => {
+  const C=[$("gpC0"),$("gpC1")], T=[$("gpT0"),$("gpT1")], GW=48, GH=36, N=GW*GH;
+  const LANES=[{cores:8,ms:14},{cores:512,ms:180}];
+  let st=null;
+  const col=(i,j)=>{ const v=Math.sin(i*.25)+Math.sin(j*.3)+Math.sin((i+j)*.18)+Math.sin(Math.hypot(i-GW/2,j-GH/2)*.35); const h=(v+4)/8; return `hsl(${(h*300+20)|0},80%,${45+h*15}%)`; };
+  function go(){ st={t:0,done:[0,0]}; $("gpGo").textContent="Race again ▶"; }
+  $("gpGo").onclick=go;
+  function draw(){
+    C.forEach((cv,l)=>{ const x=ctxOf(cv), W=cv.offsetWidth, H=cv.offsetHeight, cw=W/GW, ch=H/GH; x.fillStyle="#0d0d0f"; x.fillRect(0,0,W,H);
+      if(!st) { x.fillStyle=MUTE; x.font=`16px ${MONO}`; x.textAlign="center"; x.fillText(`${N.toLocaleString()} pixels to shade`,W/2,H/2); x.textAlign="left"; return; }
+      const {cores,ms}=LANES[l], waves=Math.floor(st.t/ms), done=Math.min(N,waves*cores), busy=done<N?Math.min(cores,N-done):0;
+      for(let k=0;k<done;k++){ const i=k%GW, j=(k/GW)|0; x.fillStyle=col(i,j); x.fillRect(i*cw,j*ch,cw+.5,ch+.5); }
+      x.fillStyle="#fff"; for(let k=done;k<done+busy;k++){ const i=k%GW, j=(k/GW)|0; x.fillRect(i*cw,j*ch,cw+.5,ch+.5); }
+      if(done>=N&&!st.done[l]) st.done[l]=Math.ceil(N/cores)*ms;
+      T[l].textContent=((st.done[l]||st.t)/1000).toFixed(1)+" s"; });
+  }
+  A.gpu={ enter(){ st=null; T.forEach(t=>t.textContent="0.0 s"); $("gpGo").textContent="Race ▶"; }, tick(dt){ if(st&&!(st.done[0]&&st.done[1])) st.t+=dt; draw(); } };
+})();
+
+/* ---------- tokens ---------- */
+function tokenize(text){
+  const out=[]; const re=/\s*[A-Za-z']+|\s*\d+|\s*[^\sA-Za-z\d]|\s+$/g; let m;
+  const SUF=["tion","able","ness","ment","ing","est","ed","ly","er"];
+  while((m=re.exec(text))){ let w=m[0]; if(!w) break;
+    const lead=w.match(/^\s*/)[0], core0=w.slice(lead.length); let core=core0, tail=[];
+    while(core.length>7){ const s=SUF.find(s=>core.endsWith(s)&&core.length-s.length>=3); if(s){ tail.unshift(s); core=core.slice(0,-s.length); } else { tail.unshift(core.slice(5)); core=core.slice(0,5); } }
+    out.push(lead+core, ...tail); }
+  return out.filter(t=>t.length);
+}
+const tokId=t=>{ let h=2166136261; for(const c of t) h=Math.imul(h^c.charCodeAt(0),16777619); return (h>>>0)%50000+200; };
+(() => {
+  const inp=$("tokIn"), box=$("toks"), ids=$("tokIds");
+  const COLS=["#ffd65c","#9fd0ff","#94e8b2","#ffb0a8","#d4b8ff"];
+  function run(){ const t=tokenize(inp.value);
+    box.innerHTML=t.map((w,i)=>`<span class="tok" style="background:${COLS[i%5]};color:#121214;animation-delay:${Math.min(i*35,900)}ms"><span class="w">${w.replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/^ /,"␣")}</span><span class="id">${tokId(w)}</span></span>`).join("");
+    $("tokN").textContent=`${t.length} tokens · ${inp.value.length} characters`;
+    ids.textContent="["+t.map(tokId).join(", ")+"]"; }
+  inp.addEventListener("input",run); inp.addEventListener("keydown",e=>e.stopPropagation()); run();
+  A.nlp={ enter(){ run(); } };
+})();
+
+/* ---------- embeddings: a 2D meaning map ---------- */
+(() => {
+  const cv=$("emCv"), say=$("emSay");
+  const W0={ man:[.12,.32],woman:[.12,.52],king:[.29,.22],queen:[.29,.42],boy:[.05,.14],girl:[.05,.34],prince:[.2,.06],princess:[.2,.26],
+    dog:[.70,.24],cat:[.82,.32],puppy:[.64,.10],kitten:[.76,.18],horse:[.92,.14],cow:[.94,.26],mouse:[.88,.42],bird:[.70,.40],
+    pizza:[.10,.74],cheese:[.20,.82],bread:[.06,.88],apple:[.26,.68],banana:[.32,.78],"ice cream":[.20,.95],
+    car:[.52,.74],truck:[.60,.82],bus:[.48,.86],bike:[.44,.68],train:[.60,.94],
+    happy:[.82,.66],joyful:[.90,.60],glad:[.88,.72],sad:[.78,.88],angry:[.92,.86],calm:[.72,.76],
+    school:[.48,.40],home:[.52,.28],house:[.58,.34],office:[.44,.50] };
+  const words=Object.keys(W0); let W=0,H=0, sel=null, an=null, t0=0;
+  const P=w=>({x:40+W0[w][0]*(W-80), y:80+W0[w][1]*(H-190)});
+  function near(w,n=4){ return words.filter(o=>o!==w).map(o=>[o,Math.hypot(W0[o][0]-W0[w][0],W0[o][1]-W0[w][1])]).sort((a,b)=>a[1]-b[1]).slice(0,n); }
+  function draw(now){
+    W=cv.offsetWidth; H=cv.offsetHeight; const x=ctxOf(cv); x.fillStyle="#0d0d0f"; x.fillRect(0,0,W,H);
+    const p=an?ease((now-t0)/1400):1, p2=an?ease((now-t0-1400)/1200):0;
+    if(sel&&!an){ for(const [o] of near(sel)){ const a=P(sel), b=P(o); x.strokeStyle="rgba(255,194,14,.6)"; x.lineWidth=2; x.setLineDash([6,5]); x.beginPath(); x.moveTo(a.x,a.y); x.lineTo(b.x,b.y); x.stroke(); x.setLineDash([]); } }
+    const nb=sel&&!an?near(sel).map(n=>n[0]):[], act=an?[an.a,an.b,an.c,an.res]:[];
+    for(const w of words){ const q=P(w), on=w===sel||nb.includes(w)||act.includes(w), dim=(sel||an)&&!on;
+      x.fillStyle=on?Y:dim?"rgba(243,241,234,.25)":"rgba(243,241,234,.8)"; x.beginPath(); x.arc(q.x,q.y,on?6:4,0,7); x.fill();
+      x.font=`${on?700:500} ${on?20:17}px ${SANS}`; x.fillStyle=on?INK:dim?"rgba(243,241,234,.3)":"#cfccc4"; x.fillText(w,q.x+9,q.y+6); }
+    if(an){ const a=P(an.a), b=P(an.b), c=P(an.c), d={x:c.x+(a.x-b.x),y:c.y+(a.y-b.y)};
+      const arrow=(f,t,k,col)=>{ if(k<=0) return; const ex=f.x+(t.x-f.x)*k, ey=f.y+(t.y-f.y)*k; x.strokeStyle=col; x.lineWidth=3.5; x.beginPath(); x.moveTo(f.x,f.y); x.lineTo(ex,ey); x.stroke();
+        const ang=Math.atan2(t.y-f.y,t.x-f.x); x.fillStyle=col; x.beginPath(); x.moveTo(ex,ey); x.lineTo(ex-14*Math.cos(ang-.4),ey-14*Math.sin(ang-.4)); x.lineTo(ex-14*Math.cos(ang+.4),ey-14*Math.sin(ang+.4)); x.fill(); };
+      arrow(b,a,p,BLUE); arrow(c,d,p2,Y);
+      if(p2>=1){ x.strokeStyle=Y; x.lineWidth=3; x.beginPath(); x.arc(d.x,d.y,16+Math.sin(now/200)*3,0,7); x.stroke(); } }
+  }
+  cv.addEventListener("pointerdown",e=>{ const q=ptr(e,cv); let best=null,bd=40; for(const w of words){ const p=P(w), d=Math.hypot(p.x+20-q.x,p.y-q.y); if(d<bd){ bd=d; best=w; } }
+    an=null; sel=best; if(!best){ say.innerHTML="Click a word to see its nearest neighbors."; return; }
+    say.innerHTML=`Closest to <b>${best}</b>: ${near(best).map(n=>n[0]).join(", ")}`; });
+  document.querySelectorAll('[data-id="embed"] [data-an]').forEach(b=>b.onclick=()=>{
+    const [a,bb,c]=b.dataset.an.split(","); const tx=W0[c][0]+W0[a][0]-W0[bb][0], ty=W0[c][1]+W0[a][1]-W0[bb][1];
+    const res=words.filter(w=>![a,bb,c].includes(w)).sort((m,n)=>Math.hypot(W0[m][0]-tx,W0[m][1]-ty)-Math.hypot(W0[n][0]-tx,W0[n][1]-ty))[0];
+    an={a,b:bb,c,res}; sel=null; t0=performance.now();
+    say.innerHTML=`Blue: the step from <b>${bb}</b> to <b>${a}</b>. Take the same step from <b>${c}</b>…`;
+    setTimeout(()=>{ if(an&&an.res===res) say.innerHTML=`<b>${a}</b> − <b>${bb}</b> + <b>${c}</b> ≈ <b>${res}</b>`; },2600); });
+  A.embed={ enter(){ sel=null; an=null; say.innerHTML="Click a word to see its nearest neighbors."; }, tick(dt,now){ draw(now); } };
+})();
+
+/* ---------- gpt: three letters ---------- */
+(() => {
+  const rows=[...document.querySelectorAll("#gptRows .gptRow")], cv=$("gptCv"); let k=0, t0=0, books=[];
+  const TXT="Once upon a time, a robot vacuum dreamed of exploring the whole house…";
+  const WORDS=["The","cat","that","was","chasing","the","mouse","ran"];
+  function set(n){ k=n; t0=performance.now(); books=[]; rows.forEach((r,i)=>r.classList.toggle("on",i<k)); }
+  document.querySelector('[data-id="gpt"]').addEventListener("click",e=>{ if(e.target.closest("button,a")) return; advance(); });
+  function draw(now){
+    const x=ctxOf(cv), W=cv.offsetWidth, H=cv.offsetHeight, t=now-t0; x.fillStyle="#0d0d0f"; x.fillRect(0,0,W,H);
+    x.textAlign="center"; x.textBaseline="middle";
+    if(k===0){ x.fillStyle=MUTE; x.font=`20px ${SANS}`; x.fillText("Click to reveal each letter",W/2,H/2); }
+    else if(k===1){ // generative: text appears word by word
+      const n=Math.floor((t%9000)/260), shown=TXT.split(" ").slice(0,n).join(" ");
+      x.textAlign="left"; x.font=`28px ${SANS}`; x.fillStyle=INK; const lines=[]; let line="";
+      for(const w of shown.split(" ")){ const tl=line?line+" "+w:w; if(x.measureText(tl).width>W-80){ lines.push(line); line=w; } else line=tl; } lines.push(line);
+      lines.forEach((l,i)=>x.fillText(l,40,H/2-40+i*44));
+      const last=lines[lines.length-1]; if(Math.floor(now/450)%2){ x.fillStyle=Y; x.fillRect(44+x.measureText(last).width,H/2-40+(lines.length-1)*44-16,3,32); } }
+    else if(k===2){ // pre-trained: books fly into the network
+      if(Math.random()<.25) books.push({x:rnd(20,W-60),y:-30,v:rnd(2,4),c:pick(["#c94f4f","#4f7ac9","#c9a24f","#5fa86e","#8f6ac9"]),r:rnd(-.4,.4)});
+      const cx=W/2, cy=H-110;
+      books=books.filter(b=>{ b.x+=(cx-b.x)*.03; b.y+=b.v; b.v+=.08; x.save(); x.translate(b.x,b.y); x.rotate(b.r); x.fillStyle=b.c; x.fillRect(-14,-20,28,40); x.fillStyle="rgba(255,255,255,.5)"; x.fillRect(-10,-14,20,3); x.restore(); return b.y<cy-30; });
+      for(let i=0;i<5;i++) for(let j=0;j<5;j++){ x.strokeStyle="rgba(255,194,14,.25)"; x.beginPath(); x.moveTo(cx-90,cy-60+i*30); x.lineTo(cx+90,cy-60+j*30); x.stroke(); }
+      for(let i=0;i<5;i++) for(const sx of [-90,90]){ x.fillStyle="#1c1c20"; x.strokeStyle=Y; x.lineWidth=2.5; x.beginPath(); x.arc(cx+sx,cy-60+i*30,8,0,7); x.fill(); x.stroke(); }
+      x.fillStyle=MUTE; x.font=`16px ${MONO}`; x.fillText(`pages read: ${fmt(t*4100)}`,W/2,30); }
+    else { // transformer: every word attends to every word
+      const n=WORDS.length, xs=i=>50+i*(W-100)/(n-1), y0=H/2+60;
+      for(let i=0;i<n;i++) for(let j=i+1;j<n;j++){ const ph=(Math.sin(now/600+i*1.3+j*.7)+1)/2, a=xs(i), b=xs(j), h=(b-a)*.45;
+        x.strokeStyle=`rgba(255,194,14,${.08+ph*.5})`; x.lineWidth=1+ph*3; x.beginPath(); x.moveTo(a,y0-22); x.quadraticCurveTo((a+b)/2,y0-22-h,b,y0-22); x.stroke(); }
+      x.font=`600 20px ${SANS}`; WORDS.forEach((w,i)=>{ x.fillStyle="#24242a"; const wd=x.measureText(w).width+18; x.fillRect(xs(i)-wd/2,y0-16,wd,32); x.fillStyle=INK; x.fillText(w,xs(i),y0); }); }
+    x.textAlign="left"; x.textBaseline="alphabetic";
+  }
+  A.gpt={ enter(dir){ set(dir<0?3:0); }, step(){ if(k>=3) return false; set(k+1); return true; }, back(){ if(k<=0) return false; set(k-1); return true; }, tick(dt,now){ draw(now); } };
+})();
+
+/* ---------- attention: click a word ---------- */
+(() => {
+  const WORDS=["The","cat","that","was","chasing","the","mouse","ran","into","the","house","."];
+  const HAND={7:{1:.42,7:.12,6:.1,10:.1,4:.08,8:.08,0:.03,2:.02,3:.02,5:.01,9:.01,11:.01},1:{7:.3,1:.25,0:.15,4:.15,2:.1,6:.05},2:{1:.6,2:.15,3:.1,4:.1,0:.05},
+    4:{1:.35,6:.3,4:.15,3:.1,5:.05,2:.05},6:{4:.4,6:.2,5:.15,1:.15,7:.1},10:{7:.3,8:.25,9:.2,10:.2,1:.05},8:{7:.45,10:.35,8:.2},3:{1:.4,4:.35,3:.25}};
+  const box=$("atWords"), svg=$("atSvg"), sayEl=$("atSay"); let sel=7, near=false;
+  box.innerHTML=WORDS.map((w,i)=>`<span class="atW" data-i="${i}">${w}</span>`).join("");
+  function weights(i){ let w={};
+    if(near){ for(let j=i-2;j<=i+2;j++) if(j>=0&&j<WORDS.length) w[j]=j===i?.3:Math.abs(j-i)===1?.25:.1; }
+    else if(HAND[i]) w={...HAND[i]};
+    else { WORDS.forEach((_,j)=>w[j]=j===i?.35:Math.abs(j-i)===1?.2:.03); }
+    const s=Object.values(w).reduce((a,b)=>a+b,0); for(const k in w) w[k]/=s; return w; }
+  function render(){
+    [...box.children].forEach((c,i)=>c.classList.toggle("sel",i===sel));
+    svg.innerHTML=""; const w=weights(sel), el=box.children, base=box.offsetTop;
+    const cx=i=>el[i].offsetLeft+el[i].offsetWidth/2;
+    Object.entries(w).sort((a,b)=>a[1]-b[1]).forEach(([j,v])=>{ j=+j; if(j===sel) return; const a=cx(sel), b=cx(j), h=Math.min(300,40+Math.abs(b-a)*.4), top=base-6;
+      const pth=svgEl("path",{d:`M${a} ${top} Q${(a+b)/2} ${top-h*1.6} ${b} ${top}`,fill:"none",stroke:Y,"stroke-opacity":.25+v*1.6,"stroke-width":1.5+v*26,"stroke-linecap":"round"},svg);
+      const len=pth.getTotalLength(); pth.style.strokeDasharray=len; pth.style.strokeDashoffset=len; pth.style.transition="stroke-dashoffset .7s ease"; requestAnimationFrame(()=>requestAnimationFrame(()=>pth.style.strokeDashoffset=0));
+      if(v>=.07){ const t=svgEl("text",{x:(a+b)/2,y:top-h*.8-10,"text-anchor":"middle",fill:INK,"font-size":17,"font-family":MONO,"font-weight":600},svg); t.textContent=Math.round(v*100)+"%"; } });
+    const top=+Object.entries(w).filter(([j])=>+j!==sel).sort((a,b)=>b[1]-a[1])[0][0], wd=WORDS[sel];
+    sayEl.className="fb";
+    if(sel===7&&near){ sayEl.className="fb bad"; sayEl.innerHTML="Only looking nearby, “ran” sees “the mouse ran into”… so it would think <b>the mouse</b> ran. Wrong!"; }
+    else if(sel===7){ sayEl.className="fb good"; sayEl.innerHTML="“ran” pays the most attention to <b>“cat”</b>, six words away. The cat is the one that ran."; }
+    else sayEl.innerHTML=`“${wd}” pays the most attention to “${WORDS[top]}”. Try clicking <b>ran</b>.`;
+  }
+  box.onclick=e=>{ const c=e.target.closest(".atW"); if(c){ sel=+c.dataset.i; render(); } };
+  $("atAll").onclick=()=>{ near=false; $("atAll").classList.add("on"); $("atNear").classList.remove("on"); render(); };
+  $("atNear").onclick=()=>{ near=true; $("atNear").classList.add("on"); $("atAll").classList.remove("on"); render(); };
+  A.attention={ enter(){ sel=7; near=false; $("atAll").classList.add("on"); $("atNear").classList.remove("on"); setTimeout(render,60); } };
+})();
+
+/* ---------- next word: the cow jumped over the moon ---------- */
+(() => {
+  const P1={ the:{cow:.45,moon:.2,barn:.15,fence:.1,dog:.1}, cow:{jumped:.5,mooed:.2,ran:.12,slept:.08,".":.1}, dog:{ran:.4,jumped:.3,slept:.15,".":.1,mooed:.05},
+    jumped:{over:.8,happily:.08,".":.07,and:.05}, over:{the:.88,".":.12}, moon:{".":.7,and:.2,happily:.1}, barn:{".":.6,and:.4}, fence:{".":.5,and:.3,happily:.2},
+    mooed:{happily:.4,".":.4,and:.2}, ran:{over:.4,".":.25,happily:.2,and:.15}, slept:{".":.6,happily:.2,and:.2}, happily:{".":.7,and:.3}, and:{the:.4,jumped:.2,ran:.2,mooed:.1,slept:.1} };
+  const P2={ "over the":{moon:.62,fence:.18,barn:.12,dog:.05,cow:.03}, "the moon":{".":.8,and:.12,happily:.08} };
+  let sent=["The"], fresh=0;
+  const dist=()=>{ const n=sent.length, k2=(sent[n-2]||"").toLowerCase()+" "+sent[n-1].toLowerCase(); return P2[k2]||P1[sent[n-1].toLowerCase()]||{".":1}; };
+  const done=()=>sent[sent.length-1]===".";
+  function render(){
+    $("nwSent").innerHTML=sent.map((w,i)=>(w==="."?"":" ")+`<span class="${i===sent.length-1&&fresh?"new":""}">${w}</span>`).join("").trim()+(done()?"":`<span class="cur"></span>`);
+    const d=Object.entries(dist()).sort((a,b)=>b[1]-a[1]);
+    $("nwHead").textContent=done()?"Sentence finished: “.” ends it":`Next word after “${sent.slice(-2).join(" ")}”`;
+    $("nwProbs").innerHTML=done()?`<div class="hint">Press <b>Start over</b>, or try rolling the dice for a different sentence.</div>`:
+      d.map(([w,p],i)=>`<div class="prow ${i===0?"top":""}" data-w="${w}"><span>${w==="."?". (end)":w}</span><span class="bar"><i style="width:${p*100}%"></i></span><span class="pc">${Math.round(p*100)}%</span></div>`).join("");
+    ["nwTop","nwRoll"].forEach(id=>$(id).disabled=done());
+  }
+  function add(w){ if(done()) return; const row=[...$("nwProbs").children].find(r=>r.dataset.w===w); if(row) row.classList.add("pk");
+    setTimeout(()=>{ sent.push(w); fresh=1; if(sent.length>13&&!done()) sent.push("."); render(); },180); }
+  const greedy=()=>Object.entries(dist()).sort((a,b)=>b[1]-a[1])[0][0];
+  const sample=()=>{ let r=Math.random(); for(const [w,p] of Object.entries(dist())){ r-=p; if(r<=0) return w; } return "."; };
+  $("nwTop").onclick=()=>add(greedy()); $("nwRoll").onclick=()=>add(sample());
+  $("nwReset").onclick=()=>{ sent=["The"]; fresh=0; render(); };
+  $("nwProbs").onclick=e=>{ const r=e.target.closest(".prow"); if(r) add(r.dataset.w); };
+  A.nextword={ enter(){ sent=["The"]; fresh=0; render(); } };
+})();
+
+/* ---------- be the model: word banks ---------- */
+(() => {
+  const BANKS=[
+    {name:"Animals",words:["a","cat","dog","bird","jumps","flies","runs","quietly","quickly","and","STOP"],
+     P:{"^":{a:1},a:{cat:4,dog:4,bird:3},cat:{jumps:4,runs:3,and:1,STOP:1},dog:{runs:5,jumps:3,and:1},bird:{flies:7,jumps:1,and:1},
+        jumps:{quickly:3,quietly:2,and:2,STOP:3},flies:{quickly:3,quietly:3,and:2,STOP:3},runs:{quickly:5,quietly:1,and:2,STOP:2},
+        quietly:{and:3,STOP:6},quickly:{and:3,STOP:6},and:{a:4,runs:2,jumps:2,flies:1}}},
+    {name:"Morning",words:["I","up","early","late","wake","go","to","and","school","work","home","sleep","again","STOP"],
+     P:{"^":{I:1},I:{wake:6,go:4,sleep:2},wake:{up:9,early:1},up:{early:5,late:3,and:3},early:{and:5,STOP:3},late:{and:5,STOP:3,again:2},
+        and:{go:5,I:3},go:{to:8,home:3},to:{school:5,work:4,sleep:3},school:{late:2,STOP:4,and:3},work:{late:2,STOP:4,and:3,early:1,again:1},
+        home:{and:3,early:2,late:2,STOP:4,again:1},sleep:{late:2,early:2,again:2,STOP:3,and:1},again:{STOP:7,and:2}}},
+    {name:"Food",words:["I","like","love","hate","pizza","apples","ice cream","spicy","sweet","and","STOP"],
+     P:{"^":{I:1},I:{like:5,love:4,hate:2},like:{pizza:4,apples:3,"ice cream":4,spicy:2,sweet:2},love:{pizza:5,"ice cream":5,apples:2,spicy:1,sweet:2},
+        hate:{apples:3,spicy:3,pizza:1,sweet:2,"ice cream":1},spicy:{pizza:6,apples:1,"ice cream":1},sweet:{apples:4,"ice cream":4,pizza:1},
+        pizza:{and:4,STOP:6},apples:{and:4,STOP:6},"ice cream":{and:4,STOP:6},and:{I:4,apples:2,"ice cream":2,pizza:2,spicy:1,sweet:1}}},
+  ];
+  let b=0, sent=[], busy=false;
+  const last=()=>sent.length?sent[sent.length-1].w:"^", over=()=>last()==="STOP";
+  function dist(){ const d=BANKS[b].P[last()]||{}, s=Object.values(d).reduce((a,c)=>a+c,0)||1; const o={}; for(const w of BANKS[b].words) o[w]=(d[w]||0)/s; return o; }
+  function render(){
+    $("btTabs").innerHTML=BANKS.map((k,i)=>`<button class="btn ${i===b?"on":""}" data-b="${i}">${k.name}</button>`).join("");
+    const d=dist();
+    $("btBank").innerHTML=BANKS[b].words.map(w=>`<button class="wb ${w==="STOP"?"stop":""}" data-w="${w}">${w}<span class="p" style="width:${over()?0:d[w]*100}%"></span>${!over()&&d[w]>0?`<span class="n">${Math.round(d[w]*100)}%</span>`:""}</button>`).join("");
+    $("btSent").innerHTML=sent.length?sent.filter(s=>s.w!=="STOP").map(s=>`<span class="${s.m?"m":"u"}">${s.w}</span>`).join(" ")+(over()?".":""):`<span class="muted" style="font-weight:500;font-size:24px">Click words below to build a sentence…</span>`;
+    $("btHint").textContent=over()?"Finished! Clear it, or let the model write another.":sent.length?"The bars show what the model expects next.":"";
+  }
+  $("btTabs").onclick=e=>{ const t=e.target.closest("[data-b]"); if(!t||busy) return; b=+t.dataset.b; sent=[]; render(); };
+  $("btBank").onclick=e=>{ const t=e.target.closest(".wb"); if(!t||busy) return; if(over()) sent=[]; sent.push({w:t.dataset.w,m:false}); render(); };
+  $("btClear").onclick=()=>{ if(busy) return; sent=[]; render(); };
+  $("btModel").onclick=()=>{ if(busy) return; sent=[]; render(); busy=true;
+    const stepM=()=>{ if(cur<0||slides[cur].dataset.id!=="bethe"){ busy=false; return; }
+      const d=dist(); let r=Math.random(), w="STOP"; for(const [k,p] of Object.entries(d)){ r-=p; if(p>0&&r<=0){ w=k; break; } }
+      if(sent.length>=12) w="STOP";
+      const el=[...$("btBank").children].find(c=>c.dataset.w===w); if(el) el.classList.add("flash");
+      setTimeout(()=>{ sent.push({w,m:true}); render(); if(w==="STOP"){ busy=false; return; } setTimeout(stepM,550); },450); };
+    setTimeout(stepM,300); };
+  A.bethe={ enter(){ busy=false; sent=[]; render(); } };
+})();
+
+/* ---------- training data: towers of books ---------- */
+(() => {
+  const cv=$("dtCv"); let k=1, unit="books", t0=0, born=[];
+  const M=[ // name, year, books, label per unit
+    ["You","70 years",3640,{books:"~3,640 books",pages:"~1.8 million pages",gb:"~3.6 GB"}],
+    ["GPT-2","2019",40000,{books:"~40,000 books",pages:"~20 million pages",gb:"40 GB"}],
+    ["GPT-3","2020",570000,{books:"~570,000 books",pages:"~285 million pages",gb:"570 GB"}],
+    ["GPT-4","2023",2000000,{books:"~2 million books",pages:"~1 billion pages",gb:"~2 TB (assumed)"}],
+  ];
+  const PER=10000, ROW=10, SPINES=["#b4534b","#4b6fb4","#c49a3c","#4f9a62","#8a62b8","#c96f3c","#3c9aa8"];
+  document.querySelectorAll("#dtUnits [data-u]").forEach(btn=>btn.onclick=e=>{ e.stopPropagation(); unit=btn.dataset.u; document.querySelectorAll("#dtUnits [data-u]").forEach(o=>o.classList.toggle("on",o===btn)); });
+  document.querySelector('[data-id="data"]').addEventListener("click",e=>{ if(e.target.closest("button,a")) return; advance(); });
+  function set(n,anim){ k=n; t0=anim?performance.now():-1e9; }
+  function draw(now){
+    const x=ctxOf(cv), W=cv.offsetWidth, H=cv.offsetHeight; x.fillStyle="#0d0d0f"; x.fillRect(0,0,W,H);
+    const base=H-110, bw=Math.min(18,(W-120)/4/ROW-1), bh=Math.min(24,(base-60)/20), colW=(W-60)/4;
+    x.strokeStyle=LINE; x.lineWidth=2; x.beginPath(); x.moveTo(20,base+1); x.lineTo(W-20,base+1); x.stroke();
+    M.forEach(([nm,yr,books,lab],i)=>{ const cx=30+colW*i+colW/2, vis=i<=k, n=books/PER, full=Math.floor(n), frac=n-full;
+      x.textAlign="center"; x.fillStyle=vis?(i?INK:BLUE):"rgba(243,241,234,.15)"; x.font=`700 22px ${SANS}`; x.fillText(nm,cx,base+34);
+      x.font=`14px ${MONO}`; x.fillStyle=vis?MUTE:"rgba(155,152,143,.2)"; x.fillText(yr,cx,base+54);
+      if(!vis) return;
+      x.fillStyle=i?Y:BLUE; x.font=`600 15px ${MONO}`; x.fillText(lab[unit],cx,base+78);
+      const delay=i===k?t0:-1e9;
+      for(let b=0;b<Math.ceil(n);b++){ const r=(b/ROW)|0, c=b%ROW, wFrac=b===full?frac:1, tb=(now-delay-b*18)/450; if(tb<0) continue;
+        const yy=base-(r+1)*bh - (1-ease(tb))*220, xx=cx-ROW*bw/2+c*bw;
+        x.globalAlpha=Math.min(1,tb*2); x.fillStyle=i?SPINES[(b*5+((b/ROW)|0)*3+i)%SPINES.length]:BLUE; x.fillRect(xx+1,yy+1,(bw-2)*wFrac,bh-2); x.globalAlpha=1;
+        if(wFrac===1){ x.fillStyle="rgba(255,255,255,.35)"; x.fillRect(xx+3,yy+5,bw-6,2); } }
+      if(i===0){ x.fillStyle=BLUE; x.font=`13px ${MONO}`; x.fillText("(a tiny sliver)",cx,base-bh-10); } });
+    x.textAlign="left"; x.fillStyle=MUTE; x.font=`15px ${MONO}`; x.fillText("1 block = 10,000 books",24,32);
+  }
+  A.data={ enter(dir){ set(dir<0?3:1,dir>=0); }, step(){ if(k>=3) return false; set(k+1,true); return true; }, back(){ if(k<=1) return false; set(k-1,false); return true; }, tick(dt,now){ draw(now); } };
+})();
+
+/* ---------- chatgpt: token-by-token streaming ---------- */
+(() => {
+  const PR=[
+    ["Explain AI to a 10-year-old","AI is when a computer learns patterns from lots of examples, so it can do things like recognize pictures or answer questions. It doesn’t think like you do. It just makes really good guesses!"],
+    ["Name my robot vacuum","How about Sir Sweeps-a-Lot? Other ideas: Crumb Hunter, Dusty, or The Floor Whisperer."],
+    ["A two-line poem about GPUs","Ten thousand tiny cores all in a row,\nthey paint your games and help the AIs grow."],
+  ];
+  const ALT=[" the"," a"," it"," to"," and"," games"," learn"," so"," very"," AI"," you","!",","," data"," fast"," big"];
+  const msgs=$("cgMsgs"), nx=$("cgNext"); let run=0;
+  $("cgPrompts").innerHTML=PR.map((p,i)=>`<button class="btn" data-p="${i}">${p[0]}</button>`).join("");
+  function ask(i){ const id=++run; msgs.innerHTML="";
+    const u=document.createElement("div"); u.className="bub u"; u.textContent=PR[i][0]; msgs.appendChild(u);
+    const a=document.createElement("div"); a.className="bub a"; msgs.appendChild(a);
+    const toks=tokenize(PR[i][1].replace(/\n/g," ↵ ")); let j=0;
+    const tick=()=>{ if(id!==run) return; if(j>=toks.length){ nx.innerHTML=`<span>done · ${toks.length} tokens</span>`; return; }
+      const t=toks[j++], p=rnd(.42,.93), alts=ALT.filter(w=>w!==t).sort(()=>Math.random()-.5).slice(0,2), q=rnd(.3,.7)*(1-p);
+      nx.innerHTML=`<span>next token:</span><span class="c w">${t.replace(/^ /,"␣")} ${Math.round(p*100)}%</span>`+alts.map((w,k)=>`<span class="c">${w.replace(/^ /,"␣")} ${Math.max(1,Math.round((k?1-p-q:q)*100))}%</span>`).join("");
+      const s=document.createElement("span"); s.className="t"; if(t.trim()==="↵"){ a.appendChild(document.createElement("br")); } else { s.textContent=t; a.appendChild(s); }
+      setTimeout(tick,t.length>4?150:110); };
+    setTimeout(tick,500); }
+  $("cgPrompts").onclick=e=>{ const b=e.target.closest("[data-p]"); if(b) ask(+b.dataset.p); };
+  A.chatgpt={ enter(){ run++; msgs.innerHTML=""; nx.innerHTML="<span>Pick a prompt above.</span>"; } };
+})();
+
+/* ---------- navigation ---------- */
+const countEl=$("count"), prog=$("progress");
+/* ---------- live class sync: instructor drives, students follow ---------- */
+// a backend "adapter" plugs in here: claude artifacts (below) or firebase (live.js on the web site)
+// adapter = { role:"presenter"|"student", get(), set(state), subscribe(cb) -> unsub, followers?(cb) -> unsub }
+const Live={role:"solo",ad:null,state:null,locked:false,writing:false,want:null,written:null,room:false,followers:0,unsub:[]};
+const liveBar=document.getElementById("livebar"), toastEl=document.getElementById("toast");
+function toast(msg){ toastEl.textContent=msg; toastEl.classList.add("on"); clearTimeout(toast.t); toast.t=setTimeout(()=>toastEl.classList.remove("on"),2200); }
+function liveCap(){ return Live.role==="student"&&Live.state&&Live.state.locked ? Live.state.slide : Infinity; }
+function clampSlide(v){ v=Math.floor(+v); return Number.isFinite(v)?Math.max(0,Math.min(slides.length-1,v)):0; }
+function renderLive(){
+  if(Live.role==="presenter"){
+    liveBar.innerHTML=`<button class="lv ${Live.locked?"on":""}" id="lvBtn" title="Lock students to your slide"><span class="dot"></span>${Live.locked?"Class follows you":"Class can roam"}</button>`+(Live.room?`<span class="lvc">${Live.followers} student${Live.followers===1?"":"s"} watching</span>`:"");
+    document.getElementById("lvBtn").onclick=toggleLock;
+  } else if(Live.role==="student"&&Live.state&&Live.state.locked){
+    liveBar.innerHTML=`<span class="lv on"><span class="dot"></span>Following your instructor</span>`;
+  } else liveBar.innerHTML="";
+  document.getElementById("next").disabled = cur>=liveCap();
+}
+async function pushLive(){
+  if(Live.role!=="presenter"||!Live.ad) return;
+  Live.want={slide:cur,locked:Live.locked};
+  if(Live.writing) return; Live.writing=true;
+  try{ while(Live.want && JSON.stringify(Live.want)!==JSON.stringify(Live.written)){ const w=Live.want; await Live.ad.set(w); Live.written=w; } }
+  catch(e){ console.warn("live sync write failed",e); toast("Couldn’t sync the class. Check your connection."); }
+  Live.writing=false;
+}
+function toggleLock(){ Live.locked=!Live.locked; renderLive(); pushLive(); toast(Live.locked?"Students now follow your slides":"Students can move freely"); }
+function onLiveState(d){
+  const prev=Live.state;
+  Live.state=d?{slide:clampSlide(d.slide),locked:d.locked===true}:null;
+  const s=Live.state;
+  if(s&&s.locked&&(!prev||!prev.locked||prev.slide!==s.slide||cur>s.slide)) go(s.slide);
+  renderLive();
+}
+async function attachLive(ad){
+  Live.unsub.forEach(u=>{ try{ u&&u(); }catch(e){} }); Live.unsub=[];
+  Live.ad=ad; Live.role=ad?ad.role:"solo"; Live.state=null; Live.written=null; Live.room=false;
+  if(!ad){ renderLive(); return; }
+  if(ad.role==="presenter"){
+    try{ const d=await ad.get(); if(d){ Live.locked=d.locked===true; Live.written={slide:clampSlide(d.slide),locked:Live.locked}; if(Live.locked) go(clampSlide(d.slide)); } else Live.locked=false; }catch(e){}
+  } else Live.unsub.push(ad.subscribe(onLiveState));
+  if(ad.followers){ try{ Live.unsub.push(ad.followers(n=>{ Live.room=true; Live.followers=n; renderLive(); })); }catch(e){} }
+  renderLive();
+}
+// backend 1: claude artifact capabilities (db + room + user)
+async function claudeAdapter(){
+  const C=window.claude; if(!C||typeof C.use!=="function") return;
+  let user=null, db=null, room=null;
+  try{ [user,db,room]=await Promise.all([C.use("user"),C.use("db"),C.use("room")]); }catch(e){ return; }
+  if(!db) return;
+  let pres=false; try{ pres=!!user&&(!!(await user.isOwner())||!!(await user.canEdit())); }catch(e){}
+  const ref=db.doc("live/state");
+  attachLive({
+    role:pres?"presenter":"student",
+    get:async()=>{ const s=await ref.get(); return s.exists?s.data():null; },
+    set:w=>ref.set(w),
+    subscribe:cb=>ref.onSnapshot(s=>cb(s.exists?s.data():null),e=>console.warn("live sync stopped",e)),
+    followers:room?cb=>{ if(!pres) room.presence({following:true}).catch(()=>{}); return room.onPeers(ch=>cb(ch.peers.filter(p=>!p.isMe&&p.presence&&p.presence.following).length)); }:null,
+  });
+}
+// backend 2 (web site): live.js calls window.Deck.attachLive(...)
+window.Deck={attachLive,toast,current:()=>cur,count:slides.length};
+
+
+function go(i,fromHash){
+  i=Math.max(0,Math.min(slides.length-1,i));
+  const capS=liveCap(); if(i>capS){ if(cur>=capS) toast("Waiting for your instructor…"); i=capS; }
+  if(i===cur) return;
+  const dir=i>cur?1:-1;
+  if(cur>=0) slides[cur].classList.remove("active");
+  cur=i; const s=slides[cur]; s.classList.add("active");
+  s.querySelectorAll("canvas").forEach(fitCanvas);
+  const a=A[s.dataset.id]; if(a&&a.enter) a.enter(dir);
+  countEl.textContent=`${cur+1} / ${slides.length}`; prog.style.width=((cur+1)/slides.length*100)+"%";
+  if(!fromHash){ try{ history.replaceState(null,"","#s"+(cur+1)); }catch(e){} }
+  if(Live.role==="presenter"&&Live.locked) pushLive();
+  if(Live.role!=="solo") renderLive();
+}
+function fromHash(){ const m=/^#s(\d+)$/.exec(location.hash); go(m?+m[1]-1:0,true); }
+addEventListener("hashchange",fromHash);
+function advance(){ const a=A[slides[cur].dataset.id]; if(a&&a.step&&a.step()) return; go(cur+1); }
+function retreat(){ const a=A[slides[cur].dataset.id]; if(a&&a.back&&a.back()) return; go(cur-1); }
+$("prev").onclick=retreat; $("next").onclick=advance;
+function toggleFS(){ try{ if(document.fullscreenElement) document.exitFullscreen(); else document.documentElement.requestFullscreen().catch(()=>{}); }catch(e){} }
+$("fs").onclick=toggleFS;
+addEventListener("keydown",e=>{
+  if(e.target.tagName==="INPUT") return;
+  const k=e.key;
+  if(["ArrowRight","PageDown"].includes(k)||(k===" "&&e.target.tagName!=="BUTTON")){ advance(); e.preventDefault(); }
+  else if(["ArrowLeft","PageUp"].includes(k)){ retreat(); e.preventDefault(); }
+  else if(k==="Home") go(0); else if(k==="End") go(slides.length-1);
+  else if(k==="f"||k==="F") toggleFS();
+});
+let sx=null; stage.addEventListener("touchstart",e=>{ if(e.target.closest("input,button,svg,canvas,.chip,.wb,.atW,.prow")) return; sx=e.touches[0].clientX; },{passive:true});
+stage.addEventListener("touchend",e=>{ if(sx===null) return; const dx=e.changedTouches[0].clientX-sx; if(Math.abs(dx)>60) (dx<0?advance:retreat)(); sx=null; });
+addEventListener("resize",fitStage);
+fitStage(); fromHash(); claudeAdapter();
+let last=performance.now();
+function loop(now){ const dt=Math.min(100,now-last); last=now; const s=slides[cur], a=s&&A[s.dataset.id]; if(a&&a.tick){ try{ a.tick(dt,now); }catch(err){ console.error(err); } } requestAnimationFrame(loop); }
+requestAnimationFrame(loop);
+})();
+
+
+
+</script>
+<script type="module" src="../live.js"></script>
+</body>
+</html>
