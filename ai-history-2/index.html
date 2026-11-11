@@ -298,8 +298,8 @@
   .gptRow .L{font-size:120px;font-weight:700;line-height:.85;color:var(--y)}
   .gptRow .w{font-size:40px;font-weight:700;line-height:1}
   .gptRow .w span{color:var(--mute);font-weight:500}
-  .gptRow p{font-size:21px;margin-top:8px;max-height:0;overflow:hidden;transition:max-height .6s ease}
-  .gptRow.on p{max-height:140px}
+  .gptRow p{font-size:21px;margin-top:8px;opacity:0;transform:translateY(8px);transition:opacity .5s ease,transform .5s ease}
+  .gptRow.on p{opacity:1;transform:none}
 
   /* attention */
   .atBox{position:relative;height:560px}
@@ -812,7 +812,7 @@
     </div>
   </section>
 
-  <div id="chrome"><span class="sp"></span><button class="nbtn" id="prev" aria-label="Previous">←</button><span class="ver" style="font-size:12px;opacity:.6;margin-right:8px">updated Nov 10, 9:58 PM</span><span id="count"></span><button class="nbtn" id="next" aria-label="Next">→</button><button class="nbtn" id="fs" aria-label="Fullscreen" title="Fullscreen (F)">⤢</button></div>
+  <div id="chrome"><span class="sp"></span><button class="nbtn" id="prev" aria-label="Previous">←</button><span class="ver" style="font-size:12px;opacity:.6;margin-right:8px">updated Nov 11, 11:04 AM</span><span id="count"></span><button class="nbtn" id="next" aria-label="Next">→</button><button class="nbtn" id="fs" aria-label="Fullscreen" title="Fullscreen (F)">⤢</button></div>
   <div id="progress"></div>
   <div id="livewrap"><span id="liveauth"></span><div id="livebar"></div></div>
   <div id="toast" role="status"></div>
