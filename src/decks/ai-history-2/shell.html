@@ -695,21 +695,6 @@
     </div>
   </section>
 
-  <!-- gpt -->
-  <section class="slide" data-id="gpt" style="cursor:pointer">
-    <div class="two" style="grid-template-columns:1fr 1fr;gap:60px">
-      <div class="stack" style="gap:30px" id="gptRows">
-        <div class="gptRow"><div class="L">G</div><div><div class="w">enerative</div><p>It <b>creates</b> new text by predicting the next word, again and again.</p></div></div>
-        <div class="gptRow"><div class="L">P</div><div><div class="w">re-trained</div><p>It first reads a <b>massive</b> amount of text (books, articles, websites) to learn how language works. Later it can be fine-tuned for a job, like chatting.</p></div></div>
-        <div class="gptRow"><div class="L">T</div><div><div class="w">ransformer</div><p>The network design from 2017. It uses <b>self-attention</b> to look at every word at once, so it can follow long sentences and train fast on GPUs.</p></div></div>
-      </div>
-      <div class="stack" style="gap:18px">
-        <h2 class="rise" style="--i:0"><span class="n">What does GPT stand for?</span>Three words, <span class="y">one idea</span></h2>
-        <div class="stage-box rise" style="--i:1;height:470px"><canvas id="gptCv"></canvas></div>
-      </div>
-    </div>
-  </section>
-
   <!-- attention -->
   <section class="slide" data-id="attention">
     <div class="stack" style="gap:14px;height:100%">
@@ -791,6 +776,21 @@
         <div class="prompts" id="cgPrompts"></div>
         <div class="msgs" id="cgMsgs"></div>
         <div class="nextp" id="cgNext"></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- gpt -->
+  <section class="slide" data-id="gpt" style="cursor:pointer">
+    <div class="two" style="grid-template-columns:1fr 1fr;gap:60px">
+      <div class="stack" style="gap:30px" id="gptRows">
+        <div class="gptRow"><div class="L">G</div><div><div class="w">enerative</div><p>It <b>creates</b> new text by predicting the next word, again and again.</p></div></div>
+        <div class="gptRow"><div class="L">P</div><div><div class="w">re-trained</div><p>It first reads a <b>massive</b> amount of text (books, articles, websites) to learn how language works. Later it can be fine-tuned for a job, like chatting.</p></div></div>
+        <div class="gptRow"><div class="L">T</div><div><div class="w">ransformer</div><p>The network design from 2017. It uses <b>self-attention</b> to look at every word at once, so it can follow long sentences and train fast on GPUs.</p></div></div>
+      </div>
+      <div class="stack" style="gap:18px">
+        <h2 class="rise" style="--i:0"><span class="n">What does GPT stand for?</span>Three words, <span class="y">one idea</span></h2>
+        <div class="stage-box rise" style="--i:1;height:470px"><canvas id="gptCv"></canvas></div>
       </div>
     </div>
   </section>
