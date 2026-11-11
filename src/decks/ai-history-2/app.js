@@ -395,8 +395,9 @@ document.querySelectorAll(".slide.tl").forEach(sl=>{
     const sz=460, ix=(W-sz)/2, iy=(H-sz)/2;
     x.imageSmoothingEnabled=true;
     if(st===0){ x.drawImage(color,ix,iy,sz,sz);
-      const a=ease(p); x.globalAlpha=a; x.fillStyle=Y; x.beginPath(); x.roundRect?x.roundRect(ix+16,iy+16,150,46,10):x.rect(ix+16,iy+16,150,46); x.fill();
-      x.fillStyle="#121214"; x.font=`700 22px ${MONO}`; x.textBaseline="middle"; x.fillText('label: "cat"',ix+28,iy+39); x.globalAlpha=1;
+      const a=ease(p), lab='label: "cat"'; x.font=`700 22px ${MONO}`; const lw=x.measureText(lab).width+28;
+      x.globalAlpha=a; x.fillStyle=Y; x.beginPath(); x.roundRect?x.roundRect(ix+16,iy+16,lw,46,10):x.rect(ix+16,iy+16,lw,46); x.fill();
+      x.fillStyle="#121214"; x.textBaseline="middle"; x.fillText(lab,ix+30,iy+40); x.globalAlpha=1;
       x.fillStyle=MUTE; x.font=`15px ${MONO}`; x.textBaseline="alphabetic"; x.fillText("cat.bmp",ix,iy+sz+24); }
     else if(st===1||st===2){
       const from=st===1?color:noisy, to=st===1?gray:clean, w=sz*ease(p);
