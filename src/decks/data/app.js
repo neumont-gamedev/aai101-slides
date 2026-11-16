@@ -738,19 +738,21 @@ $("probGrid").innerHTML=[
 (() => {
   const cv=$("bsCv"); let gen=[], shown=0, acc=0;
   const sharpen=p=>{ const a=p**3, b=(1-p)**3; return a/(a+b); };
-  const run=()=>{ const p=+$("bsMix").value/100, q=sharpen(p); gen=Array.from({length:40},()=>Math.random()<q?1:0); shown=0; acc=0; $("bsGen").textContent="…"; };
-  $("bsMix").oninput=()=>{ $("bsTrain").textContent=$("bsMix").value+"%"; gen=[]; $("bsGen").textContent="–"; };
+  const run=()=>{ const p=+$("bsMix").value/100, q=sharpen(p); gen=Array.from({length:40},()=>Math.random()<q?1:0); shown=0; acc=0; $("bsGen").textContent=$("bsGenB").textContent="…"; };
+  const setTrain=()=>{ const v=+$("bsMix").value; $("bsTrain").textContent=v+"%"; $("bsTrainB").textContent=(100-v)+"%"; };
+  $("bsMix").oninput=()=>{ setTrain(); gen=[]; $("bsGen").textContent=$("bsGenB").textContent="–"; };
   $("bsGo").onclick=run;
   function person(x,px,py,col,a=1){ x.globalAlpha=a; x.fillStyle=col; x.beginPath(); x.arc(px,py-12,9,0,7); x.fill(); x.beginPath(); x.moveTo(px-14,py+16); x.quadraticCurveTo(px-14,py,px,py); x.quadraticCurveTo(px+14,py,px+14,py+16); x.closePath(); x.fill(); x.globalAlpha=1; }
-  A.biassim={ enter(){ $("bsMix").value=70; $("bsTrain").textContent="70%"; run(); },
+  A.biassim={ enter(){ $("bsMix").value=70; setTrain(); run(); },
     tick(dt){ const W=cv.offsetWidth, H=cv.offsetHeight, x=ctxOf(cv); x.clearRect(0,0,W,H);
       const p=+$("bsMix").value/100, nA=Math.round(p*40), cols=10, gx=(W-80)/cols;
-      label(x,"TRAINING DATA",40,44,MUTE,15); label(x,"GENERATED",40,H/2+30,MUTE,15);
+      label(x,`TRAINING DATA · ${nA} A · ${40-nA} B`,40,44,MUTE,15);
       for(let i=0;i<40;i++){ const c=i%cols, r=i/cols|0; person(x,40+gx*c+gx/2,80+r*56,i<nA?Y:BLUE); }
       acc+=dt; while(acc>45&&shown<gen.length){ acc-=45; shown++; }
       const sorted=gen.slice(0,shown);
       for(let i=0;i<shown;i++){ const c=i%cols, r=i/cols|0; person(x,40+gx*c+gx/2,H/2+66+r*56,sorted[i]?Y:BLUE,Math.min(1,(shown-i)/3)); }
-      if(shown===gen.length&&gen.length){ $("bsGen").textContent=Math.round(gen.filter(Boolean).length/gen.length*100)+"%"; }
+      const gA=sorted.filter(Boolean).length; label(x,shown?`GENERATED · ${gA} A · ${shown-gA} B`:"GENERATED",40,H/2+30,MUTE,15);
+      if(shown===gen.length&&gen.length){ const pa=Math.round(gA/gen.length*100); $("bsGen").textContent=pa+"%"; $("bsGenB").textContent=(100-pa)+"%"; }
       x.strokeStyle=LINE; x.beginPath(); x.moveTo(30,H/2+4); x.lineTo(W-30,H/2+4); x.stroke();
       label(x,"● group A",W-210,44,Y,15); label(x,"● group B",W-110,44,BLUE,15);
     } };

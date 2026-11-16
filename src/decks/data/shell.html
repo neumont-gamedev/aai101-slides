@@ -980,9 +980,9 @@
         <h2 class="rise" style="--i:0"><span class="n">BIAS IN, BIAS OUT</span>Skewed data, skewed results</h2>
         <p class="rise" style="--i:1">A generator that always picks the <b>most likely</b> look doesn’t just copy an imbalance. It <b class="y">exaggerates</b> it.</p>
         <div class="card pad rise" style="--i:2;display:flex;flex-direction:column;gap:14px">
-          <div class="k">Training data: share of group <b class="y">A</b></div>
+          <div class="k">Training data: group <b class="y">A</b> vs. group <b style="color:var(--blue)">B</b></div>
           <input type="range" id="bsMix" min="50" max="95" value="70">
-          <div class="mono" style="font-size:20px">training: <b class="y" id="bsTrain">70%</b> A &nbsp;·&nbsp; generated: <b class="y" id="bsGen">–</b> A</div>
+          <div class="mono" style="font-size:20px;line-height:1.6">training: &nbsp;<b class="y" id="bsTrain">70%</b> A · <b style="color:var(--blue)" id="bsTrainB">30%</b> B<br>generated: <b class="y" id="bsGen">–</b> A · <b style="color:var(--blue)" id="bsGenB">–</b> B</div>
           <div style="display:flex;gap:12px"><button class="btn on" id="bsGo">Generate 40 images</button></div>
         </div>
         <p class="hint rise" style="--i:3">a simplified illustration, not a real model</p>
