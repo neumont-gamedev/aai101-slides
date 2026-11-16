@@ -600,7 +600,7 @@ document.querySelectorAll(".slide.tl:not(.tl2)").forEach(sl=>{
       x.font=`600 17px ${MONO}`; x.fillStyle=MUTE; x.textAlign="center"; x.fillText("should be 1.00",OUT.x,OUT.y-62); x.textAlign="left";
       if(wrong){ const a=phase==="err"?p:1; x.globalAlpha=a; x.fillStyle=RED; x.font=`700 22px ${SANS}`; x.textAlign="center"; x.fillText(`✗ off by ${err().toFixed(2)}`,OUT.x,OUT.y+96); x.textAlign="left"; x.globalAlpha=1; }
       // error over rounds
-      const gx=40, gy=520, gw=VW-80, gh=100, n=Math.max(12,hist.length);
+      const gx=40, gy=500, gw=VW-80, gh=94, n=Math.max(12,hist.length);
       x.strokeStyle=LINE; x.lineWidth=2; x.beginPath(); x.moveTo(gx,gy); x.lineTo(gx,gy+gh); x.lineTo(gx+gw,gy+gh); x.stroke();
       x.fillStyle=MUTE; x.font=`14px ${MONO}`; x.fillText("error",gx+8,gy+12); x.textAlign="right"; x.fillText("rounds →",gx+gw,gy+gh+20); x.textAlign="left";
       x.strokeStyle=RED; x.lineWidth=3; x.beginPath(); hist.forEach((o,i)=>{ const px=gx+i/(n-1)*gw, py=gy+gh-(1-o)/.7*gh; i?x.lineTo(px,py):x.moveTo(px,py); }); x.stroke();

@@ -1049,7 +1049,7 @@ EEEEEE  LLLLLL  IIII  ZZZZZZZ  AA   AA</pre><div class="log" id="elog"></div><fo
         </ol>
         <div class="ctl rise" style="--i:3;display:flex;gap:12px;flex-wrap:wrap"><button class="btn" id="bpiStep">Next step ▶</button><button class="btn on" id="bpiTrain">Train ▶▶</button><button class="btn" id="bpiReset">Reset</button></div>
       </div>
-      <div class="stage-box rise" style="--i:2;height:660px"><canvas id="bpiCv"></canvas><div class="cap" id="bpiCap">Should I bring an umbrella?</div></div>
+      <div class="stage-box rise" style="--i:2;height:660px"><canvas id="bpiCv"></canvas><div class="cap" id="bpiCap" style="bottom:6px">Should I bring an umbrella?</div></div>
     </div>
   </section>
 
@@ -1618,7 +1618,7 @@ EEEEEE  LLLLLL  IIII  ZZZZZZZ  AA   AA</pre><div class="log" id="elog"></div><fo
     </div>
   </section>
 
-  <div id="chrome"><span class="sp"></span><button class="nbtn" id="prev" aria-label="Previous">←</button><span class="ver" style="font-size:12px;opacity:.6;margin-right:8px">updated Nov 16, 10:34 AM</span><span id="count"></span><button class="nbtn" id="next" aria-label="Next">→</button><button class="nbtn" id="fs" aria-label="Fullscreen" title="Fullscreen (F)">⤢</button></div>
+  <div id="chrome"><span class="sp"></span><button class="nbtn" id="prev" aria-label="Previous">←</button><span class="ver" style="font-size:12px;opacity:.6;margin-right:8px">updated Nov 16, 10:43 AM</span><span id="count"></span><button class="nbtn" id="next" aria-label="Next">→</button><button class="nbtn" id="fs" aria-label="Fullscreen" title="Fullscreen (F)">⤢</button></div>
   <div id="progress"></div>
   <div id="livewrap"><span id="liveauth"></span><div id="livebar"></div></div>
   <div id="toast" role="status"></div>
@@ -2226,7 +2226,7 @@ document.querySelectorAll(".slide.tl:not(.tl2)").forEach(sl=>{
       x.font=`600 17px ${MONO}`; x.fillStyle=MUTE; x.textAlign="center"; x.fillText("should be 1.00",OUT.x,OUT.y-62); x.textAlign="left";
       if(wrong){ const a=phase==="err"?p:1; x.globalAlpha=a; x.fillStyle=RED; x.font=`700 22px ${SANS}`; x.textAlign="center"; x.fillText(`✗ off by ${err().toFixed(2)}`,OUT.x,OUT.y+96); x.textAlign="left"; x.globalAlpha=1; }
       // error over rounds
-      const gx=40, gy=520, gw=VW-80, gh=100, n=Math.max(12,hist.length);
+      const gx=40, gy=500, gw=VW-80, gh=94, n=Math.max(12,hist.length);
       x.strokeStyle=LINE; x.lineWidth=2; x.beginPath(); x.moveTo(gx,gy); x.lineTo(gx,gy+gh); x.lineTo(gx+gw,gy+gh); x.stroke();
       x.fillStyle=MUTE; x.font=`14px ${MONO}`; x.fillText("error",gx+8,gy+12); x.textAlign="right"; x.fillText("rounds →",gx+gw,gy+gh+20); x.textAlign="left";
       x.strokeStyle=RED; x.lineWidth=3; x.beginPath(); hist.forEach((o,i)=>{ const px=gx+i/(n-1)*gw, py=gy+gh-(1-o)/.7*gh; i?x.lineTo(px,py):x.moveTo(px,py); }); x.stroke();
