@@ -70,7 +70,7 @@ function rain(id){
   };
 }
 A.oil=rain("bgOil"); A.recap=rain("bgRecap");
-$("rcChips").innerHTML=["structured","unstructured","dataset","feature","label","data type","annotation","supervised","regression","classification","unsupervised","EDA","visualization","mean · median · mode","variance","data cleaning","imputation","encoding","normalization","feature engineering","train / test split","bias"]
+$("rcChips").innerHTML=["structured","unstructured","dataset","feature","label","data type","annotation","supervised","regression","classification","unsupervised","EDA","visualization","mean · median · mode","data cleaning","imputation","encoding","feature engineering","train / test split","bias"]
   .map(t=>`<span class="tag t-y" style="font-size:20px;padding:8px 16px">${t}</span>`).join("");
 
 /* ---------- dataset term: a faint csv behind the word ---------- */
@@ -859,37 +859,6 @@ $("probGrid").innerHTML=[
   tabs($("sdTabs"),k=>{ seed=k; $("sdCode").textContent=k==="none"?"None":k; run(); });
   $("sdRun").onclick=run;
   A.seed={ enter(){ runs=[]; run(); } };
-})();
-
-/* ---------- spread: range, variance, sd ---------- */
-(() => {
-  const s=$("spSvg"), X0=70, X1=1310, LY=210, MAX=20, px=v=>X0+v/MAX*(X1-X0);
-  const PRE=[["[2, 4, 6, 8, 10]",[2,4,6,8,10]],["tight",[8,9,10,10,11]],["spread out",[1,5,10,15,19]],["+ outlier",[8,9,10,10,11,19.5]]];
-  let V=[], drag=-1;
-  $("sdPre").innerHTML=PRE.map((p,i)=>`<button class="btn" data-i="${i}">${p[0]}</button>`).join("");
-  $("sdPre").onclick=e=>{ const b=e.target.closest("button"); if(!b) return; V=PRE[+b.dataset.i][1].slice(); render(); };
-  function render(){
-    s.innerHTML=""; const n=V.length, mu=V.reduce((a,b)=>a+b,0)/n, va=V.reduce((a,b)=>a+(b-mu)**2,0)/n, sd=Math.sqrt(va), mn=Math.min(...V), mx=Math.max(...V);
-    svgEl("rect",{x:px(mu-sd),y:16,width:px(mu+sd)-px(mu-sd),height:LY-16,fill:"rgba(255,194,14,.07)"},s);
-    svgEl("line",{x1:X0-20,y1:LY,x2:X1+20,y2:LY,stroke:LINE,"stroke-width":3},s);
-    for(let v=0;v<=MAX;v+=2){ svgEl("line",{x1:px(v),y1:LY-6,x2:px(v),y2:LY+6,stroke:"#55534d","stroke-width":2},s); const t=svgEl("text",{x:px(v),y:LY+32,"text-anchor":"middle",fill:MUTE,"font-size":16,"font-family":"JetBrains Mono"},s); t.textContent=v; }
-    svgEl("line",{x1:px(mn),y1:LY+46,x2:px(mx),y2:LY+46,stroke:GREEN,"stroke-width":3},s);
-    const rt=svgEl("text",{x:(px(mn)+px(mx))/2,y:LY+42+20,"text-anchor":"middle",fill:GREEN,"font-size":14,"font-family":"JetBrains Mono"},s); rt.textContent="range";
-    svgEl("line",{x1:px(mu),y1:10,x2:px(mu),y2:LY,stroke:Y,"stroke-width":3},s);
-    const mt=svgEl("text",{x:px(mu)+8,y:26,fill:Y,"font-size":17,"font-family":"JetBrains Mono","font-weight":600},s); mt.textContent="μ = "+fmt(mu);
-    const order=V.map((v,i)=>i).sort((a,b)=>V[a]-V[b]);
-    order.forEach((i,k)=>{ const y=LY-30-k*(150/Math.max(1,n-1||1));
-      svgEl("line",{x1:px(mu),y1:y,x2:px(V[i]),y2:y,stroke:"rgba(255,90,78,.7)","stroke-width":2,"stroke-dasharray":"6 5"},s);
-      svgEl("circle",{cx:px(V[i]),cy:y,r:14,fill:INK,stroke:"#121214","stroke-width":3,"data-i":i,style:"cursor:grab"},s); });
-    $("rgV").textContent=fmt(mx-mn,1); $("vaV").textContent=fmt(va,2); $("sdV").textContent=fmt(sd,2);
-  }
-  s.addEventListener("pointerdown",e=>{ const c=e.target.closest("circle"); if(!c) return; drag=+c.dataset.i; s.setPointerCapture(e.pointerId); });
-  s.addEventListener("pointermove",e=>{ if(drag<0) return; const [x]=svgXY(e,s); V[drag]=clamp(Math.round((x-X0)/(X1-X0)*MAX*2)/2,0,MAX); render(); });
-  s.addEventListener("pointerup",()=>drag=-1);
-  let pi=0;
-  A.spread={ enter(){ pi=0; V=PRE[0][1].slice(); render(); },
-    step(){ if(pi>=PRE.length-1) return false; pi++; V=PRE[pi][1].slice(); render(); return true; },
-    back(){ if(pi<=0) return false; pi--; V=PRE[pi][1].slice(); render(); return true; } };
 })();
 
 /* ---------- navigation ---------- */
