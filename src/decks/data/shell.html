@@ -230,14 +230,6 @@
   .cinfo h3{font-size:30px;color:var(--y)}
   .cinfo p{font-size:20px}
 
-  /* venn */
-  .venn svg{width:100%;height:100%}
-  .venn .rg{cursor:pointer}
-  .venn .rg ellipse{transition:fill-opacity .25s,stroke-width .25s}
-  .venn .rg:hover ellipse{fill-opacity:.32}
-  .vinfo{padding:22px 26px;min-height:200px;display:flex;flex-direction:column;gap:10px}
-  .vinfo h3{font-size:34px}
-  .vinfo p{font-size:22px}
   .roles .card{padding:22px 22px;display:flex;flex-direction:column;gap:12px}
   .roles h3{font-size:28px}
   .roles .who2{font-family:var(--mono);font-size:14px;letter-spacing:.08em}
@@ -1021,18 +1013,6 @@
           <li>Did the same prompt give similar results across generations?</li>
           <li>Are there stereotypes in the images?</li>
         </ol>
-      </div>
-    </div>
-  </section>
-
-  <!-- venn -->
-  <section class="slide" data-id="fields">
-    <div class="two" style="grid-template-columns:1.25fr .75fr;gap:40px">
-      <div class="stage-box venn rise" style="--i:1;background:transparent;border:none"><svg id="vnSvg" viewBox="0 0 900 620"></svg></div>
-      <div class="stack" style="gap:20px">
-        <h2 class="rise" style="--i:0"><span class="n">WHERE DATA FITS</span>The big picture</h2>
-        <div class="card vinfo rise" style="--i:2" id="vnInfo"></div>
-        <p class="hint rise" style="--i:3">click a region</p>
       </div>
     </div>
   </section>

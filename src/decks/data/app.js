@@ -689,25 +689,6 @@ $("probGrid").innerHTML=[
   A.charts={ enter(){ sel(0); } };
 })();
 
-/* ---------- venn: where data fits ---------- */
-(() => {
-  const s=$("vnSvg");
-  const Rg=[
-    {k:"cs",n:"Computer science",c:BLUE,e:[450,310,440,300],t:[450,70],d:"The broad field of computing: programming, software development, databases, and much more."},
-    {k:"ds",n:"Data science",c:GREEN,e:[450,360,370,220],t:[450,190],d:"Uses computing, statistics and domain knowledge to extract insights and predictions from data. Includes gathering and cleaning data, finding patterns, building models and communicating results."},
-    {k:"da",n:"Data analytics",c:AMBER,e:[320,410,180,110],t:[250,400],d:"Collecting, cleaning, exploring and interpreting data to find patterns and insights. Essential to AI, since AI systems learn from data."},
-    {k:"ml",n:"Machine learning",c:PURPLE,e:[580,410,180,110],t:[650,400],d:"Algorithms that learn from data to make predictions, instead of following hand-written rules."},
-    {k:"ai",n:"AI",c:RED,e:[450,410,90,90],t:[450,410],d:"Building systems that can perform tasks that normally take human intelligence. Modern AI sits where analytics and machine learning meet."},
-  ];
-  Rg.forEach(r=>{ const g=svgEl("g",{class:"rg","data-k":r.k},s); svgEl("ellipse",{cx:r.e[0],cy:r.e[1],rx:r.e[2],ry:r.e[3],fill:r.c,"fill-opacity":.1,stroke:r.c,"stroke-width":3},g);
-    const t=svgEl("text",{x:r.t[0],y:r.t[1],"text-anchor":"middle",fill:r.c,"font-size":r.k==="ai"?34:26,"font-weight":700,"font-family":"Space Grotesk"},g); t.textContent=r.n; });
-  const sel=k=>{ const r=Rg.find(x=>x.k===k); s.querySelectorAll(".rg").forEach(g=>{ const on=g.dataset.k===k; g.querySelector("ellipse").setAttribute("stroke-width",on?6:3); g.querySelector("ellipse").setAttribute("fill-opacity",on?.26:.1); });
-    $("vnInfo").innerHTML=`<h3 style="color:${r.c}">${r.n}</h3><p>${r.d}</p>`; };
-  s.addEventListener("click",e=>{ const g=e.target.closest(".rg"); if(g) sel(g.dataset.k); });
-  const ORD=["cs","ds","da","ml","ai"]; let i=0;
-  A.fields={ enter(){ i=1; sel("ds"); }, step(){ if(i>=ORD.length-1) return false; i++; sel(ORD[i]); return true; }, back(){ if(i<=0) return false; i--; sel(ORD[i]); return true; } };
-})();
-
 /* ---------- be the annotator ---------- */
 (() => {
   const RV=[["This game is absolutely amazing!","p"],["The controls are terrible and frustrating.","n"],["The game was released yesterday.","u"],["I love the graphics and soundtrack!","p"],["The game crashes every time I start it.","n"],["The game supports four players.","u"],["Best game I've played all year!","p"],["The loading times are way too long.","n"],["The game is available on PC and Xbox.","u"],["The story was boring and disappointing.","n"]];
