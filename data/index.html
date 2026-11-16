@@ -1,0 +1,2159 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta name="deck-id" content="data">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>AAI101 · Data</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;700&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#121214; --panel:#1c1c20; --panel2:#24242a; --line:#2e2e35;
+    --ink:#f3f1ea; --mute:#9b988f; --y:#ffc20e; --amber:#ff8a1f; --red:#ff5a4e; --green:#5fd68a; --blue:#6ab8ff;
+    --sans:"Space Grotesk",system-ui,-apple-system,"Segoe UI",sans-serif;
+    --mono:"JetBrains Mono",ui-monospace,Consolas,monospace;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  html,body{height:100%;background:#000;overflow:hidden;color:var(--ink);font-family:var(--sans)}
+  #stage{position:absolute;left:50%;top:50%;width:1600px;height:900px;background:var(--bg);overflow:hidden}
+
+  .slide{position:absolute;inset:0;padding:100px 110px 90px;opacity:0;visibility:hidden;transform:scale(1.015);
+    transition:opacity .6s ease,transform .8s cubic-bezier(.2,.7,.2,1),visibility 0s .6s}
+  .slide.active{opacity:1;visibility:visible;transform:none;transition:opacity .6s ease,transform .8s cubic-bezier(.2,.7,.2,1),visibility 0s}
+  .rise{opacity:0;transform:translateY(26px);transition:opacity .7s ease,transform .8s cubic-bezier(.2,.7,.2,1)}
+  .slide.active .rise{opacity:1;transform:none;transition-delay:calc(var(--i,0) * 110ms + 150ms)}
+
+  .bg{position:absolute;inset:0;width:100%;height:100%;display:block}
+  .vignette{position:absolute;inset:0;background:radial-gradient(ellipse at center,rgba(18,18,20,.5) 0%,rgba(18,18,20,.88) 60%,var(--bg) 100%);pointer-events:none}
+  .content{position:relative;z-index:1;height:100%}
+  .center{display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center}
+
+  .eyebrow{font-family:var(--mono);font-size:20px;letter-spacing:.18em;text-transform:uppercase;color:var(--y)}
+  h1{font-size:118px;line-height:.98;font-weight:700;letter-spacing:-.03em;margin:22px 0 34px}
+  h1 span,h2 span.y{color:var(--y)}
+  h2{font-size:56px;font-weight:700;letter-spacing:-.02em;line-height:1.06}
+  h2 .n{font-family:var(--mono);font-size:21px;color:var(--y);font-weight:600;display:block;letter-spacing:.12em;margin-bottom:12px}
+  .lede{font-size:31px;line-height:1.4;color:#d6d3cb;max-width:1100px}
+  p{font-size:25px;line-height:1.45;color:#d6d3cb}
+  b,strong{color:var(--ink)}
+  i.t{font-style:italic;color:var(--ink)}
+  .y{color:var(--y)} .mono{font-family:var(--mono)} .muted{color:var(--mute)}
+  .card{background:var(--panel);border:1px solid var(--line);border-radius:18px}
+
+  .bul{list-style:none;display:flex;flex-direction:column;gap:14px;margin-top:6px}
+  .bul li{font-size:24px;line-height:1.4;color:#d6d3cb;position:relative;padding-left:26px}
+  .bul li::before{content:"";position:absolute;left:0;top:.5em;width:11px;height:11px;background:var(--y);border-radius:3px}
+  .num{list-style:none;counter-reset:n;display:flex;flex-direction:column;gap:14px}
+  .num li{counter-increment:n;font-size:24px;line-height:1.4;color:#d6d3cb;position:relative;padding-left:44px}
+  .num li::before{content:counter(n);position:absolute;left:0;top:.18em;font-family:var(--mono);font-size:16px;line-height:1.4;color:var(--bg);background:var(--y);border-radius:6px;padding:0 9px}
+
+  .two{display:grid;grid-template-columns:1fr 1fr;gap:64px;height:100%;align-items:center}
+  .two.wide-r{grid-template-columns:.85fr 1.15fr}
+  .stack{display:flex;flex-direction:column;gap:26px}
+  .stage-box{position:relative;height:620px;border-radius:20px;overflow:hidden;border:1px solid var(--line);background:#0d0d0f}
+  .stage-box canvas,.stage-box svg{position:absolute;inset:0;width:100%;height:100%}
+  .cap{position:absolute;left:18px;bottom:14px;font-family:var(--mono);font-size:15px;color:var(--mute);background:rgba(13,13,15,.8);padding:6px 10px;border-radius:8px;z-index:2}
+  .callout{border-left:4px solid var(--y);padding:14px 20px;background:rgba(255,194,14,.07);border-radius:0 12px 12px 0;font-size:22px;line-height:1.45;color:#e5e2da}
+  .linkchip{display:inline-flex;align-items:center;gap:10px;font-family:var(--mono);font-size:17px;color:var(--ink);border:1px solid var(--line);background:var(--panel);border-radius:999px;padding:8px 16px;text-decoration:none;width:max-content}
+  .linkchip:hover{border-color:var(--y);color:var(--y)}
+  .linkchip::before{content:"↗";color:var(--y)}
+  .btn{background:var(--panel2);border:1px solid var(--line);color:var(--ink);font:500 19px var(--sans);padding:10px 20px;border-radius:10px;cursor:pointer}
+  .btn:hover{border-color:var(--y);color:var(--y)}
+  .btn.on{background:var(--y);color:var(--bg);border-color:var(--y)}
+  .tag{display:inline-block;font-family:var(--mono);font-size:15px;padding:4px 10px;border-radius:6px;font-weight:600;letter-spacing:.04em}
+  .t-red{background:rgba(255,90,78,.15);color:var(--red)} .t-green{background:rgba(95,214,138,.15);color:var(--green)} .t-blue{background:rgba(106,184,255,.15);color:var(--blue)} .t-y{background:rgba(255,194,14,.15);color:var(--y)}
+
+  /* chrome */
+  #chrome{position:absolute;left:0;right:0;bottom:0;height:56px;display:flex;align-items:center;gap:18px;padding:0 32px;z-index:10;font-family:var(--mono);font-size:16px;color:var(--mute);pointer-events:none}
+  #chrome button{pointer-events:auto}
+  #chrome .sp{flex:1}
+  #brand{position:absolute;left:32px;top:28px;z-index:10;font-family:var(--mono);font-size:15px;letter-spacing:.14em;color:var(--mute);text-transform:uppercase}
+  #brand b{color:var(--y);font-weight:600}
+  #logo{position:absolute;right:32px;top:22px;height:44px;z-index:10;pointer-events:none;filter:drop-shadow(0 2px 8px rgba(0,0,0,.5))}
+  #progress{position:absolute;left:0;bottom:0;height:4px;background:var(--y);transition:width .5s cubic-bezier(.2,.7,.2,1);z-index:11}
+  .nbtn{background:transparent;border:1px solid var(--line);color:var(--ink);font:inherit;width:40px;height:34px;border-radius:8px;cursor:pointer}
+  .nbtn:hover{border-color:var(--y);color:var(--y)}
+
+  /* live class sync */
+  #livewrap{position:absolute;left:32px;bottom:11px;z-index:12;display:flex;gap:12px;align-items:center;font-family:var(--mono);font-size:15px}
+  #livebar,#liveauth{display:flex;gap:12px;align-items:center}
+  #liveauth:empty,#livebar:empty{display:none}
+  .lv{display:inline-flex;align-items:center;gap:9px;background:var(--panel);border:1px solid var(--line);color:var(--mute);border-radius:999px;padding:6px 14px;font:inherit}
+  button.lv{cursor:pointer} button.lv:hover{border-color:var(--y)}
+  .lv.on{border-color:var(--y);color:var(--y)}
+  .lv .dot{width:9px;height:9px;border-radius:50%;background:#55534d}
+  .lv.on .dot{background:var(--red);box-shadow:0 0 0 0 rgba(255,90,78,.6);animation:lvp 1.6s infinite}
+  @keyframes lvp{70%{box-shadow:0 0 0 8px rgba(255,90,78,0)}100%{box-shadow:0 0 0 0 rgba(255,90,78,0)}}
+  .lvc{color:var(--mute)}
+  .nbtn:disabled{opacity:.25;cursor:not-allowed;border-color:var(--line);color:var(--ink)}
+  #toast{position:absolute;left:50%;bottom:76px;z-index:20;transform:translate(-50%,16px);opacity:0;pointer-events:none;background:var(--panel2);border:1px solid var(--y);color:var(--ink);font-size:20px;padding:12px 22px;border-radius:12px;transition:opacity .3s,transform .3s;box-shadow:0 12px 40px rgba(0,0,0,.5)}
+  #toast.on{opacity:1;transform:translate(-50%,0)}
+  /* ---------- data deck ---------- */
+  .keyIdea{opacity:0;transform:translateY(12px);transition:opacity .6s ease .5s,transform .6s cubic-bezier(.2,.7,.2,1) .5s}
+  .keyIdea.on{opacity:1;transform:none}
+  .tight .bul li{font-size:21px} .tight .bul{gap:10px}
+  .grid2{display:grid;grid-template-columns:1fr 1fr;gap:22px}
+  .grid3{display:grid;grid-template-columns:repeat(3,1fr);gap:22px}
+  .grid4{display:grid;grid-template-columns:repeat(4,1fr);gap:18px}
+  .pad{padding:22px 24px}
+  .k{font-family:var(--mono);font-size:14px;letter-spacing:.1em;color:var(--mute);text-transform:uppercase}
+  code,.code{font-family:var(--mono);color:var(--y)}
+  .hint{font-family:var(--mono);font-size:15px;color:var(--mute)}
+
+  /* terminology */
+  .termS{display:flex;flex-direction:column;justify-content:center;height:100%;gap:22px;max-width:1250px}
+  .termS .word{font-size:132px;font-weight:700;letter-spacing:-.035em;line-height:.95;color:var(--ink)}
+  .termS .word span{color:var(--y)}
+  .termS .meta{display:flex;gap:22px;align-items:baseline;font-family:var(--mono);font-size:24px;color:var(--mute)}
+  .termS .meta i{font-family:var(--sans);font-style:italic;color:var(--blue)}
+  .termS .def{font-size:36px;line-height:1.38;color:#e5e2da;border-left:5px solid var(--y);padding-left:28px}
+  .termS .def b{color:var(--y)}
+  .termBg{position:absolute;right:-40px;top:50%;transform:translateY(-50%);font-family:var(--mono);font-size:15px;line-height:1.5;color:rgba(255,194,14,.08);white-space:pre;pointer-events:none;text-align:right}
+
+  /* data tables */
+  table.dt{border-collapse:separate;border-spacing:0;font-family:var(--mono);font-size:19px;width:100%}
+  table.dt th,table.dt td{padding:10px 14px;text-align:center;border-bottom:1px solid var(--line);transition:background .35s,color .35s,opacity .35s}
+  table.dt th{color:var(--mute);font-weight:600;font-size:14px;letter-spacing:.08em;text-transform:uppercase;border-bottom:2px solid var(--line)}
+  table.dt td{color:var(--ink)}
+  table.dt td.l,table.dt th.l{text-align:left}
+  table.dt .hF{background:rgba(106,184,255,.13);color:var(--blue)}
+  table.dt .hL{background:rgba(255,194,14,.15);color:var(--y)}
+  table.dt .bad{background:rgba(255,90,78,.18);color:var(--red);font-weight:600}
+  table.dt .ok{background:rgba(95,214,138,.16);color:var(--green);font-weight:600}
+  table.dt tr.gone td,table.dt .gone{opacity:.18;text-decoration:line-through}
+  table.dt .pop{animation:cellpop .6s ease}
+  @keyframes cellpop{0%{transform:scale(1)}40%{transform:scale(1.18)}100%{transform:scale(1)}}
+  .tbl{padding:12px 18px;overflow:hidden}
+
+  /* title */
+  .bigline{font-size:150px;font-weight:700;letter-spacing:-.04em;line-height:.95}
+  .bigline span{color:var(--y)}
+
+  /* ingredients */
+  .ingStage{position:relative;height:600px;margin-top:14px}
+  .ingStage canvas{position:absolute;inset:0;width:100%;height:100%}
+  .ingCap{font-size:24px;line-height:1.4;color:#d6d3cb;min-height:34px;text-align:center;transition:opacity .4s}
+  .ingCap b{color:var(--y)}
+
+  /* code */
+  pre.src{font-family:var(--mono);font-size:19px;line-height:1.55;color:#d6d3cb;background:#0d0d0f;border:1px solid var(--line);border-radius:14px;padding:18px 22px;white-space:pre;overflow:hidden}
+  pre.src .kw{color:var(--blue)} pre.src .fn{color:var(--green)} pre.src .s{color:var(--amber)} pre.src .c{color:var(--mute)} pre.src .n{color:var(--y)}
+
+  /* sorter */
+  .sortItems{display:flex;flex-wrap:wrap;gap:12px;min-height:120px;align-content:flex-start}
+  .chipx{font-size:20px;padding:10px 16px;border-radius:12px;background:var(--panel2);border:1px solid var(--line);cursor:pointer;user-select:none;display:inline-flex;gap:10px;align-items:center;transition:transform .2s,border-color .2s,opacity .3s}
+  .chipx:hover{border-color:var(--y)}
+  .chipx.sel{border-color:var(--y);color:var(--y);transform:translateY(-3px);box-shadow:0 8px 24px rgba(0,0,0,.4)}
+  .chipx .e{font-size:24px}
+  .bins{display:grid;grid-template-columns:1fr 1fr;gap:18px}
+  .bin{padding:16px 18px;min-height:250px;cursor:pointer;display:flex;flex-direction:column;gap:10px;transition:border-color .2s,background .2s}
+  .bin:hover{border-color:var(--y)}
+  .bin h3{font-size:24px;display:flex;justify-content:space-between;align-items:center}
+  .bin .in{display:flex;flex-wrap:wrap;gap:8px}
+  .bin .in .chipx{font-size:16px;padding:6px 10px;cursor:default}
+  .chipx.right{border-color:rgba(95,214,138,.6);background:rgba(95,214,138,.1)}
+  .chipx.wrong{border-color:rgba(255,90,78,.6);background:rgba(255,90,78,.1)}
+
+  /* type quiz */
+  .tq td .tchip{display:inline-block;min-width:130px;font-size:16px;padding:6px 12px;border-radius:8px;cursor:pointer;border:1px dashed var(--mute);color:var(--mute);user-select:none}
+  .tq td .tchip.set{border-style:solid;color:var(--ink);border-color:var(--line);background:var(--panel2)}
+  .tq td .tchip.right{border-color:var(--green);color:var(--green);background:rgba(95,214,138,.12)}
+  .tq td .tchip.wrong{border-color:var(--red);color:var(--red);background:rgba(255,90,78,.12)}
+  .critter{display:flex;gap:24px;align-items:center}
+  .critter svg{width:180px;height:180px;flex:none}
+
+  /* tabs */
+  .tabs{display:flex;gap:8px;flex-wrap:wrap}
+  .tabs button{background:transparent;border:1px solid var(--line);color:var(--mute);font:500 16px var(--sans);padding:8px 14px;border-radius:999px;cursor:pointer;display:inline-flex;gap:8px;align-items:center}
+  .tabs button:hover{border-color:var(--y);color:var(--ink)}
+  .tabs button.on{background:var(--y);border-color:var(--y);color:var(--bg)}
+  .tabs button.done::after{content:"✓";color:var(--green);font-weight:700}
+  .tabs button.on.done::after{color:var(--bg)}
+
+  /* cleaning */
+  .probs{display:grid;grid-template-columns:repeat(4,1fr);gap:16px;margin-top:34px}
+  .prob{padding:18px 20px;display:flex;flex-direction:column;gap:8px}
+  .prob h3{font-size:22px}
+  .prob .ex{font-size:16px;color:#c9c6be;line-height:1.4}
+  .prob .fix{font-size:16px;color:var(--green);line-height:1.4}
+  .prob .fix::before{content:"fix → ";font-family:var(--mono);color:var(--mute)}
+  .prob .ic{font-family:var(--mono);font-size:26px;color:var(--y)}
+  .labHead{display:flex;justify-content:space-between;align-items:center;gap:20px}
+  .labNote{min-height:96px;font-size:21px;line-height:1.45;color:#d6d3cb}
+  .labNote b{color:var(--y)}
+  .acts{display:flex;gap:10px;flex-wrap:wrap}
+  .acts .btn{font-size:17px;padding:9px 16px}
+
+  /* number line */
+  .nl{position:relative;height:300px}
+  .nl svg{position:absolute;inset:0;width:100%;height:100%}
+  .stats3{display:grid;grid-template-columns:repeat(3,1fr);gap:14px}
+  .stat{padding:14px 18px;display:flex;flex-direction:column;gap:2px}
+  .stat .k{font-size:13px}
+  .stat b{font-family:var(--mono);font-size:34px}
+  .stat.mean b{color:var(--y)} .stat.med b{color:var(--blue)} .stat.mode b{color:var(--green)}
+  .stat .d{font-size:15px;color:var(--mute);line-height:1.35}
+  .presets{display:flex;gap:8px;flex-wrap:wrap}
+  .presets .btn{font-family:var(--mono);font-size:15px;padding:7px 12px}
+
+  /* scaling + encoding */
+  .scaleBox{padding:22px 26px;display:flex;flex-direction:column;gap:16px}
+  .scaleRow{display:grid;grid-template-columns:120px 1fr 100px;gap:16px;align-items:center;font-family:var(--mono);font-size:18px}
+  .scaleTrack{position:relative;height:12px;border-radius:6px;background:#2a2a30}
+  .scaleTrack i{position:absolute;top:-7px;width:26px;height:26px;margin-left:-13px;border-radius:50%;background:var(--y);box-shadow:0 0 16px rgba(255,194,14,.5);transition:left .2s}
+  .scaleTrack.b i{background:var(--blue);box-shadow:0 0 16px rgba(106,184,255,.5)}
+  .enc{display:grid;grid-template-columns:1fr 1fr;gap:20px}
+  .sw8{display:inline-block;width:16px;height:16px;border-radius:4px;vertical-align:-2px;margin-right:8px}
+
+  /* feature engineering */
+  .fe{display:grid;grid-template-columns:repeat(4,1fr);gap:14px}
+  .fes{padding:16px 18px;display:flex;flex-direction:column;gap:6px;cursor:pointer;transition:border-color .3s,background .3s,opacity .3s;opacity:.55}
+  .fes .n{font-family:var(--mono);font-size:14px;color:var(--y);letter-spacing:.08em}
+  .fes h3{font-size:22px}
+  .fes p{font-size:16px;color:#c9c6be;line-height:1.4}
+  .fes.on{opacity:1;border-color:var(--y);background:rgba(255,194,14,.06)}
+  .fes.done{opacity:1}
+  .fes.done .n::after{content:"  ✓";color:var(--green)}
+
+  /* charts */
+  .viz{position:relative;height:440px}
+  .viz>*{position:absolute;inset:0;transition:opacity .5s}
+  .viz .off{opacity:0;pointer-events:none}
+  .cgrid{display:grid;grid-template-columns:repeat(6,1fr);gap:14px}
+  .cg{padding:12px;display:flex;flex-direction:column;align-items:center;gap:6px;cursor:pointer;transition:border-color .2s,transform .2s}
+  .cg:hover{border-color:var(--y)}
+  .cg.on{border-color:var(--y);background:rgba(255,194,14,.07);transform:translateY(-3px)}
+  .cg svg{width:100%;height:110px}
+  .cg span{font-size:16px;font-weight:600}
+  .cinfo{padding:18px 24px;display:grid;grid-template-columns:260px 1fr 1fr;gap:26px;align-items:center;min-height:120px}
+  .cinfo h3{font-size:30px;color:var(--y)}
+  .cinfo p{font-size:20px}
+
+  /* venn */
+  .venn svg{width:100%;height:100%}
+  .venn .rg{cursor:pointer}
+  .venn .rg ellipse{transition:fill-opacity .25s,stroke-width .25s}
+  .venn .rg:hover ellipse{fill-opacity:.32}
+  .vinfo{padding:22px 26px;min-height:200px;display:flex;flex-direction:column;gap:10px}
+  .vinfo h3{font-size:34px}
+  .vinfo p{font-size:22px}
+  .roles .card{padding:22px 22px;display:flex;flex-direction:column;gap:12px}
+  .roles h3{font-size:28px}
+  .roles .who2{font-family:var(--mono);font-size:14px;letter-spacing:.08em}
+  .roles p{font-size:18px;line-height:1.45}
+  .roles .ks{font-size:16px;color:#c9c6be;border-top:1px solid var(--line);padding-top:10px;line-height:1.45}
+  .roles .ks b{font-family:var(--mono);font-size:13px;letter-spacing:.08em;color:var(--mute);display:block;margin-bottom:4px}
+
+  /* annotation */
+  .senti{display:grid;grid-template-columns:repeat(3,1fr);gap:16px}
+  .senti .card{padding:20px;display:flex;flex-direction:column;gap:12px;align-items:center;text-align:center}
+  .senti .face{font-size:54px;line-height:1}
+  .senti h3{font-size:22px;font-family:var(--mono);letter-spacing:.08em}
+  .senti p{font-size:18px;font-style:italic}
+  .rv{display:grid;grid-template-columns:44px 1fr 330px;gap:14px;align-items:center;padding:8px 14px;border-bottom:1px solid var(--line)}
+  .rv .id{font-family:var(--mono);font-size:16px;color:var(--mute)}
+  .rv .tx{font-size:20px}
+  .rv .lb{display:flex;gap:6px;justify-content:flex-end}
+  .rv .lb button{font:600 14px var(--mono);padding:6px 10px;border-radius:8px;border:1px solid var(--line);background:transparent;color:var(--mute);cursor:pointer;letter-spacing:.04em}
+  .rv .lb button:hover{border-color:var(--ink);color:var(--ink)}
+  .rv .lb button.on.p{background:rgba(95,214,138,.18);border-color:var(--green);color:var(--green)}
+  .rv .lb button.on.n{background:rgba(255,90,78,.16);border-color:var(--red);color:var(--red)}
+  .rv .lb button.on.u{background:rgba(106,184,255,.16);border-color:var(--blue);color:var(--blue)}
+  .rv.miss{box-shadow:inset 4px 0 0 var(--red)}
+  .rv.hit{box-shadow:inset 4px 0 0 var(--green)}
+
+  /* bias */
+  .mk{display:grid;grid-template-columns:repeat(3,1fr);gap:18px}
+  .mk figure{position:relative;border-radius:16px;overflow:hidden;border:1px solid var(--line);height:360px;cursor:pointer}
+  .mk img{width:100%;height:100%;object-fit:cover;display:block;transition:filter .4s}
+  .mk figcaption{position:absolute;left:12px;bottom:12px;font-family:var(--mono);font-size:15px;padding:5px 10px;border-radius:8px;background:rgba(13,13,15,.85);color:var(--mute)}
+  .mk figure.rev.ai{border-color:var(--y);box-shadow:0 0 0 3px rgba(255,194,14,.3)}
+  .mk figure.rev.ai figcaption{color:var(--y)}
+  .prompt{font-family:var(--mono);font-size:22px;padding:16px 22px;border-radius:14px;background:#0d0d0f;border:1px solid var(--line);color:var(--ink)}
+  .prompt::before{content:"› ";color:var(--y)}
+  .plist{display:flex;flex-direction:column;gap:12px}
+  .plist .prompt{font-size:19px;padding:12px 18px}
+
+  /* links */
+  .links{display:grid;grid-template-columns:1fr 1fr;gap:18px;margin-top:40px}
+  .lk{padding:22px 26px;display:flex;flex-direction:column;gap:8px;text-decoration:none;color:var(--ink);transition:border-color .2s,transform .2s}
+  .lk:hover{border-color:var(--y);transform:translateY(-3px)}
+  .lk h3{font-size:28px}
+  .lk p{font-size:18px;color:var(--mute)}
+  .lk span{font-family:var(--mono);font-size:16px;color:var(--y)}
+
+  /* classification */
+  .ftog{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+  .ftog .switch{padding:14px;gap:10px}
+  .switch{cursor:pointer;display:flex;flex-direction:column;align-items:center;user-select:none}
+  .switch .lbl{font-family:var(--mono);font-size:16px;color:var(--mute)}
+  .switch .tog{width:80px;height:44px;border-radius:30px;background:#2a2a30;position:relative;transition:background .3s}
+  .switch .tog::after{content:"";position:absolute;left:5px;top:5px;width:34px;height:34px;border-radius:50%;background:#77746d;transition:transform .35s cubic-bezier(.3,1.4,.5,1),background .3s}
+  .switch.on .tog{background:rgba(255,194,14,.3)} .switch.on .tog::after{transform:translateX(36px);background:var(--y)}
+  .classes{display:grid;grid-template-columns:repeat(3,1fr);gap:14px}
+  .cls{padding:18px;text-align:center;display:flex;flex-direction:column;gap:6px;transition:all .3s;opacity:.4}
+  .cls .num{font-family:var(--mono);font-size:44px;font-weight:600;color:var(--mute)}
+  .cls .nm{font-size:22px;font-weight:700;font-family:var(--mono);letter-spacing:.06em}
+  .cls.on{opacity:1;border-color:var(--y);background:rgba(255,194,14,.08);box-shadow:0 0 30px rgba(255,194,14,.15)}
+  .cls.on .num{color:var(--y)}
+
+  /* split */
+  .split3{display:grid;grid-template-columns:repeat(3,1fr);gap:18px}
+  .sp3{padding:22px;display:flex;flex-direction:column;gap:10px}
+  .sp3 h3{font-size:28px}
+  .sp3 .pct{font-family:var(--mono);font-size:44px;font-weight:600}
+  .sp3 p{font-size:18px;line-height:1.45}
+  .sp3 .an{font-size:16px;color:var(--mute);font-style:italic;border-top:1px solid var(--line);padding-top:10px}
+  .bar3{display:flex;height:34px;border-radius:10px;overflow:hidden;font-family:var(--mono);font-size:15px;font-weight:600}
+  .bar3 div{display:grid;place-items:center;color:var(--bg)}
+  .seedrow{display:grid;grid-template-columns:repeat(10,1fr);gap:8px}
+  .seedrow div{height:64px;border-radius:10px;display:grid;place-items:center;font-family:var(--mono);font-size:18px;font-weight:600;transition:background .4s,color .4s}
+  .seedrow .tr{background:rgba(95,214,138,.18);color:var(--green);border:1px solid rgba(95,214,138,.5)}
+  .seedrow .te{background:rgba(106,184,255,.18);color:var(--blue);border:1px solid rgba(106,184,255,.5)}
+  .runlog{font-family:var(--mono);font-size:16px;color:var(--mute);display:flex;flex-direction:column;gap:6px;min-height:120px}
+  .runlog b{color:var(--ink)}
+
+  /* eda */
+  .eda{display:grid;grid-template-columns:repeat(5,1fr);gap:14px;margin-top:30px}
+  .eda .card{padding:18px;display:flex;flex-direction:column;gap:10px}
+  .eda .n{font-family:var(--mono);font-size:30px;color:var(--y);font-weight:600}
+  .eda h3{font-size:21px;line-height:1.2}
+  .eda ul{list-style:none;display:flex;flex-direction:column;gap:8px}
+  .eda li{font-size:16px;color:#c9c6be;line-height:1.4}
+
+  /* formulas */
+  .fx{font-family:var(--mono);font-size:24px;color:var(--ink);display:inline-flex;align-items:center;gap:10px;flex-wrap:wrap}
+  .frac{display:inline-flex;flex-direction:column;align-items:center;vertical-align:middle;line-height:1.25}
+  .frac>span:first-child{border-bottom:2px solid currentColor;padding:0 6px 2px}
+  .frac>span:last-child{padding:2px 6px 0}
+  .fbox{padding:18px 22px;display:flex;flex-direction:column;gap:10px}
+  .fbox h3{font-size:24px}
+  .fbox p{font-size:18px}
+  .sum{font-size:1.5em;line-height:1}
+  .stattable td,.stattable th{font-family:var(--sans);font-size:20px;text-align:left;padding:14px 18px}
+  .stattable td:first-child{font-weight:700;color:var(--y);white-space:nowrap}
+  .stattable tr{cursor:default}
+  .stattable tr:hover td{background:rgba(255,255,255,.03)}
+
+  /* kinds of datasets */
+  .dk{padding:16px 16px 20px;display:flex;flex-direction:column;gap:8px}
+  .dk canvas{width:100%;height:300px;display:block;border-radius:12px;background:#0d0d0f;margin-bottom:8px}
+  .dk h3{font-size:28px}
+  .dk p{font-size:18px;line-height:1.4}
+
+  /* structured vs unstructured */
+  .svu{display:grid;grid-template-columns:1fr 1fr;gap:26px;margin-top:28px}
+  .svuC{padding:18px 20px 22px;display:flex;flex-direction:column;gap:10px}
+  .svuC canvas{width:100%;height:290px;display:block;border-radius:12px;background:#0d0d0f;margin-bottom:6px}
+  .svuC .k{font-size:22px;font-weight:600}
+  .svuC p{font-size:22px;line-height:1.4}
+  table.svuT{margin-top:22px;font-family:var(--sans)}
+  table.svuT td{font-size:19px;padding:9px 14px;color:#d6d3cb;width:42%}
+  table.svuT td.k{width:16%;font-size:13px}
+
+  /* features on objects */
+  .fo .cap{top:14px;bottom:auto}
+  .fo svg .hs{cursor:pointer}
+  .fo svg .hl{fill:rgba(255,194,14,0);stroke:rgba(255,194,14,0);stroke-width:4;transition:fill .25s,stroke .25s}
+  .fo svg .hs:hover .hl,.fo svg .hs.on .hl{fill:rgba(255,194,14,.22);stroke:#ffc20e}
+  .fo svg .hs.seen .hl{stroke:rgba(255,194,14,.35);stroke-dasharray:6 6}
+  .fo svg .hs.on .hl{stroke-dasharray:none}
+  .foInfo{padding:22px 24px;min-height:170px;display:flex;flex-direction:column;gap:8px}
+  .foInfo .fn{font-size:40px;font-weight:700;line-height:1.1;color:var(--y)}
+  table.dt tr.found td{color:var(--y);background:rgba(255,194,14,.12);font-weight:600}
+  .foInfo .fv{font-family:var(--mono);font-size:30px;color:var(--y)}
+  table.dt tr.found td{animation:cellpop .5s ease}
+  table.dt td.q{color:var(--mute)}
+
+  /* knn */
+  .knnRes{font-size:21px;line-height:1.45;min-height:64px}
+  .knnRes b{color:var(--y)}
+</style>
+</head>
+<body>
+<div id="stage">
+  <img id="logo" src="data:image/png;base64,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" alt="Neumont University">
+  <a id="brand" href="../" title="All slide decks" style="text-decoration:none">← <b>AAI101</b> &nbsp;·&nbsp; Data</a>
+
+  <!-- title -->
+  <section class="slide" data-id="title">
+    <canvas class="bg" id="bgData"></canvas>
+    <div class="vignette"></div>
+    <div class="content center">
+      <div class="eyebrow rise" style="--i:0">AAI101 · Introduction to Artificial Intelligence</div>
+      <h1 class="rise" style="--i:1">Data</h1>
+      <p class="lede rise" style="--i:2">The core ingredient that powers AI. Models learn patterns from numbers, text, images and sound, so the <b class="y">quality</b> and <b class="y">variety</b> of the data shape what they can do.</p>
+    </div>
+  </section>
+
+  <!-- oil -->
+  <section class="slide" data-id="oil">
+    <canvas class="bg" id="bgOil"></canvas>
+    <div class="vignette"></div>
+    <div class="content center">
+      <div class="bigline rise" style="--i:0">Data is the<br>new <span>oil</span>.</div>
+      <p class="lede rise" style="--i:1;margin-top:40px">Crude oil is worth little until it’s refined. Raw data is the same: it has to be <b>collected</b>, <b>cleaned</b> and <b>shaped</b> before it can power anything.</p>
+      <p class="rise muted mono" style="--i:2;margin-top:16px;font-size:18px">phrase popularized by mathematician Clive Humby, 2006</p>
+    </div>
+  </section>
+
+  <!-- ingredients -->
+  <section class="slide" data-id="ingredients" style="padding-top:90px">
+    <h2 class="rise" style="--i:0"><span class="n">WHAT IT TAKES</span>The ingredients of AI</h2>
+    <div class="ingStage rise" style="--i:1"><canvas id="ingCv"></canvas></div>
+    <p class="ingCap" id="ingCap"></p>
+  </section>
+
+  <!-- rules vs ml -->
+  <section class="slide" data-id="rulesml">
+    <div class="two" style="grid-template-columns:1fr 1fr;gap:50px">
+      <div class="stack" style="gap:18px">
+        <h2 class="rise" style="--i:0"><span class="n">TWO WAYS TO BUILD AI</span>Rules vs. learning</h2>
+        <div class="tabs rise" style="--i:1" id="rmTabs"><button class="on" data-k="rules">Rule-based AI</button><button data-k="ml">Machine learning</button></div>
+        <div id="rmRules" class="stack" style="gap:14px">
+          <p>A person writes every rule by hand.</p>
+<pre class="src"><span class="kw">if</span> (temperature &gt; <span class="n">100.5</span>)
+    <span class="kw">if</span> (runnyNose == <span class="kw">true</span>)
+        <span class="kw">if</span> (muscleAche == <span class="kw">false</span>)
+            <span class="kw">return</span> hasCold;
+        <span class="kw">else</span>
+            <span class="kw">return</span> hasFlu;</pre>
+        </div>
+        <div id="rmML" class="stack" style="gap:16px;display:none">
+          <p>Nobody writes the rule. The model is shown <b>labeled examples</b> and finds the boundary itself.</p>
+          <ul class="bul"><li>Each dot is a past patient: <b style="color:var(--blue)">cold</b> or <b class="y">flu</b></li><li>Press <b>Train</b> and watch the model adjust its line until it separates them</li><li>More (and better) data → a better line</li></ul>
+          <div style="display:flex;gap:12px;align-items:center"><button class="btn on" id="rmTrain">Train ▶</button><button class="btn" id="rmReset">Reset</button><span class="hint" id="rmEpoch">epoch 0</span></div>
+        </div>
+      </div>
+      <div class="stack rise" style="--i:2;gap:14px">
+        <div class="stage-box" style="height:580px"><canvas id="rmCv"></canvas></div>
+        <p class="mono" id="rmCap" style="font-size:18px;color:var(--mute);text-align:center;min-height:26px">a human drew this boundary: temperature &gt; 100.5</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- dataset term -->
+  <section class="slide" data-id="t-dataset">
+    <pre class="termBg" id="tbg1"></pre>
+    <div class="termS">
+      <div class="eyebrow rise" style="--i:0">Terminology</div>
+      <div class="word rise" style="--i:1">data<span>set</span></div>
+      <div class="meta rise" style="--i:2"><span>/ˈdādəˌset/</span><i>noun</i></div>
+      <div class="def rise" style="--i:3">A structured <b>collection of data</b> organized and stored together for analysis or processing.</div>
+    </div>
+  </section>
+
+  <!-- kinds of datasets -->
+  <section class="slide" data-id="dskinds">
+    <div class="labHead rise" style="--i:0"><h2><span class="n">DATASETS COME IN MANY FORMS</span>Tables, text, images, audio</h2>
+      <div class="tabs" id="dkTabs"><button class="on" data-k="raw">As we see it</button><button data-k="num">As the computer sees it</button></div></div>
+    <div class="grid4 rise" style="--i:1;margin-top:34px">
+      <div class="card dk"><canvas id="dkTable"></canvas><h3>Tables</h3><p><b>One example</b> = one row</p><p class="muted">house prices, the Iris flowers, sales records</p></div>
+      <div class="card dk"><canvas id="dkText"></canvas><h3>Text</h3><p><b>One example</b> = one document</p><p class="muted">product reviews, emails, Wikipedia, books</p></div>
+      <div class="card dk"><canvas id="dkImage"></canvas><h3>Images</h3><p><b>One example</b> = one picture</p><p class="muted">handwritten digits (MNIST), X-rays, photos</p></div>
+      <div class="card dk"><canvas id="dkAudio"></canvas><h3>Audio</h3><p><b>One example</b> = one clip</p><p class="muted">voice commands, music, bird songs</p></div>
+    </div>
+    <div class="callout keyIdea" id="dkIdea" style="margin-top:28px">To a computer, <b>every dataset is numbers</b>: a table’s values, word IDs, pixel brightness, sound wave samples.</div>
+  </section>
+
+  <!-- structured vs unstructured -->
+  <section class="slide" data-id="svu">
+    <h2 class="rise" style="--i:0"><span class="n">TWO SHAPES OF DATA</span>Structured vs. unstructured</h2>
+    <div class="svu rise" style="--i:1">
+      <div class="card svuC"><canvas id="svuS"></canvas><div class="k" style="color:var(--blue)">Structured</div>
+        <p>Organized into <b>rows and columns</b> with a fixed format. Each column is a feature, each row is one example.</p></div>
+      <div class="card svuC"><canvas id="svuU"></canvas><div class="k" style="color:var(--amber)">Unstructured</div>
+        <p><b>No fixed format</b>: it doesn’t fit neatly into rows and columns. Text, images, audio, video.</p></div>
+    </div>
+    <table class="dt svuT keyIdea" id="svuT">
+      <tr><td class="l k">Looks like</td><td class="l">spreadsheets, database tables, CSV files</td><td class="l">photos, emails, voice memos, videos, social posts</td></tr>
+      <tr><td class="l k">Easy to…</td><td class="l">search, sort, filter, average</td><td class="l">store, but hard to search or count</td></tr>
+      <tr><td class="l k">AI uses</td><td class="l">classic machine learning (regression, decision trees)</td><td class="l">deep learning to find patterns first</td></tr>
+    </table>
+  </section>
+
+  <!-- structured -->
+  <section class="slide" data-id="structured">
+    <div class="stack" style="gap:22px">
+      <h2 class="rise" style="--i:0"><span class="n">TERMINOLOGY</span>Structured data</h2>
+      <p class="rise" style="--i:1;max-width:1300px">Well-organized data in clearly defined <b>rows and columns</b>. Each <b style="color:var(--blue)">column is a feature</b> (a variable) and each <b class="y">row is an instance</b> (one example). Easy to clean, analyze and feed into models.</p>
+      <div class="card tbl rise" style="--i:2"><table class="dt" id="stTbl"></table></div>
+      <p class="hint rise" style="--i:3" id="stHint">hover a column or a row</p>
+    </div>
+  </section>
+
+  <!-- data types -->
+  <section class="slide" data-id="dtypes">
+    <div class="two" style="grid-template-columns:.8fr 1.2fr;gap:50px">
+      <div class="stack" style="gap:20px">
+        <h2 class="rise" style="--i:0"><span class="n">EVERY COLUMN HAS A</span>Data type</h2>
+        <div class="grid2 rise" style="--i:1">
+          <div class="card pad"><div class="k">Text</div><p class="mono" style="font-size:19px">"Ember", "nice!"</p><p class="muted" style="font-size:15px;margin-top:4px">free-form, could be anything</p></div>
+          <div class="card pad"><div class="k">Number</div><p class="mono" style="font-size:19px">12, 48.5</p></div>
+          <div class="card pad"><div class="k">Boolean (Yes/No)</div><p class="mono" style="font-size:19px">true / false</p></div>
+          <div class="card pad"><div class="k">Date / Time</div><p class="mono" style="font-size:19px">2026-10-15</p></div>
+          <div class="card pad" style="grid-column:1 / span 2"><div class="k">Category</div><p class="mono" style="font-size:19px">"Fire", "Water", "Grass"</p><p class="muted" style="font-size:15px;margin-top:4px">one value from a fixed set. Models can’t use these directly; we’ll turn them into numbers later.</p></div>
+        </div>
+        <p class="rise" style="--i:2">The type decides what you can do with it: you can <b>average</b> a column of numbers, but not a column of names.</p>
+      </div>
+      <div class="stack rise" style="--i:2;gap:16px">
+        <div class="critter"><svg viewBox="0 0 180 180" id="critSvg"></svg><div><div class="k">Creature card</div><div style="font-size:40px;font-weight:700">Ember</div><p class="hint">click each <b class="y">?</b> to set its data type</p></div></div>
+        <div class="card tbl"><table class="dt tq" id="tqTbl"></table></div>
+        <div style="display:flex;gap:12px;align-items:center"><button class="btn on" id="tqCheck">Check</button><button class="btn" id="tqShow">Show answers</button><span class="status" id="tqMsg" style="font-size:21px"></span></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- unstructured + sorter -->
+  <section class="slide" data-id="unstructured">
+    <div class="two" style="grid-template-columns:.9fr 1.1fr;gap:56px">
+      <div class="stack" style="gap:20px">
+        <h2 class="rise" style="--i:0"><span class="n">TERMINOLOGY</span>Unstructured data</h2>
+        <p class="rise" style="--i:1">Data that doesn’t fit neatly into rows and columns: <b>text, images, audio, video</b>. Deep learning models are built to pull patterns out of it.</p>
+        <div class="callout rise" style="--i:2">Most of the world’s data is unstructured: photos, messages, recordings.</div>
+        <p class="hint rise" style="--i:3">Click an item, then click the bin it belongs in.</p>
+      </div>
+      <div class="stack rise" style="--i:2;gap:18px">
+        <div class="sortItems" id="srtItems"></div>
+        <div class="bins">
+          <div class="bin card" data-b="S"><h3>Structured <span class="hint" id="srtS">0</span></h3><div class="in"></div></div>
+          <div class="bin card" data-b="U"><h3>Unstructured <span class="hint" id="srtU">0</span></h3><div class="in"></div></div>
+        </div>
+        <div style="display:flex;gap:14px;align-items:center"><span class="status" id="srtMsg" style="font-size:22px"></span><span class="sp" style="flex:1"></span><button class="btn" id="srtReset">Reset</button></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- feature term -->
+  <section class="slide" data-id="t-feature">
+    <div class="termS">
+      <div class="eyebrow rise" style="--i:0">Terminology</div>
+      <div class="word rise" style="--i:1">fea·<span>ture</span></div>
+      <div class="meta rise" style="--i:2"><span>/ˈfēCHər/</span><i>noun</i></div>
+      <div class="def rise" style="--i:3">An individual <b>measurable property</b> or characteristic of the data that is used as <b>input</b> for a model.</div>
+      <p class="rise muted" style="--i:4;font-size:26px">In a table, each <b style="color:var(--blue)">column</b> is a feature, like the ones we just gave data types.</p>
+    </div>
+  </section>
+
+  <!-- features on real objects -->
+  <section class="slide" data-id="fobj">
+    <div class="two" style="grid-template-columns:1.2fr .8fr;gap:44px">
+      <div class="stack" style="gap:16px">
+        <div class="labHead rise" style="--i:0"><h2><span class="n">SPOT THE FEATURES</span>Everything has features</h2></div>
+        <div class="tabs rise" style="--i:1" id="foTabs"><button class="on" data-k="0">🚗 Car</button><button data-k="1">🏠 House</button><button data-k="2">🐕 Animal</button></div>
+        <div class="stage-box fo rise" style="--i:2;height:520px"><svg id="foSvg" viewBox="0 0 700 460"></svg><div class="cap" id="foCap">hover over the parts</div></div>
+      </div>
+      <div class="stack rise" style="--i:3;gap:16px">
+        <div class="card foInfo" id="foInfo"></div>
+        <div class="card tbl"><table class="dt" id="foTbl"></table></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- label term -->
+  <section class="slide" data-id="t-label">
+    <div class="termS">
+      <div class="eyebrow rise" style="--i:0">Terminology</div>
+      <div class="word rise" style="--i:1">la·<span>bel</span></div>
+      <div class="meta rise" style="--i:2"><span>/ˈlābəl/</span><i>noun</i></div>
+      <div class="def rise" style="--i:3">The <b>correct output</b> or category assigned to a piece of data. In supervised learning, labels are the answers the model learns from, so it can predict them for new data.</div>
+    </div>
+  </section>
+
+  <!-- features & labels table -->
+  <section class="slide" data-id="featlab">
+    <div class="stack" style="gap:20px">
+      <div class="labHead rise" style="--i:0"><h2><span class="n">PUTTING IT TOGETHER</span>Features and labels</h2>
+        <div class="tabs" id="flTabs"><button data-k="f">Features</button><button data-k="l">Labels</button><button data-k="q">New animal?</button></div></div>
+      <div class="card tbl rise" style="--i:1"><table class="dt" id="flTbl"></table></div>
+      <div class="callout rise" style="--i:2" id="flNote">Every row is one animal. Press → to highlight the parts.</div>
+    </div>
+  </section>
+
+  <!-- annotation -->
+  <section class="slide" data-id="annotation">
+    <div class="two" style="grid-template-columns:1fr 1fr;gap:56px">
+      <div class="stack" style="gap:22px">
+        <h2 class="rise" style="--i:0"><span class="n">WHERE LABELS COME FROM</span>Data annotation</h2>
+        <p class="rise" style="--i:1"><b class="y">Data annotation</b>: labeling or categorizing data (images, text, audio) so AI models can learn to recognize patterns and make predictions.</p>
+        <p class="rise" style="--i:2"><b class="y">Data annotator</b>: the person who does it. Behind most AI models are thousands of people adding labels by hand.</p>
+        <div class="callout rise" style="--i:3">Example task: <b>sentiment analysis</b>. Is this text positive, neutral, or negative?</div>
+      </div>
+      <div class="senti rise" style="--i:2">
+        <div class="card"><div class="face">🙂</div><h3 style="color:var(--green)">POSITIVE</h3><p>“Great service for an affordable price. We will definitely be booking again.”</p></div>
+        <div class="card"><div class="face">😐</div><h3 style="color:var(--blue)">NEUTRAL</h3><p>“Just booked two nights at this hotel.”</p></div>
+        <div class="card"><div class="face">🙁</div><h3 style="color:var(--red)">NEGATIVE</h3><p>“Horrible service. The room was dirty and unpleasant. Not worth the money.”</p></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- annotate activity -->
+  <section class="slide" data-id="annotate">
+    <div class="stack" style="gap:14px">
+      <div class="labHead rise" style="--i:0"><h2><span class="n">YOUR TURN</span>Be the annotator</h2>
+        <div style="display:flex;gap:12px;align-items:center"><span class="hint" id="anCount">0 / 10 labeled</span><button class="btn on" id="anCheck">Compare to key</button><button class="btn" id="anReset">Reset</button></div></div>
+      <div class="card rise" style="--i:1;padding:6px 8px" id="anList"></div>
+      <div class="callout rise" style="--i:2" id="anNote">Label every review. Do your answers match your neighbor’s? Annotators disagree, and that disagreement ends up in the data.</div>
+    </div>
+  </section>
+
+  <!-- supervised term -->
+  <section class="slide" data-id="t-supervised">
+    <div class="termS">
+      <div class="eyebrow rise" style="--i:0">Terminology</div>
+      <div class="word rise" style="--i:1">supervised <span>learning</span></div>
+      <div class="meta rise" style="--i:2"><i>noun</i></div>
+      <div class="def rise" style="--i:3">Machine learning trained on <b>labeled data</b>: every training example pairs the input with the correct output. The model learns to map inputs to outputs, then predicts outputs for <b>new, unseen</b> data.</div>
+    </div>
+  </section>
+
+  <!-- supervised in action -->
+  <section class="slide" data-id="supervised">
+    <div class="two" style="grid-template-columns:1fr 1fr;gap:50px">
+      <div class="stack" style="gap:20px">
+        <h2 class="rise" style="--i:0"><span class="n">SUPERVISED LEARNING</span>Learning from answers</h2>
+        <div class="card tbl rise" style="--i:1"><table class="dt" id="svTbl"></table></div>
+        <p class="rise" style="--i:2"><b style="color:var(--blue)">Features</b> go in, the <b class="y">label</b> is the answer. The model learns how the features relate to the price.</p>
+        <div class="card pad rise" style="--i:3;display:flex;flex-direction:column;gap:12px">
+          <div class="k">Try a new house</div>
+          <div style="display:grid;grid-template-columns:110px 1fr 110px;gap:14px;align-items:center"><span class="mono">Sq Feet</span><input type="range" id="svX" min="1300" max="2100" step="10" value="1650"><b class="mono" id="svXv">1650</b></div>
+          <div style="font-size:26px">Predicted price: <b class="y mono" id="svY">$0k</b></div>
+        </div>
+      </div>
+      <div class="stage-box rise" style="--i:2"><canvas id="svCv"></canvas><div class="cap" id="svCap">price ≈ slope × sq ft + intercept</div></div>
+    </div>
+  </section>
+
+  <!-- regression -->
+  <section class="slide" data-id="regression">
+    <div class="two" style="grid-template-columns:.85fr 1.15fr;gap:50px">
+      <div class="stack" style="gap:20px">
+        <h2 class="rise" style="--i:0"><span class="n">SUPERVISED TASK 1</span>Regression</h2>
+        <p class="rise" style="--i:1">Models the relationship between an <b>outcome</b> and one or more <b>predictors</b>, to predict a <b class="y">continuous value</b>: a price, a temperature, sales revenue.</p>
+        <div class="grid2 rise" style="--i:2"><div class="card pad"><div class="k" style="color:var(--blue)">Features</div><p style="font-size:20px">sq ft, bedrooms, pool</p></div><div class="card pad"><div class="k" style="color:var(--y)">Label</div><p style="font-size:20px">price ($)</p></div></div>
+        <p class="hint rise" style="--i:3">click to add a house · click a dot to remove it</p>
+      </div>
+      <div class="stage-box rise" style="--i:2"><canvas id="rgCv" style="cursor:crosshair"></canvas><div class="cap" id="rgCap"></div></div>
+    </div>
+  </section>
+
+  <!-- classification -->
+  <section class="slide" data-id="classification">
+    <div class="two" style="grid-template-columns:1fr 1fr;gap:56px">
+      <div class="stack" style="gap:20px">
+        <h2 class="rise" style="--i:0"><span class="n">SUPERVISED TASK 2</span>Classification</h2>
+        <p class="rise" style="--i:1">Predicts a <b class="y">category</b> by assigning each data point to one of a set of predefined classes.</p>
+        <div class="grid2 rise" style="--i:2"><div class="card pad"><div class="k" style="color:var(--blue)">Features</div><p style="font-size:20px">fins, feathers, fur, lays eggs</p></div><div class="card pad"><div class="k" style="color:var(--y)">Label</div><p style="font-size:20px">fish / bird / mammal</p></div></div>
+        <p class="rise muted" style="--i:3;font-size:21px">The model actually outputs a number: each class gets one. Turning categories into numbers is called <b>encoding</b>, and we’ll see more of it later.</p>
+      </div>
+      <div class="stack rise" style="--i:2;gap:18px">
+        <div class="k">Describe an animal</div>
+        <div class="ftog" id="clTog"></div>
+        <div class="classes" id="clOut">
+          <div class="card cls" data-c="0"><span class="num">0</span><span class="nm">FISH</span></div>
+          <div class="card cls" data-c="1"><span class="num">1</span><span class="nm">BIRD</span></div>
+          <div class="card cls" data-c="2"><span class="num">2</span><span class="nm">MAMMAL</span></div>
+        </div>
+        <div class="callout" id="clWhy" style="min-height:70px"></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- unsupervised term -->
+  <section class="slide" data-id="t-unsupervised">
+    <div class="termS">
+      <div class="eyebrow rise" style="--i:0">Terminology</div>
+      <div class="word rise" style="--i:1">unsupervised <span>learning</span></div>
+      <div class="meta rise" style="--i:2"><i>noun</i></div>
+      <div class="def rise" style="--i:3">Machine learning trained on <b>unlabeled data</b>: inputs with no answers. The model discovers <b>patterns, structures or groupings</b> on its own.</div>
+    </div>
+  </section>
+
+  <!-- unsupervised -->
+  <section class="slide" data-id="unsupervised">
+    <div class="two" style="grid-template-columns:.8fr 1.2fr;gap:44px">
+      <div class="stack tight" style="gap:18px">
+        <h2 class="rise" style="--i:0"><span class="n">NO LABELS</span>Finding structure</h2>
+        <p class="rise" style="--i:1">These dots have no colors: no labels at all. The algorithm has to find the groups itself.</p>
+        <ul class="bul rise" style="--i:2">
+          <li><b>Customer segmentation</b>: group shoppers by habits for targeted marketing</li>
+          <li><b>Anomaly detection</b>: spot unusual network traffic or card transactions</li>
+          <li><b>Recommendations</b>: find similar movies, songs or products</li>
+        </ul>
+        <div class="rise" style="--i:3;display:flex;gap:12px;align-items:center"><button class="btn on" id="usRun">Find 3 clusters ▶</button><button class="btn" id="usNew">New data</button></div>
+      </div>
+      <div class="stage-box rise" style="--i:2"><canvas id="usCv"></canvas><div class="cap" id="usCap">k-means: unlabeled points</div></div>
+    </div>
+  </section>
+
+  <!-- eda -->
+  <section class="slide" data-id="eda">
+    <h2 class="rise" style="--i:0"><span class="n">BEFORE YOU MODEL</span>Exploratory data analysis</h2>
+    <p class="rise" style="--i:1;margin-top:18px;max-width:1300px"><b>EDA</b>: summarize a dataset’s main characteristics, often with charts, to uncover patterns, spot anomalies and check assumptions.</p>
+    <div class="eda rise" style="--i:2">
+      <div class="card"><span class="n">01</span><h3>Understand the data</h3><ul><li>Size, structure, data types</li><li>Trends between features</li></ul></div>
+      <div class="card"><span class="n">02</span><h3>Handle bad data</h3><ul><li>Find missing, duplicate, wrong values</li><li>Choose: impute or remove</li></ul></div>
+      <div class="card"><span class="n">03</span><h3>Check distributions</h3><ul><li>How values are spread</li><li>Outliers and anomalies</li></ul></div>
+      <div class="card"><span class="n">04</span><h3>Feature relationships</h3><ul><li>Correlations between variables</li><li>Guides selection and engineering</li></ul></div>
+      <div class="card"><span class="n">05</span><h3>Guide next steps</h3><ul><li>Cleaning, feature engineering, model choice</li></ul></div>
+    </div>
+  </section>
+
+  <!-- why charts -->
+  <section class="slide" data-id="vizwhy">
+    <div class="two" style="grid-template-columns:.8fr 1.2fr;gap:50px">
+      <div class="stack" style="gap:20px">
+        <h2 class="rise" style="--i:0"><span class="n">DATA VISUALIZATION</span>Why charts?</h2>
+        <p class="rise" style="--i:1">Charts turn numbers into visual patterns. Trends, comparisons and sudden changes jump out that are hard to see in a raw table.</p>
+        <div class="callout rise" style="--i:2">Quick: in which month did sales drop the most? Look at the table first, then switch to the chart.</div>
+        <div class="tabs rise" style="--i:3" id="vzTabs"><button class="on" data-k="t">Table</button><button data-k="c">Chart</button></div>
+      </div>
+      <div class="card rise viz" style="--i:2;padding:20px">
+        <div id="vzTable" style="padding:20px"><table class="dt" id="vzTbl" style="font-size:20px"></table></div>
+        <svg id="vzChart" class="off" viewBox="0 0 860 400"></svg>
+      </div>
+    </div>
+  </section>
+
+  <!-- chart types -->
+  <section class="slide" data-id="charts">
+    <div class="stack" style="gap:18px">
+      <h2 class="rise" style="--i:0"><span class="n">PICK THE RIGHT ONE</span>Chart types</h2>
+      <div class="cgrid rise" style="--i:1" id="cgGrid"></div>
+      <div class="card cinfo rise" style="--i:2" id="cgInfo"></div>
+    </div>
+  </section>
+
+  <!-- mean median mode -->
+  <section class="slide" data-id="center">
+    <div class="stack" style="gap:18px">
+      <div class="labHead rise" style="--i:0"><h2><span class="n">FINDING THE CENTER</span>Mean, median, mode</h2>
+        <div class="presets" id="ctPre"></div></div>
+      <div class="card rise nl" style="--i:1;height:340px"><svg id="ctSvg" viewBox="0 0 1380 340"></svg></div>
+      <div class="stats3 rise" style="--i:2">
+        <div class="card stat mean"><span class="k">Mean</span><b id="ctMean">–</b><span class="d">Add them up, divide by how many. Outliers pull it around.</span></div>
+        <div class="card stat med"><span class="k">Median</span><b id="ctMed">–</b><span class="d">The middle value once sorted (average the two middles if even). Resists outliers.</span></div>
+        <div class="card stat mode"><span class="k">Mode</span><b id="ctMode">–</b><span class="d">The most frequent value. Works for categories too. Can have two (bimodal).</span></div>
+      </div>
+      <p class="hint rise" style="--i:3">click the line to add a value · click a dot to remove it · “average” usually means the mean, but always ask which one</p>
+    </div>
+  </section>
+
+  <!-- spread -->
+  <section class="slide" data-id="spread">
+    <div class="stack" style="gap:16px">
+      <div class="labHead rise" style="--i:0"><h2><span class="n">HOW SPREAD OUT?</span>Range, variance, std. dev.</h2>
+        <div class="presets" id="sdPre"></div></div>
+      <div class="card rise nl" style="--i:1;height:270px"><svg id="spSvg" viewBox="0 0 1380 270"></svg></div>
+      <div class="grid3 rise" style="--i:2;gap:16px">
+        <div class="card fbox"><h3>Range <b class="mono y" id="rgV" style="float:right"></b></h3><div class="fx" style="font-size:20px">max − min</div><p class="muted">Quick sense of spread. Sensitive to outliers.</p></div>
+        <div class="card fbox"><h3>Variance <b class="mono y" id="vaV" style="float:right"></b></h3><div class="fx" style="font-size:20px">σ² = <span class="frac"><span>Σ(xᵢ − μ)²</span><span>n</span></span></div><p class="muted">Average <b>squared</b> distance from the mean.</p></div>
+        <div class="card fbox"><h3>Std. deviation <b class="mono y" id="sdV" style="float:right"></b></h3><div class="fx" style="font-size:20px">σ = √σ²</div><p class="muted">Back in the original units: the typical distance from the mean.</p></div>
+      </div>
+      <p class="hint rise" style="--i:3">drag the dots · the dashed lines are each value’s distance from the mean (μ)</p>
+    </div>
+  </section>
+
+  <!-- stats summary -->
+  <section class="slide" data-id="statsum">
+    <h2 class="rise" style="--i:0"><span class="n">CHEAT SHEET</span>Descriptive statistics</h2>
+    <div class="card tbl rise" style="--i:1;margin-top:30px">
+      <table class="dt stattable">
+        <tr><th>Term</th><th>Definition</th><th>When to use</th></tr>
+        <tr><td>Mean</td><td>Arithmetic average of values</td><td>Data is symmetric and free of outliers</td></tr>
+        <tr><td>Median</td><td>Middle value of sorted data</td><td>Data has outliers or is skewed</td></tr>
+        <tr><td>Mode</td><td>Most frequently occurring value(s)</td><td>Finding the most common category or value</td></tr>
+        <tr><td>Average</td><td>General term, usually the mean</td><td>Depends on context: ask which one</td></tr>
+        <tr><td>Range</td><td>Max minus min</td><td>A quick look at spread</td></tr>
+        <tr><td>Variance</td><td>Average squared deviation from the mean</td><td>Measuring spread (more theoretical)</td></tr>
+        <tr><td>Std. deviation</td><td>Square root of variance</td><td>Quantifying spread in the data’s own units</td></tr>
+      </table>
+    </div>
+  </section>
+
+  <!-- data cleaning term -->
+  <section class="slide" data-id="t-cleaning">
+    <div class="termS">
+      <div class="eyebrow rise" style="--i:0">Terminology</div>
+      <div class="word rise" style="--i:1">data <span>cleaning</span></div>
+      <div class="meta rise" style="--i:2"><span>a.k.a. data wrangling</span><i>noun</i></div>
+      <div class="def rise" style="--i:3">The process of <b>detecting and correcting</b> (or removing) errors and inconsistencies in data to improve its quality.</div>
+    </div>
+  </section>
+
+  <!-- cleaning problems -->
+  <section class="slide" data-id="problems">
+    <h2 class="rise" style="--i:0"><span class="n">DATA CLEANING</span>What goes wrong in real data</h2>
+    <div class="probs" id="probGrid"></div>
+  </section>
+
+  <!-- imputation term -->
+  <section class="slide" data-id="t-imputation">
+    <div class="termS">
+      <div class="eyebrow rise" style="--i:0">Terminology</div>
+      <div class="word rise" style="--i:1">im·pu·<span>ta·tion</span></div>
+      <div class="meta rise" style="--i:2"><span>/ˌimpyəˈtāSH(ə)n/</span><i>noun</i></div>
+      <div class="def rise" style="--i:3">Replacing <b>missing or incomplete</b> values with substitutes, from statistics (mean, median, mode), predictive models, or logical inference.</div>
+    </div>
+  </section>
+
+  <!-- cleaning lab -->
+  <section class="slide" data-id="cleanlab">
+    <div class="stack" style="gap:18px">
+      <div class="labHead rise" style="--i:0"><h2><span class="n">CLEANING LAB</span><span id="labTitle">Missing data</span></h2></div>
+      <div class="tabs rise" style="--i:1" id="labTabs"></div>
+      <div class="card tbl rise" style="--i:2"><table class="dt" id="labTbl"></table></div>
+      <div class="two rise" style="--i:3;grid-template-columns:1fr auto;gap:30px;height:auto;align-items:start">
+        <div class="labNote" id="labNote"></div>
+        <div class="acts" id="labActs"></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- transform -->
+  <section class="slide" data-id="transform">
+    <div class="stack" style="gap:22px">
+      <h2 class="rise" style="--i:0"><span class="n">TRANSFORMING VALUES</span>Making data model-ready</h2>
+      <p class="rise" style="--i:1">Converting or scaling values into a format suitable for machine learning.</p>
+      <div class="grid2 rise" style="--i:2;gap:26px">
+        <div class="card scaleBox">
+          <h3 style="font-size:28px">Scaling</h3>
+          <p style="font-size:20px">Squeeze heights of 150–190 cm into the range 0–1.</p>
+          <div class="scaleRow"><span>height</span><input type="range" id="scH" min="150" max="190" value="172"><b id="scHv">172 cm</b></div>
+          <div class="scaleRow"><span class="muted">150</span><div class="scaleTrack" id="scT1"><i></i></div><span class="muted">190</span></div>
+          <div class="scaleRow"><span class="muted">0.0</span><div class="scaleTrack b" id="scT2"><i></i></div><span class="muted">1.0</span></div>
+          <div class="fx" style="font-size:22px">(<span id="scA">172</span> − 150) / (190 − 150) = <b class="y" id="scR">0.55</b></div>
+        </div>
+        <div class="card scaleBox">
+          <div style="display:flex;justify-content:space-between;align-items:center"><h3 style="font-size:28px">Encoding</h3><div class="tabs" id="encTabs"><button class="on" data-k="label">Label</button><button data-k="onehot">One-hot</button></div></div>
+          <p style="font-size:20px" id="encP">Models need numbers, so categories like Red, Blue, Green become numbers.</p>
+          <table class="dt" id="encTbl"></table>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- norm vs std -->
+  <section class="slide" data-id="normstd">
+    <div class="two" style="grid-template-columns:.85fr 1.15fr;gap:50px">
+      <div class="stack" style="gap:20px">
+        <h2 class="rise" style="--i:0"><span class="n">SCALING FEATURES</span>Normalization vs. standardization</h2>
+        <div class="card pad rise" style="--i:1"><h3 style="font-size:26px;color:var(--y)">Normalization</h3><p style="font-size:20px">Scales data to a fixed range, usually <b>0 to 1</b>. Keeps the shape of the distribution, changes the scale.</p></div>
+        <div class="card pad rise" style="--i:2"><h3 style="font-size:26px;color:var(--blue)">Standardization</h3><p style="font-size:20px">Shifts and rescales data to <b>mean 0</b> and <b>standard deviation 1</b>. Not bounded to a range.</p></div>
+        <div class="tabs rise" style="--i:3" id="nsTabs"><button class="on" data-k="raw">Raw</button><button data-k="mm">Min-max</button><button data-k="z">Z-score</button></div>
+      </div>
+      <div class="stage-box rise" style="--i:2"><canvas id="nsCv"></canvas><div class="cap" id="nsCap">raw values</div></div>
+    </div>
+  </section>
+
+  <!-- how to normalize -->
+  <section class="slide" data-id="howto">
+    <div class="two" style="grid-template-columns:1fr 1fr;gap:50px">
+      <div class="stack" style="gap:18px">
+        <h2 class="rise" style="--i:0"><span class="n">THE FORMULAS</span>How to normalize</h2>
+        <div class="card fbox rise" style="--i:1"><h3>1 · Min-max scaling</h3><div class="fx">x′ = <span class="frac"><span>x − min</span><span>max − min</span></span></div><p class="muted">Fixed range, 0 to 1.</p></div>
+        <div class="card fbox rise" style="--i:2"><h3>2 · Standardization (z-score)</h3><div class="fx">z = <span class="frac"><span>x − μ</span><span>σ</span></span></div><p class="muted">μ is the mean, σ the standard deviation.</p></div>
+        <div class="card fbox rise" style="--i:3"><h3>3 · Log scaling</h3><div class="fx">x′ = log(x)</div><p class="muted">For features with a huge range of values (incomes, populations).</p></div>
+      </div>
+      <div class="stack rise" style="--i:2;gap:18px">
+        <div class="eyebrow">Worked example</div>
+        <div class="card pad" style="display:flex;flex-direction:column;gap:14px">
+          <div class="mono" style="font-size:22px">data = [10, 20, 30, 40] &nbsp; <span class="muted">min = 10, max = 40</span></div>
+          <div id="mmRows" style="display:flex;flex-direction:column;gap:10px"></div>
+          <div class="mono" style="font-size:24px" id="mmRes"></div>
+        </div>
+        <div style="display:flex;gap:12px"><button class="btn on" id="mmNext">Next value ▶</button><button class="btn" id="mmReset">Reset</button></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- when to normalize -->
+  <section class="slide" data-id="whennorm">
+    <div class="two" style="grid-template-columns:.9fr 1.1fr;gap:44px">
+      <div class="stack tight" style="gap:16px">
+        <h2 class="rise" style="--i:0"><span class="n">WHEN TO SCALE</span>Does it matter?</h2>
+        <p class="rise" style="--i:1;font-size:22px">Algorithms that use <b>distances</b> or <b>gradients</b> need it: otherwise big-numbered features drown out small ones.</p>
+        <div class="grid2 rise" style="--i:2;gap:14px">
+          <div class="card pad"><div class="k" style="color:var(--y)">Scale first</div><ul class="bul" style="margin-top:10px"><li>K-nearest neighbors</li><li>K-means clustering</li><li>SVMs</li><li>Logistic regression</li><li>Neural networks</li><li>PCA</li></ul></div>
+          <div class="card pad"><div class="k" style="color:var(--green)">Raw is fine</div><ul class="bul" style="margin-top:10px"><li>Decision trees</li><li>Random forest</li><li>Gradient boosting (XGBoost, LightGBM)</li><li>Rule-based systems</li></ul><p class="muted" style="font-size:16px;margin-top:10px">Trees split on thresholds, not distances.</p></div>
+        </div>
+      </div>
+      <div class="stack rise" style="--i:2;gap:12px">
+        <div class="stage-box" style="height:560px"><canvas id="knCv"></canvas><div class="cap" id="knCap"></div></div>
+        <div style="display:flex;gap:12px;align-items:center"><div class="tabs" id="knTabs"><button class="on" data-k="raw">Raw miles &amp; age</button><button data-k="sc">Scaled 0–1</button></div><span class="knnRes" id="knRes" style="font-size:18px"></span></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- feature engineering -->
+  <section class="slide" data-id="feateng">
+    <div class="stack" style="gap:18px">
+      <h2 class="rise" style="--i:0"><span class="n">FEATURE ENGINEERING</span>Preparing data so models can learn</h2>
+      <p class="rise" style="--i:1;max-width:1300px">Cleaning data, creating useful features, selecting relevant ones and transforming values into formats models understand.</p>
+      <div class="fe rise" style="--i:2" id="feSteps">
+        <div class="fes card" data-s="0"><span class="n">01</span><h3>Data cleaning</h3><p>Fix incorrect, missing or inconsistent data. <i>Fill in a missing price.</i></p></div>
+        <div class="fes card" data-s="1"><span class="n">02</span><h3>Feature creation</h3><p>Create new information from existing data. <i>Age from year built.</i></p></div>
+        <div class="fes card" data-s="2"><span class="n">03</span><h3>Feature selection</h3><p>Keep what helps predict. <i>Sq ft, not the owner’s name.</i></p></div>
+        <div class="fes card" data-s="3"><span class="n">04</span><h3>Transformation</h3><p>Change the representation. <i>Yes/No → 1/0, scale numbers.</i></p></div>
+      </div>
+      <div class="card tbl rise" style="--i:3"><table class="dt" id="feTbl"></table></div>
+      <div class="rise" style="--i:4;display:flex;gap:12px;align-items:center"><button class="btn on" id="feNext">Apply step 1 ▶</button><button class="btn" id="feReset">Reset</button><span class="hint" id="feMsg">raw data, straight from the listing site</span></div>
+    </div>
+  </section>
+
+  <!-- train/test split -->
+  <section class="slide" data-id="split">
+    <div class="two" style="grid-template-columns:.85fr 1.15fr;gap:50px">
+      <div class="stack" style="gap:20px">
+        <h2 class="rise" style="--i:0"><span class="n">TRAINING VS. TESTING</span>Split your data</h2>
+        <p class="rise" style="--i:1">Train the model on most of the data, then test it on rows it has <b>never seen</b>. Otherwise you only learn how well it memorized.</p>
+        <div class="card pad rise" style="--i:2;display:flex;flex-direction:column;gap:12px">
+          <div class="k">test_size</div>
+          <input type="range" id="spT" min="10" max="50" step="5" value="20">
+          <div class="mono" style="font-size:20px"><b style="color:var(--green)" id="spTr">80</b> training rows · <b style="color:var(--blue)" id="spTe">20</b> testing rows</div>
+        </div>
+        <p class="hint rise" style="--i:3">common splits: 80/20 or 70/30</p>
+      </div>
+      <div class="stage-box rise" style="--i:2"><canvas id="spCv"></canvas></div>
+    </div>
+  </section>
+
+  <!-- train val test -->
+  <section class="slide" data-id="tvt">
+    <h2 class="rise" style="--i:0"><span class="n">THREE SETS</span>Training, validation, testing</h2>
+    <div class="bar3 rise" style="--i:1;margin:34px 0 26px"><div style="width:70%;background:var(--green)">TRAINING 70%</div><div style="width:15%;background:var(--y)">VALIDATION 15%</div><div style="width:15%;background:var(--blue)">TESTING 15%</div></div>
+    <div class="split3 rise" style="--i:2">
+      <div class="card sp3"><h3 style="color:var(--green)">Training</h3><p>The examples the model learns from. It sees these over and over.</p><div class="an">like the homework problems</div></div>
+      <div class="card sp3"><h3 style="color:var(--y)">Validation</h3><p>Used <b>during</b> training to tune the model’s settings (hyperparameters, e.g. learning rate) and pick the best version.</p><div class="an">like the practice quiz</div></div>
+      <div class="card sp3"><h3 style="color:var(--blue)">Testing</h3><p>A separate set the model has <b>never seen</b>, used once at the end to measure final accuracy and how well it generalizes.</p><div class="an">like the final exam</div></div>
+    </div>
+  </section>
+
+  <!-- random state -->
+  <section class="slide" data-id="seed">
+    <div class="stack" style="gap:22px">
+      <h2 class="rise" style="--i:0"><span class="n">IN CODE</span>Why random_state=42?</h2>
+<pre class="src rise" style="--i:1;font-size:21px">X_train, X_test, y_train, y_test = <span class="fn">train_test_split</span>(X, y, test_size=<span class="n">0.3</span>, random_state=<span class="n" id="sdCode">42</span>)</pre>
+      <p class="rise" style="--i:2">The split is random. Fixing the <b>seed</b> makes it the <b class="y">same random</b> every run, so results can be reproduced. 42 has no mathematical meaning: it’s a nod to <i class="t">The Hitchhiker’s Guide to the Galaxy</i>, the “Answer to the Ultimate Question of Life, the Universe, and Everything.”</p>
+      <div class="card pad rise" style="--i:3;display:flex;flex-direction:column;gap:14px">
+        <div style="display:flex;gap:12px;align-items:center;flex-wrap:wrap"><span class="k">random_state</span><div class="tabs" id="sdTabs"><button class="on" data-k="42">42</button><button data-k="7">7</button><button data-k="none">None</button></div><span style="flex:1"></span><button class="btn on" id="sdRun">Run split ⟳</button><span class="hint"><b style="color:var(--green)">■</b> train <b style="color:var(--blue)">■</b> test</span></div>
+        <div class="seedrow" id="sdRow"></div>
+        <div class="runlog" id="sdLog"></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- llm -->
+  <section class="slide" data-id="llm">
+    <div class="two wide-r">
+      <div class="stack" style="gap:22px">
+        <h2 class="rise" style="--i:0"><span class="n">LARGE LANGUAGE MODELS</span>Trained on what we wrote</h2>
+        <p class="rise" style="--i:1">LLMs learn from the data they’re given: massive amounts of text from the <b>internet</b> and <b>digital books</b>.</p>
+        <ul class="bul rise" style="--i:2"><li>Everything the model “knows” came from that text</li><li>Topics that are rare in the data, it knows less about</li><li>Patterns and opinions in the data, including unfair ones, come along too</li></ul>
+      </div>
+      <div class="stage-box rise" style="--i:2"><canvas id="llmCv"></canvas><div class="cap" id="llmCap">tokens read: 0</div></div>
+    </div>
+  </section>
+
+  <!-- bias market -->
+  <section class="slide" data-id="market">
+    <div class="stack" style="gap:20px">
+      <h2 class="rise" style="--i:0"><span class="n">WHAT DID THE DATA TEACH IT?</span>Ask an AI for a picture</h2>
+      <div class="prompt rise" style="--i:1">Create an image of a smiling lady working in the produce section of a market.</div>
+      <div class="mk rise" style="--i:2" id="mkGrid">
+        <figure data-ai="0"><img src="img/market-1.jpg" alt="A smiling woman with glasses in a supermarket produce section"><figcaption>A</figcaption></figure>
+        <figure data-ai="0"><img src="img/market-2.jpg" alt="A smiling woman in a pink head wrap at an outdoor fruit market"><figcaption>B</figcaption></figure>
+        <figure data-ai="1"><img src="img/market-ai.png" alt="An AI-generated image of a smiling woman in an apron at a produce stand"><figcaption>C</figcaption></figure>
+      </div>
+      <div class="callout keyIdea" id="mkIdea">Image <b>C</b> is the AI’s. Given no other details, it produced a Western-style market and a white woman: the kind of image most common in its training data.</div>
+      <p class="hint" id="mkHint">Which one did the AI make? Click a photo to reveal.</p>
+    </div>
+  </section>
+
+  <!-- bias term -->
+  <section class="slide" data-id="t-bias">
+    <div class="termS">
+      <div class="eyebrow rise" style="--i:0">Terminology</div>
+      <div class="word rise" style="--i:1">bi·<span>as</span></div>
+      <div class="meta rise" style="--i:2"><span>/ˈbīəs/</span><i>noun</i></div>
+      <div class="def rise" style="--i:3">In AI: <b>unfair influence</b> in an algorithm’s results, often from imbalanced data or design, leading to skewed or unequal outcomes.</div>
+    </div>
+  </section>
+
+  <!-- bias sim -->
+  <section class="slide" data-id="biassim">
+    <div class="two" style="grid-template-columns:.85fr 1.15fr;gap:50px">
+      <div class="stack" style="gap:20px">
+        <h2 class="rise" style="--i:0"><span class="n">BIAS IN, BIAS OUT</span>Skewed data, skewed results</h2>
+        <p class="rise" style="--i:1">A generator that always picks the <b>most likely</b> look doesn’t just copy an imbalance. It <b class="y">exaggerates</b> it.</p>
+        <div class="card pad rise" style="--i:2;display:flex;flex-direction:column;gap:14px">
+          <div class="k">Training data: share of group <b class="y">A</b></div>
+          <input type="range" id="bsMix" min="50" max="95" value="70">
+          <div class="mono" style="font-size:20px">training: <b class="y" id="bsTrain">70%</b> A &nbsp;·&nbsp; generated: <b class="y" id="bsGen">–</b> A</div>
+          <div style="display:flex;gap:12px"><button class="btn on" id="bsGo">Generate 40 images</button></div>
+        </div>
+        <p class="hint rise" style="--i:3">a simplified illustration, not a real model</p>
+      </div>
+      <div class="stage-box rise" style="--i:2"><canvas id="bsCv"></canvas></div>
+    </div>
+  </section>
+
+  <!-- bias activity -->
+  <section class="slide" data-id="biasact">
+    <div class="two" style="grid-template-columns:1fr 1fr;gap:56px">
+      <div class="stack" style="gap:20px">
+        <h2 class="rise" style="--i:0"><span class="n">ACTIVITY</span>Generate and compare</h2>
+        <p class="rise" style="--i:1">Use an image generator. Run each prompt a few times:</p>
+        <div class="plist rise" style="--i:2">
+          <div class="prompt">Generate an image of a successful software engineer.</div>
+          <div class="prompt">Generate an image of a college professor.</div>
+          <div class="prompt">Generate an image of a criminal.</div>
+          <div class="prompt">Generate an image of a CEO of a technology company.</div>
+        </div>
+      </div>
+      <div class="stack" style="gap:16px">
+        <div class="eyebrow rise" style="--i:2">Then discuss</div>
+        <ol class="num rise" style="--i:3">
+          <li>What characteristics do the people in your images share?</li>
+          <li>Do you notice patterns in gender, age, race, clothing or appearance?</li>
+          <li>What assumptions did the AI make that weren’t in your prompt?</li>
+          <li>Did the same prompt give similar results across generations?</li>
+          <li>Are there stereotypes in the images?</li>
+        </ol>
+      </div>
+    </div>
+  </section>
+
+  <!-- venn -->
+  <section class="slide" data-id="fields">
+    <div class="two" style="grid-template-columns:1.25fr .75fr;gap:40px">
+      <div class="stage-box venn rise" style="--i:1;background:transparent;border:none"><svg id="vnSvg" viewBox="0 0 900 620"></svg></div>
+      <div class="stack" style="gap:20px">
+        <h2 class="rise" style="--i:0"><span class="n">WHERE DATA FITS</span>The big picture</h2>
+        <div class="card vinfo rise" style="--i:2" id="vnInfo"></div>
+        <p class="hint rise" style="--i:3">click a region</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- roles -->
+  <section class="slide" data-id="roles">
+    <h2 class="rise" style="--i:0"><span class="n">CAREERS</span>Fields and the people in them</h2>
+    <div class="grid4 roles rise" style="--i:1;margin-top:40px">
+      <div class="card"><span class="who2 t-blue tag">FIELD</span><h3 style="color:var(--blue)">Data science</h3><p>Uses statistics, programming and domain knowledge to extract insights from data and build predictive models.</p><div class="ks"><b>KEY ACTIVITIES</b>Collecting and analyzing data, building models, communicating results.</div></div>
+      <div class="card"><span class="who2 t-green tag">PERSON</span><h3 style="color:var(--green)">Data scientist</h3><p>Applies data science to analyze data, build predictive models and help organizations make data-driven decisions.</p><div class="ks"><b>KEY SKILLS</b>Statistics, machine learning, programming, visualization, communication.</div></div>
+      <div class="card"><span class="who2 t-y tag">FIELD</span><h3 style="color:var(--amber)">Data analytics</h3><p>Examining data to find patterns, answer questions and gain insights that inform decisions.</p><div class="ks"><b>KEY ACTIVITIES</b>Cleaning and exploring data, finding trends, building visualizations and reports.</div></div>
+      <div class="card"><span class="who2 t-red tag">PERSON</span><h3 style="color:#c79bff">Data analyst</h3><p>Collects, cleans, analyzes and visualizes data to help organizations understand trends.</p><div class="ks"><b>KEY SKILLS</b>Data cleaning, SQL, Excel, data visualization, reporting.</div></div>
+    </div>
+    <div class="callout rise" style="--i:2;margin-top:34px;max-width:1200px">Data science is one of the fastest-growing technology fields, with roles in nearly every industry.</div>
+  </section>
+
+  <!-- datasets -->
+  <section class="slide" data-id="datasets">
+    <h2 class="rise" style="--i:0"><span class="n">FIND YOUR OWN</span>Free datasets</h2>
+    <div class="links rise" style="--i:1">
+      <a class="card lk" href="https://www.kaggle.com/datasets" target="_blank" rel="noopener"><h3>Kaggle</h3><p>Huge community library, plus notebooks and competitions</p><span>kaggle.com/datasets</span></a>
+      <a class="card lk" href="https://datasetsearch.research.google.com/" target="_blank" rel="noopener"><h3>Google Dataset Search</h3><p>A search engine for datasets across the web</p><span>datasetsearch.research.google.com</span></a>
+      <a class="card lk" href="https://data.gov/" target="_blank" rel="noopener"><h3>Data.gov</h3><p>Open data from the U.S. government</p><span>data.gov</span></a>
+      <a class="card lk" href="https://archive.ics.uci.edu/" target="_blank" rel="noopener"><h3>UCI ML Repository</h3><p>Classic machine-learning datasets used in courses and papers</p><span>archive.ics.uci.edu</span></a>
+      <a class="card lk" href="https://www.earthdata.nasa.gov/" target="_blank" rel="noopener"><h3>NASA Earthdata</h3><p>Satellite and earth-science data</p><span>earthdata.nasa.gov</span></a>
+      <a class="card lk" href="https://datanuggets.org/" target="_blank" rel="noopener"><h3>Data Nuggets</h3><p>Small, real research datasets made for students</p><span>datanuggets.org</span></a>
+    </div>
+  </section>
+
+  <!-- recap -->
+  <section class="slide" data-id="recap">
+    <canvas class="bg" id="bgRecap"></canvas>
+    <div class="vignette"></div>
+    <div class="content center" style="gap:30px">
+      <div class="eyebrow rise" style="--i:0">Recap</div>
+      <h2 class="rise" style="--i:1;font-size:84px">Good AI starts with <span class="y">good data</span>.</h2>
+      <div class="rise" style="--i:2;display:flex;flex-wrap:wrap;gap:12px;justify-content:center;max-width:1200px" id="rcChips"></div>
+    </div>
+  </section>
+
+  <div id="chrome"><span class="sp"></span><button class="nbtn" id="prev" aria-label="Previous">←</button><span class="ver" style="font-size:12px;opacity:.6;margin-right:8px">updated Nov 16, 10:14 AM</span><span id="count"></span><button class="nbtn" id="next" aria-label="Next">→</button><button class="nbtn" id="fs" aria-label="Fullscreen" title="Fullscreen (F)">⤢</button></div>
+  <div id="progress"></div>
+  <div id="livewrap"><span id="liveauth"></span><div id="livebar"></div></div>
+  <div id="toast" role="status"></div>
+</div>
+<script>
+(() => {
+"use strict";
+const Y="#ffc20e", BLUE="#6ab8ff", GREEN="#5fd68a", RED="#ff5a4e", AMBER="#ff8a1f", PURPLE="#b18cff", INK="#f3f1ea", MUTE="#9b988f", LINE="#2e2e35";
+const stage=document.getElementById("stage");
+const slides=[...document.querySelectorAll(".slide")];
+const $=id=>document.getElementById(id);
+const NS="http://www.w3.org/2000/svg";
+const svgEl=(tag,attrs={},parent)=>{ const e=document.createElementNS(NS,tag); for(const k in attrs) e.setAttribute(k,attrs[k]); if(parent) parent.appendChild(e); return e; };
+const rnd=(a,b)=>a+Math.random()*(b-a), pick=a=>a[(Math.random()*a.length)|0];
+const ease=t=>1-Math.pow(1-Math.min(1,Math.max(0,t)),3);
+const clamp=(v,a,b)=>Math.max(a,Math.min(b,v));
+const lerp=(a,b,t)=>a+(b-a)*t;
+// seeded random, so demos look the same every class
+function srand(seed){ let a=seed>>>0; return ()=>{ a|=0; a=a+0x6D2B79F5|0; let t=Math.imul(a^a>>>15,1|a); t=t+Math.imul(t^t>>>7,61|t)^t; return ((t^t>>>14)>>>0)/4294967296; }; }
+const gauss=r=>{ let u=0,v=0; while(!u) u=r(); while(!v) v=r(); return Math.sqrt(-2*Math.log(u))*Math.cos(2*Math.PI*v); };
+const fmt=(v,d=2)=>{ const s=(+v).toFixed(d); return s.replace(/\.?0+$/,"")||"0"; };
+let cur=-1;
+
+/* ---------- stage + canvas sizing ---------- */
+function fitStage(){
+  const s=Math.min(innerWidth/1600,innerHeight/900);
+  stage.style.transform=`translate(-50%,-50%) scale(${s})`;
+  document.querySelectorAll("canvas").forEach(fitCanvas);
+}
+function fitCanvas(c){
+  if(!c.offsetWidth) return;
+  const r=c.getBoundingClientRect(), dpr=devicePixelRatio||1;
+  const w=Math.max(1,Math.round(r.width*dpr)), h=Math.max(1,Math.round(r.height*dpr));
+  if(c.width!==w||c.height!==h){ c.width=w; c.height=h; }
+  c._k=c.width/c.offsetWidth;
+}
+function ctxOf(c){ const x=c.getContext("2d"); x.setTransform(c._k||1,0,0,c._k||1,0,0); return x; }
+// pointer position in an element's own (unscaled) pixels
+function localXY(e,el){ const r=el.getBoundingClientRect(), k=r.width/el.offsetWidth; return [(e.clientX-r.left)/k,(e.clientY-r.top)/k]; }
+function svgXY(e,svg){ const p=svg.createSVGPoint(); p.x=e.clientX; p.y=e.clientY; const q=p.matrixTransform(svg.getScreenCTM().inverse()); return [q.x,q.y]; }
+function tabs(el,cb){ el.querySelectorAll("button").forEach(b=>b.onclick=()=>{ set(b.dataset.k); cb(b.dataset.k); }); function set(k){ el.querySelectorAll("button").forEach(b=>b.classList.toggle("on",b.dataset.k===k)); } return set; }
+const A={};
+
+/* shared canvas helpers */
+function axes(x,L,T,R,B){ x.strokeStyle=LINE; x.lineWidth=2; x.beginPath(); x.moveTo(L,T); x.lineTo(L,B); x.lineTo(R,B); x.stroke(); }
+function label(x,t,px,py,col=MUTE,size=14,align="left",font="JetBrains Mono"){ x.fillStyle=col; x.font=`${size}px "${font}",monospace`; x.textAlign=align; x.fillText(t,px,py); x.textAlign="left"; }
+function dot(x,px,py,r,fill,stroke){ x.beginPath(); x.arc(px,py,r,0,7); if(fill){ x.fillStyle=fill; x.fill(); } if(stroke){ x.strokeStyle=stroke; x.lineWidth=2; x.stroke(); } }
+
+/* ---------- title: a cloud of points that keeps finding its trend line ---------- */
+(() => {
+  const cv=$("bgData"); let P=[], t0=0;
+  A.title={
+    enter(){ const r=srand(3); t0=performance.now();
+      P=Array.from({length:150},(_,i)=>{ const tx=180+i/149*1240; return {x:rnd(0,1600),y:rnd(0,900),vx:rnd(-.3,.3),vy:rnd(-.3,.3),tx,ty:720-(tx-180)*.42+gauss(r)*46}; }); },
+    tick(dt,now){
+      const x=ctxOf(cv), f=dt/16.7; x.fillStyle="#121214"; x.fillRect(0,0,1600,900);
+      const ph=((now-t0)/1000)%12, k=ease(ph<3?0:ph<4.6?(ph-3)/1.6:ph<8.5?1:ph<10?1-(ph-8.5)/1.5:0);
+      for(const p of P){ p.x+=p.vx*f; p.y+=p.vy*f; if(p.x<0||p.x>1600) p.vx*=-1; if(p.y<0||p.y>900) p.vy*=-1; }
+      if(k>.02){ x.strokeStyle=`rgba(255,194,14,${k*.55})`; x.lineWidth=3; x.beginPath(); x.moveTo(140,737); x.lineTo(1460,183); x.stroke(); }
+      for(const p of P){ const px=lerp(p.x,p.tx,k), py=lerp(p.y,p.ty,k);
+        x.fillStyle=k>.5?`rgba(255,194,14,${.35+k*.5})`:"rgba(243,241,234,.35)"; x.beginPath(); x.arc(px,py,3+k*1.5,0,7); x.fill(); }
+    }
+  };
+})();
+
+/* ---------- falling numbers (oil + recap backgrounds) ---------- */
+function rain(id){
+  const cv=$(id); let C=[];
+  return {
+    enter(){ C=Array.from({length:46},(_,i)=>({x:i*35+10,y:rnd(-900,0),v:rnd(.4,1.4),s:Array.from({length:22},()=>pick(["0","1","0","1","3.14","42","NaN","7","0.5","1"]))})); },
+    tick(dt){ const x=ctxOf(cv), f=dt/16.7; x.fillStyle="#121214"; x.fillRect(0,0,1600,900); x.font='16px "JetBrains Mono",monospace';
+      for(const c of C){ c.y+=c.v*f; if(c.y>900) c.y=rnd(-600,-200);
+        c.s.forEach((t,j)=>{ const py=c.y-j*26; if(py<-20||py>920) return; x.fillStyle=j===0?"rgba(255,194,14,.55)":`rgba(255,194,14,${Math.max(0,.18-j*.008)})`; x.fillText(t,c.x,py); }); }
+    }
+  };
+}
+A.oil=rain("bgOil"); A.recap=rain("bgRecap");
+$("rcChips").innerHTML=["structured","unstructured","dataset","feature","label","data type","annotation","supervised","regression","classification","unsupervised","EDA","visualization","mean · median · mode","variance","data cleaning","imputation","encoding","normalization","feature engineering","train / test split","bias"]
+  .map(t=>`<span class="tag t-y" style="font-size:20px;padding:8px 16px">${t}</span>`).join("");
+
+/* ---------- dataset term: a faint csv behind the word ---------- */
+$("tbg1").textContent=["id,sq_ft,beds,pool,price","1,1500,3,1,267","2,1600,3,0,234","3,1720,4,1,300","4,1800,4,1,312","5,1450,2,0,221","6,2010,4,1,355","7,1380,2,0,205","8,1920,3,1,331","9,1660,3,0,262","10,1750,4,0,288","11,2200,5,1,402","12,1590,3,1,270","13,1310,2,0,199","14,1880,4,1,322","15,1700,3,0,279"].join("\n").repeat(2);
+
+/* ---------- ingredients: data + algorithm flow into compute, power drives the training ---------- */
+(() => {
+  const cv=$("ingCv"), VW=1380, VH=600;
+  const CAP=["Press → to build it, one ingredient at a time.",
+    "<b>Data</b>: examples to learn from. Numbers, text, images, audio.",
+    "<b>Algorithm</b>: the recipe for how the model adjusts itself to fit the data.",
+    "<b>Compute</b>: GPUs run billions of small math operations in parallel, so <b>model training</b> can begin.",
+    "<b>Power</b>: all that compute runs on electricity. More compute, faster training."];
+  // where things sit (design units: 1380 × 600)
+  const DATA={x:190,y:300}, ALG={x:1190,y:250}, RACK={x:600,y:300,w:180,h:224}, NET={x:520,y:20,w:340,h:240}, PWR={x:1150,y:500};
+  const RC={x:RACK.x+RACK.w/2,y:RACK.y+RACK.h/2};
+  const LAYERS=[4,6,6,3];
+  const nodes=LAYERS.map((n,li)=>Array.from({length:n},(_,i)=>({x:NET.x+50+li*(NET.w-100)/(LAYERS.length-1),y:NET.y+70+(i+.5)*(NET.h-90)/n,g:0})));
+  const edges=[]; for(let l=0;l<LAYERS.length-1;l++) for(const a of nodes[l]) for(const b of nodes[l+1]) edges.push([a,b]);
+  let step=0, vis=[0,0,0,0,0], P=[], pulses=[], up=[], bolts=[], acc=.1, epoch=0, ep=0, spin=0, typing=0, spD=0, spA=0, spP=0, spU=0, spN=0;
+  const bez=(p0,c,p1,t)=>({x:(1-t)*(1-t)*p0.x+2*(1-t)*t*c.x+t*t*p1.x, y:(1-t)*(1-t)*p0.y+2*(1-t)*t*c.y+t*t*p1.y});
+  const DPATH=[{x:DATA.x+95,y:DATA.y-10},{x:400,y:220},{x:RACK.x-6,y:RACK.y+70}];
+  const APATH=[{x:ALG.x-120,y:ALG.y+10},{x:960,y:200},{x:RACK.x+RACK.w+6,y:RACK.y+70}];
+  const PPATH=[{x:PWR.x-90,y:PWR.y+10},{x:930,y:560},{x:RACK.x+RACK.w+6,y:RACK.y+RACK.h-40}];
+  function rr(x,X,Y,w,h,r){ x.beginPath(); x.moveTo(X+r,Y); x.arcTo(X+w,Y,X+w,Y+h,r); x.arcTo(X+w,Y+h,X,Y+h,r); x.arcTo(X,Y+h,X,Y,r); x.arcTo(X,Y,X+w,Y,r); x.closePath(); }
+  function title(x,t,sub,cx,cy,col){ x.textAlign="center"; x.fillStyle=col; x.font='700 26px "Space Grotesk",sans-serif'; x.fillText(t,cx,cy); if(sub){ x.fillStyle=MUTE; x.font='15px "JetBrains Mono",monospace'; x.fillText(sub,cx,cy+24); } x.textAlign="left"; }
+  function path(x,p,col,a){ x.save(); x.globalAlpha*=a; x.strokeStyle=col; x.lineWidth=2; x.setLineDash([5,7]); x.lineDashOffset=-performance.now()/40; x.beginPath(); x.moveTo(p[0].x,p[0].y); x.quadraticCurveTo(p[1].x,p[1].y,p[2].x,p[2].y); x.stroke(); x.restore(); }
+  const rate=()=>vis[1]>.5&&vis[2]>.5&&vis[3]>.5?(vis[4]>.5?1:.35):0;
+  const setCap=()=>{ $("ingCap").innerHTML=CAP[step]; };
+  function show(n){ step=clamp(n,0,4); setCap(); }
+  A.ingredients={
+    enter(d){ P=[]; pulses=[]; up=[]; bolts=[]; acc=.1; epoch=0; ep=0; const n=d<0?4:0; vis=[0,0,0,0,0].map((_,i)=>i<=n&&i>0?1:0); show(n); },
+    step(){ if(step>=4) return false; show(step+1); return true; },
+    back(){ if(step<=0) return false; show(step-1); if(step<3){ acc=.1; epoch=0; } return true; },
+    tick(dt,now){
+      const W=cv.offsetWidth, H=cv.offsetHeight, x=ctxOf(cv), k=Math.min(W/VW,H/VH);
+      x.clearRect(0,0,W,H); x.save(); x.translate((W-VW*k)/2,(H-VH*k)/2); x.scale(k,k);
+      for(let i=1;i<=4;i++) vis[i]=lerp(vis[i],i<=step?1:0,Math.min(1,dt/180));
+      const R=rate(), f=dt/16.7;
+      // flows
+      if(vis[1]>.05) path(x,DPATH,Y,vis[1]*.6);
+      if(vis[2]>.05) path(x,APATH,PURPLE,vis[2]*.6);
+      if(vis[4]>.05) path(x,PPATH,AMBER,vis[4]*.6);
+      spD+=dt; if(step>=1) while(spD>140){ spD-=140; P.push({p:DPATH,t:0,txt:pick(["0","1","1","0","42","3.1","A","{ }","▦","♪"]),c:Y,s:rnd(.0045,.0065)}); } else spD=0;
+      spA+=dt; if(step>=2) while(spA>420){ spA-=420; P.push({p:APATH,t:0,txt:pick(["f(x)","if","w+=","Σ","∂","for"]),c:PURPLE,s:rnd(.004,.0055)}); } else spA=0;
+      spP+=dt; if(step>=4) while(spP>260){ spP-=260; bolts.push({t:0,s:rnd(.008,.011)}); } else spP=0;
+      x.font='600 17px "JetBrains Mono",monospace'; x.textAlign="center";
+      P=P.filter(q=>{ q.t+=q.s*f; if(q.t>=1) return false; const o=bez(q.p[0],q.p[1],q.p[2],q.t), a=Math.min(1,q.t*6)*(vis[3]>.5?1:Math.max(0,1-(q.t-.6)*2.5));
+        x.globalAlpha=a; x.fillStyle=q.c; x.fillText(q.txt,o.x,o.y+6); x.globalAlpha=1; return true; });
+      bolts=bolts.filter(b=>{ b.t+=b.s*f; if(b.t>=1) return false; const o=bez(PPATH[0],PPATH[1],PPATH[2],b.t);
+        x.save(); x.translate(o.x,o.y); x.fillStyle=Y; x.shadowColor=Y; x.shadowBlur=14; x.beginPath(); x.moveTo(-4,-14); x.lineTo(6,-14); x.lineTo(1,-2); x.lineTo(8,-2); x.lineTo(-6,16); x.lineTo(-1,3); x.lineTo(-8,3); x.closePath(); x.fill(); x.restore(); return true; });
+      x.textAlign="left";
+
+      // DATA: stacked database cylinders
+      if(vis[1]>.01){ x.save(); x.globalAlpha=vis[1]; const cx=DATA.x, top=DATA.y-90;
+        for(let i=2;i>=0;i--){ const y=top+i*58; x.fillStyle="#1c1c20"; x.strokeStyle=Y; x.lineWidth=3;
+          x.beginPath(); x.moveTo(cx-80,y); x.lineTo(cx-80,y+50); x.ellipse(cx,y+50,80,20,0,Math.PI,0,true); x.lineTo(cx+80,y); x.closePath(); x.fill(); x.stroke();
+          x.beginPath(); x.ellipse(cx,y,80,20,0,0,7); x.fillStyle="#24242a"; x.fill(); x.stroke();
+          for(let j=0;j<4;j++){ const on=Math.sin(now/220+i*2+j*1.7)>.2; x.fillStyle=on?Y:"#3a3a42"; x.fillRect(cx-50+j*26,y+28,16,5); } }
+        title(x,"DATA",null,cx,DATA.y+150,Y); x.restore(); }
+
+      // ALGORITHM: a monitor typing code
+      if(vis[2]>.01){ x.save(); x.globalAlpha=vis[2]; const mx=ALG.x-110, my=ALG.y-110;
+        rr(x,mx,my,220,150,14); x.fillStyle="#1c1c20"; x.fill(); x.strokeStyle=PURPLE; x.lineWidth=3; x.stroke();
+        rr(x,mx+12,my+12,196,112,8); x.fillStyle="#120f1d"; x.fill();
+        typing+=dt/900; const lines=[[0,.5],[1,.75],[1,.6],[0,.4],[2,.7],[1,.55],[0,.3]], shown=typing%(lines.length+2);
+        lines.forEach(([ind,w],i)=>{ const frac=clamp(shown-i,0,1); if(frac<=0) return; x.fillStyle=i%3===1?GREEN:"#7fd8ff"; x.fillRect(mx+24+ind*16,my+24+i*14,(150-ind*16)*w*frac,6); });
+        x.fillStyle=PURPLE; x.fillRect(ALG.x-14,my+150,28,26); rr(x,ALG.x-60,my+174,120,12,6); x.fill();
+        title(x,"ALGORITHM",null,ALG.x,ALG.y+120,PURPLE); x.restore(); }
+
+      // POWER: a substation and transmission tower
+      if(vis[4]>.01){ x.save(); x.globalAlpha=vis[4]; const px=PWR.x, py=PWR.y;
+        x.strokeStyle="#8a877f"; x.lineWidth=2;
+        for(let b=0;b<3;b++){ rr(x,px-80+b*34,py-26-b*6,28,46+b*6,4); x.fillStyle="#2a2a30"; x.fill(); x.stroke(); x.fillStyle=Math.sin(now/300+b)>0?AMBER:"#55534d"; x.fillRect(px-72+b*34,py-14-b*6,12,4); }
+        const tx=px+70, ty=py+24; x.beginPath(); x.moveTo(tx-22,ty); x.lineTo(tx,ty-90); x.lineTo(tx+22,ty); x.moveTo(tx-16,ty-26); x.lineTo(tx+16,ty-26); x.moveTo(tx-10,ty-52); x.lineTo(tx+10,ty-52);
+        x.moveTo(tx-30,ty-70); x.lineTo(tx+30,ty-70); x.moveTo(tx-16,ty-26); x.lineTo(tx+10,ty-52); x.moveTo(tx+16,ty-26); x.lineTo(tx-10,ty-52); x.stroke();
+        title(x,"POWER",null,px,py+62,AMBER); x.restore(); }
+
+      // COMPUTE: server rack with a GPU
+      if(vis[3]>.01){ x.save(); x.globalAlpha=vis[3]; const {x:rx,y:ry,w:rw,h:rh}=RACK;
+        rr(x,rx,ry,rw,rh,14); x.fillStyle="#1c1c20"; x.fill(); x.strokeStyle=R>.5?Y:"#55534d"; x.lineWidth=3; x.stroke();
+        for(let u=0;u<4;u++){ const uy=ry+12+u*52; rr(x,rx+12,uy,rw-24,44,6); x.fillStyle="#24242a"; x.fill();
+          if(u===2){ spin+=dt*(.002+R*.03); const gx=rx+30, gy=uy+5; rr(x,gx,gy,rw-60,34,4); x.fillStyle="#121214"; x.fill(); x.strokeStyle=GREEN; x.lineWidth=2; x.stroke();
+            for(const fx of [gx+22,gx+rw-82]){ x.save(); x.translate(fx,gy+17); x.rotate(spin); x.strokeStyle=GREEN; for(let b=0;b<4;b++){ x.rotate(Math.PI/2); x.beginPath(); x.moveTo(0,0); x.lineTo(12,4); x.stroke(); } x.restore(); }
+            x.fillStyle=GREEN; x.font='600 13px "JetBrains Mono",monospace'; x.textAlign="center"; x.fillText("GPU",gx+(rw-60)/2,gy+22); x.textAlign="left"; }
+          else for(let l=0;l<6;l++){ const on=R>0?Math.random()<.25+R*.5:Math.sin(now/500+l+u)>.6; x.fillStyle=on?(l%2?GREEN:Y):"#3a3a42"; x.beginPath(); x.arc(rx+30+l*12,uy+22,3.5,0,7); x.fill(); }
+          if(u!==2){ x.fillStyle="#3a3a42"; x.fillRect(rx+rw-70,uy+18,46,8); } }
+        title(x,"COMPUTE",`GPU load ${Math.round(R*100)}%`,RC.x,ry+rh+36,GREEN); x.restore(); }
+
+      // MODEL TRAINING: a network that lights up as compute pushes data through it
+      if(vis[3]>.01){ x.save(); x.globalAlpha=vis[3];
+        rr(x,NET.x,NET.y,NET.w,NET.h,16); x.fillStyle="rgba(255,194,14,.05)"; x.fill(); x.strokeStyle=R>.5?Y:"rgba(255,194,14,.4)"; x.lineWidth=2; x.stroke();
+        x.fillStyle=Y; x.font='700 20px "Space Grotesk",sans-serif'; x.fillText("MODEL TRAINING",NET.x+18,NET.y+32);
+        x.font='14px "JetBrains Mono",monospace'; x.fillStyle=MUTE; x.textAlign="right"; x.fillText(`epoch ${epoch}`,NET.x+NET.w-18,NET.y+30); x.textAlign="left";
+        x.lineWidth=1; x.strokeStyle="rgba(243,241,234,.08)"; x.beginPath(); for(const [a,b] of edges){ x.moveTo(a.x,a.y); x.lineTo(b.x,b.y); } x.stroke();
+        spN+=dt*R; while(spN>40){ spN-=40; const e=pick(edges.slice(0,LAYERS[0]*LAYERS[1])); pulses.push({e,t:0,l:0}); }
+        pulses=pulses.filter(p=>{ p.t+=dt*(.0015+R*.004); if(p.t>=1){ p.e[1].g=1; const l=nodes.findIndex(L=>L.includes(p.e[1])); if(l<LAYERS.length-1&&Math.random()<.7){ const nx=edges.filter(([a])=>a===p.e[1]); p.e=pick(nx); p.t=0; return true; } return false; }
+          const px=lerp(p.e[0].x,p.e[1].x,p.t), py=lerp(p.e[0].y,p.e[1].y,p.t); x.strokeStyle="rgba(255,194,14,.55)"; x.lineWidth=2; x.beginPath(); x.moveTo(p.e[0].x,p.e[0].y); x.lineTo(px,py); x.stroke(); dot(x,px,py,3,Y); return true; });
+        for(const L of nodes) for(const n of L){ n.g*=.93; dot(x,n.x,n.y,9,n.g>.05?`rgba(255,194,14,${.3+n.g*.7})`:"#2a2a30",n.g>.05?Y:"#55534d"); }
+        // accuracy bar
+        if(R>0){ acc+=(.97-acc)*R*dt*.0002; ep+=dt*R; if(ep>900){ ep=0; epoch++; } }
+        const bx=NET.x+18, by=NET.y+NET.h-24, bw=NET.w-130; x.fillStyle="#2a2a30"; rr(x,bx,by,bw,10,5); x.fill(); x.fillStyle=Y; rr(x,bx,by,Math.max(10,bw*acc),10,5); x.fill();
+        x.fillStyle=INK; x.font='600 14px "JetBrains Mono",monospace'; x.fillText(`accuracy ${Math.round(acc*100)}%`,bx+bw+12,by+10);
+        // compute → model: energy rising from the rack
+        spU+=dt*R; while(spU>120){ spU-=120; up.push({x:RC.x+rnd(-40,40),t:0}); }
+        up=up.filter(u=>{ u.t+=dt*.0016; if(u.t>=1) return false; const y=lerp(RACK.y-4,NET.y+NET.h+4,u.t); x.fillStyle=`rgba(95,214,138,${1-u.t})`; x.fillRect(u.x-2,y-8,4,12); return true; });
+        x.restore(); }
+      x.restore();
+    }
+  };
+})();
+
+/* ---------- rules vs machine learning ---------- */
+(() => {
+  const cv=$("rmCv"); const r=srand(11); let mode="rules";
+  const D=[]; for(let i=0;i<26;i++){ D.push({t:clamp(99.4+gauss(r)*.65,97.8,103.8),a:clamp(2.8+gauss(r)*1.6,.3,9.5),c:-1}); D.push({t:clamp(101.3+gauss(r)*.75,97.8,103.8),a:clamp(6.8+gauss(r)*1.6,.3,9.5),c:1}); }
+  const nx=p=>[(p.t-98)/6,p.a/10];
+  let w, best, bestErr, epoch, timer=0, running=false;
+  const errs=W=>D.filter(p=>{ const [u,v]=nx(p); return Math.sign(W[0]*u+W[1]*v+W[2]||-1)!==p.c; }).length;
+  function reset(){ w=[.2,-1,.35]; best=w.slice(); bestErr=errs(w); epoch=0; running=false; $("rmEpoch").textContent="epoch 0"; $("rmTrain").textContent="Train ▶"; }
+  function trainEpoch(){ for(const p of D){ const [u,v]=nx(p); const y=Math.sign(w[0]*u+w[1]*v+w[2]||-1); if(y!==p.c){ w[0]+=.08*p.c*u; w[1]+=.08*p.c*v; w[2]+=.08*p.c; } }
+    const e=errs(w); if(e<bestErr){ bestErr=e; best=w.slice(); } epoch++; $("rmEpoch").textContent=`epoch ${epoch} · ${bestErr} mistake${bestErr===1?"":"s"}`; if(epoch>=40){ running=false; $("rmTrain").textContent="Train ▶"; } }
+  const set=tabs($("rmTabs"),k=>{ mode=k; $("rmRules").style.display=k==="rules"?"":"none"; $("rmML").style.display=k==="ml"?"":"none"; });
+  $("rmTrain").onclick=()=>{ if(epoch>=40) reset(); running=!running; $("rmTrain").textContent=running?"Pause ❚❚":"Train ▶"; };
+  $("rmReset").onclick=reset;
+  reset();
+  A.rulesml={
+    enter(){ mode="rules"; set("rules"); $("rmRules").style.display=""; $("rmML").style.display="none"; reset(); },
+    step(){ if(mode==="rules"){ mode="ml"; set("ml"); $("rmRules").style.display="none"; $("rmML").style.display=""; return true; } if(epoch===0&&!running){ running=true; $("rmTrain").textContent="Pause ❚❚"; return true; } return false; },
+    tick(dt){
+      if(running){ timer+=dt; if(timer>130){ timer=0; trainEpoch(); } }
+      const W=cv.offsetWidth, H=cv.offsetHeight, x=ctxOf(cv), L=80, T=40, R=W-30, B=H-70;
+      x.clearRect(0,0,W,H); axes(x,L,T,R,B);
+      const px=t=>L+(t-98)/6*(R-L), py=a=>B-a/10*(B-T);
+      label(x,"temperature (°F) →",R,B+44,MUTE,15,"right"); x.save(); x.translate(30,T+10); x.rotate(-Math.PI/2); label(x,"muscle aches (0–10) →",-(B-T)+10,0,MUTE,15); x.restore();
+      for(const t of [98,100,102,104]) label(x,t,px(t),B+22,MUTE,13,"center");
+      for(let a=0;a<=10;a+=2) label(x,a,L-12,py(a)+5,MUTE,13,"right");
+      for(const p of D) dot(x,px(p.t),py(p.a),7,p.c>0?Y:BLUE);
+      x.lineWidth=4; x.setLineDash([]);
+      if(mode==="rules"){ x.strokeStyle=RED; x.setLineDash([10,8]); x.beginPath(); x.moveTo(px(100.5),T); x.lineTo(px(100.5),B); x.stroke(); x.setLineDash([]);
+        const miss=D.filter(p=>(p.t>100.5?1:-1)!==p.c).length;
+        label(x,"temperature > 100.5 → flu",px(100.5)+10,T+20,RED,15);
+        $("rmCap").textContent=`a person wrote this rule · it gets ${miss} of ${D.length} wrong`;
+      } else {
+        const drawLine=(W2,col,a)=>{ x.strokeStyle=col; x.globalAlpha=a; x.beginPath(); for(let i=0;i<=1;i++){ const u=i; const v=Math.abs(W2[1])<1e-6?0:-(W2[0]*u+W2[2])/W2[1]; i?x.lineTo(L+u*(R-L),B-v*(B-T)):x.moveTo(L+u*(R-L),B-v*(B-T)); } x.stroke(); x.globalAlpha=1; };
+        x.save(); x.beginPath(); x.rect(L,T,R-L,B-T); x.clip(); if(running) drawLine(w,INK,.25); drawLine(best,GREEN,1); x.restore();
+        $("rmCap").textContent=epoch?`the model learned this line from ${D.length} examples · ${bestErr} wrong`:"press Train: the model starts with a random guess";
+      }
+      label(x,"● cold",R-150,T-14,BLUE,16); label(x,"● flu",R-70,T-14,Y,16);
+    }
+  };
+})();
+
+/* ---------- kinds of datasets: what we see vs. the numbers the computer sees ---------- */
+(() => {
+  const C={t:$("dkTable"),x:$("dkText"),i:$("dkImage"),a:$("dkAudio")};
+  let mode=0, m=0;
+  const ROWS=[[1500,3,"Yes",267],[1600,3,"No",234],[1720,4,"Yes",300],[1800,4,"Yes",312],[1450,2,"No",221],[2010,4,"Yes",355],[1380,2,"No",205]];
+  const REVIEWS=["This game is amazing!","The controls are terrible.","Best game all year!","It crashes every time.","Love the soundtrack."];
+  const tok=w=>{ let h=7; for(const c of w.toLowerCase()) h=(h*31+c.charCodeAt(0))%4999; return h+1; };
+  const DIG=["..........","...####...","..#....#..",".......#..",".....##...",".......#..","........#.","..#.....#.","...#####..",".........."];
+  const PIX=DIG.map((r,y)=>[...r].map((c,x)=>{ if(c==="#") return 235; let n=0; for(const [dx,dy] of [[1,0],[-1,0],[0,1],[0,-1]]){ const q=DIG[y+dy]; if(q&&q[x+dx]==="#") n++; } return n*45; }));
+  const set=tabs($("dkTabs"),k=>{ mode=k==="num"?1:0; $("dkIdea").classList.toggle("on",mode===1); });
+  const prep=c=>{ const W=c.offsetWidth, H=c.offsetHeight, x=ctxOf(c); x.clearRect(0,0,W,H); return [x,W,H]; };
+  const mono=(x,s,w="400")=>x.font=`${w} ${s}px "JetBrains Mono",monospace`;
+  A.dskinds={
+    enter(d){ mode=d<0?1:0; m=mode; set(mode?"num":"raw"); $("dkIdea").classList.toggle("on",mode===1); },
+    step(){ if(mode) return false; mode=1; set("num"); $("dkIdea").classList.add("on"); return true; },
+    back(){ if(!mode) return false; mode=0; set("raw"); $("dkIdea").classList.remove("on"); return true; },
+    tick(dt,now){
+      m=lerp(m,mode,Math.min(1,dt/250));
+      // table
+      { const [x,W]=prep(C.t), cw=(W-20)/4, rh=34, scan=Math.floor(now/700)%ROWS.length;
+        mono(x,13,"600"); x.textAlign="center"; ["sq_ft","beds","pool","price"].forEach((h,i)=>{ x.fillStyle=MUTE; x.fillText(h,10+cw*i+cw/2,30); });
+        x.strokeStyle=LINE; x.beginPath(); x.moveTo(10,42); x.lineTo(W-10,42); x.stroke();
+        ROWS.forEach((r,ri)=>{ const y=50+ri*rh; if(ri===scan){ x.fillStyle="rgba(255,194,14,.12)"; x.fillRect(10,y,W-20,rh-4); }
+          r.forEach((v,ci)=>{ mono(x,16,ri===scan?"600":"400"); let t=v;
+            if(ci===2){ x.globalAlpha=1-m; x.fillStyle=ri===scan?Y:INK; x.fillText(v,10+cw*ci+cw/2,y+22); x.globalAlpha=m; x.fillStyle=Y; x.fillText(v==="Yes"?1:0,10+cw*ci+cw/2,y+22); x.globalAlpha=1; return; }
+            x.fillStyle=ri===scan?Y:INK; x.fillText(t,10+cw*ci+cw/2,y+22); }); });
+        x.textAlign="left"; }
+      // text
+      { const [x,W]=prep(C.x); const chars=(now/45)%260; let n=0, y=34;
+        REVIEWS.forEach(rv=>{ let px=14; const words=rv.split(" ");
+          for(const w of words){ const raw=w+" ", num=tok(w.replace(/[^a-z]/gi,""))+" ";
+            x.font='17px "Space Grotesk",sans-serif'; const rw=x.measureText(raw).width; mono(x,15,"600"); const ww=lerp(rw,x.measureText(num).width,m);
+            if(px+ww>W-10){ px=14; y+=24; }
+            const vis=n<chars; n+=raw.length;
+            if(vis){ x.globalAlpha=1-m; x.fillStyle=INK; x.font='17px "Space Grotesk",sans-serif'; x.fillText(raw,px,y); x.globalAlpha=m; mono(x,15,"600"); x.fillStyle=Y; x.fillText(num,px,y); x.globalAlpha=1; }
+            px+=ww+2; }
+          y+=36; }); }
+      // image: a handwritten 3, then its pixel values
+      { const [x,W,H]=prep(C.i); const s=Math.min(W,H)-30, cs=s/10, ox=(W-s)/2, oy=(H-s)/2;
+        PIX.forEach((row,yy)=>row.forEach((v,xx)=>{ const g=Math.round(v*(1-m*.75)); x.fillStyle=`rgb(${g},${g},${g})`; x.fillRect(ox+xx*cs,oy+yy*cs,cs-1,cs-1);
+          if(m>.02){ x.globalAlpha=m; mono(x,Math.max(8,cs*.36),"600"); x.textAlign="center"; x.fillStyle=v>100?Y:"#77746d"; x.fillText(v,ox+xx*cs+cs/2,oy+yy*cs+cs*.62); x.textAlign="left"; x.globalAlpha=1; } })); }
+      // audio: a waveform, then its samples
+      { const [x,W,H]=prep(C.a); const mid=H/2, t=now/1000;
+        const wave=px=>{ const u=px/W*6+t*2; const env=.55+.45*Math.sin(px/W*Math.PI*2+t*.7); return (Math.sin(u*3.1)*.6+Math.sin(u*7.3)*.3+Math.sin(u*1.3)*.25)*env; };
+        x.strokeStyle=LINE; x.beginPath(); x.moveTo(0,mid); x.lineTo(W,mid); x.stroke();
+        x.globalAlpha=1-m*.75; x.strokeStyle=BLUE; x.lineWidth=3; x.beginPath(); for(let px=0;px<=W;px+=2){ const yv=mid-wave(px)*(H*.36); px?x.lineTo(px,yv):x.moveTo(px,yv); } x.stroke(); x.globalAlpha=1; x.lineWidth=1;
+        if(m>.02){ x.globalAlpha=m; let k=0; for(let px=12;px<W;px+=20,k++){ const v=wave(px), yv=mid-v*(H*.36); x.strokeStyle=Y; x.lineWidth=2; x.beginPath(); x.moveTo(px,mid); x.lineTo(px,yv); x.stroke(); dot(x,px,yv,4,Y);
+            if(k%3===0){ mono(x,11,"600"); x.fillStyle=INK; x.textAlign="center"; x.fillText(v.toFixed(2),px,v>0?mid+18:mid-10); x.textAlign="left"; } } x.globalAlpha=1; x.lineWidth=1; } }
+    }
+  };
+})();
+
+/* ---------- structured vs. unstructured side by side ---------- */
+(() => {
+  const cS=$("svuS"), cU=$("svuU");
+  const HEAD=["id","age","city","plan","spent"], CITY=["Austin","Miami","Seattle","Denver","Boise","Provo"], PLAN=["basic","pro","free"];
+  const r=srand(4); const ROWS=Array.from({length:7},(_,i)=>[100+i*7,20+Math.floor(r()*40),CITY[Math.floor(r()*6)],PLAN[Math.floor(r()*3)],"$"+(10+Math.floor(r()*190))]);
+  const ITEMS=["🤳","🎙️","✉️","📹","🩻","🎵","💬","📷","“lol same 😂”","“meeting moved to 3?”","“great hotel, dirty pool”","#throwback","“call me back”","wave","photo","wave"];
+  let F=[], t0=0, show=false;
+  function reset(){ t0=performance.now(); const q=srand(9); F=ITEMS.map(k=>({k,x:30+q()*560,y:30+q()*230,vx:(q()-.5)*.7,vy:(q()-.5)*.7,r:(q()-.5)*.6,vr:(q()-.5)*.004})); }
+  A.svu={
+    enter(d){ reset(); show=d<0; $("svuT").classList.toggle("on",show); },
+    step(){ if(show) return false; show=true; $("svuT").classList.add("on"); return true; },
+    back(){ if(!show) return false; show=false; $("svuT").classList.remove("on"); return true; },
+    tick(dt,now){
+      // structured: the table fills in cell by cell, then holds, then starts over
+      { const W=cS.offsetWidth, H=cS.offsetHeight, x=ctxOf(cS); x.clearRect(0,0,W,H);
+        const cols=HEAD.length, cw=(W-30)/cols, rh=(H-50)/ROWS.length, total=cols*ROWS.length, el=((now-t0)/90)%(total+40), n=Math.min(total,el);
+        x.textAlign="center";
+        HEAD.forEach((h,i)=>{ x.fillStyle="rgba(106,184,255,.14)"; x.fillRect(15+i*cw+2,8,cw-4,30); x.fillStyle=BLUE; x.font='600 15px "JetBrains Mono",monospace'; x.fillText(h,15+i*cw+cw/2,28); });
+        for(let k=0;k<total;k++){ const ri=Math.floor(k/cols), ci=k%cols, cx=15+ci*cw, cy=44+ri*rh;
+          x.strokeStyle=LINE; x.strokeRect(cx+2,cy,cw-4,rh-4);
+          if(k<n){ const fresh=n-k<3; x.fillStyle=fresh?Y:INK; x.font=`${fresh?600:400} 15px "JetBrains Mono",monospace`; x.fillText(ROWS[ri][ci],cx+cw/2,cy+rh/2+2); } }
+        x.textAlign="left"; }
+      // unstructured: a jumble that drifts and bumps around
+      { const W=cU.offsetWidth, H=cU.offsetHeight, x=ctxOf(cU), f=dt/16.7; x.clearRect(0,0,W,H);
+        for(const p of F){ p.x+=p.vx*f; p.y+=p.vy*f; p.r+=p.vr*f; if(p.x<30||p.x>W-30) p.vx*=-1; if(p.y<24||p.y>H-24) p.vy*=-1; p.x=clamp(p.x,30,W-30); p.y=clamp(p.y,24,H-24);
+          x.save(); x.translate(p.x,p.y); x.rotate(p.r);
+          if(p.k==="wave"){ x.strokeStyle=AMBER; x.lineWidth=2.5; x.beginPath(); for(let i=-40;i<=40;i+=2){ const yv=Math.sin(i/4+now/200)*10*Math.cos(i/26); i===-40?x.moveTo(i,yv):x.lineTo(i,yv); } x.stroke(); }
+          else if(p.k==="photo"){ x.fillStyle="#24242a"; x.fillRect(-30,-22,60,44); x.strokeStyle=INK; x.lineWidth=2; x.strokeRect(-30,-22,60,44); x.fillStyle=AMBER; x.beginPath(); x.moveTo(-26,18); x.lineTo(-8,-4); x.lineTo(6,10); x.lineTo(14,2); x.lineTo(26,18); x.fill(); dot(x,14,-10,5,Y); }
+          else if(p.k.length<=3){ x.font='34px "Segoe UI Emoji","Apple Color Emoji",sans-serif'; x.textAlign="center"; x.fillText(p.k,0,12); }
+          else { x.font='italic 16px "Space Grotesk",sans-serif'; x.textAlign="center"; x.fillStyle="#d6d3cb"; x.fillText(p.k,0,6); }
+          x.restore(); } }
+    }
+  };
+})();
+
+/* ---------- everything has features: hover the parts of a car, a house, an animal ---------- */
+(() => {
+  const OBJ=[
+    { name:"car", label:["Price","$18,500"],
+      art:`<rect x="0" y="372" width="700" height="4" fill="#2e2e35"/>
+        <path d="M90 300 Q90 236 150 232 L232 228 L284 160 L452 160 L522 228 L590 238 Q614 244 614 278 L614 300 Q614 322 592 322 L108 322 Q90 322 90 300Z" fill="#ff5a4e"/>
+        <path d="M298 172 L370 172 L370 226 L254 226Z M384 172 L446 172 L500 226 L384 226Z" fill="#6ab8ff" opacity=".35"/>
+        <path d="M300 230 L300 314 M420 230 L420 314" stroke="#121214" stroke-width="3"/><rect x="392" y="246" width="20" height="5" rx="2" fill="#121214"/>
+        <ellipse cx="604" cy="258" rx="10" ry="8" fill="#ffc20e"/><circle cx="148" cy="252" r="9" fill="#121214" stroke="#9b988f" stroke-width="2"/>
+        <circle cx="194" cy="322" r="44" fill="#121214"/><circle cx="194" cy="322" r="20" fill="#77746d"/><circle cx="510" cy="322" r="44" fill="#121214"/><circle cx="510" cy="322" r="20" fill="#77746d"/>`,
+      feats:[
+        {n:"Color",v:"Red",t:"Text",hl:`<path class="hl" d="M90 300 Q90 236 150 232 L232 228 L284 160 L452 160 L522 228 L590 238 Q614 244 614 278 L614 300 Q614 322 592 322 L108 322 Q90 322 90 300Z"/>`},
+        {n:"Horsepower",v:"180",t:"Number",hl:`<path class="hl" d="M522 228 L590 238 Q614 244 614 278 L614 296 L522 296Z"/>`},
+        {n:"Doors",v:"4",t:"Number",hl:`<rect class="hl" x="300" y="230" width="120" height="84" rx="4"/>`},
+        {n:"Seats",v:"5",t:"Number",hl:`<path class="hl" d="M298 172 L446 172 L500 226 L254 226Z"/>`},
+        {n:"Wheels",v:"4",t:"Number",hl:`<circle class="hl" cx="194" cy="322" r="46"/><circle class="hl" cx="510" cy="322" r="46"/>`},
+        {n:"Electric",v:"No",t:"Boolean",hl:`<circle class="hl" cx="148" cy="252" r="16"/>`}]},
+    { name:"house", label:["Price","$300k"],
+      art:`<rect x="0" y="380" width="700" height="4" fill="#2e2e35"/>
+        <rect x="402" y="112" width="32" height="70" fill="#55534d"/>
+        <rect x="170" y="212" width="300" height="168" fill="#3b3b44"/><path d="M146 218 L320 98 L494 218Z" fill="#b5562a"/>
+        <rect x="470" y="262" width="140" height="118" fill="#34343c"/><path d="M462 266 L540 222 L618 266Z" fill="#9a4a24"/>
+        <path d="M486 290 H594 M486 312 H594 M486 334 H594 M486 356 H594" stroke="#55534d" stroke-width="3"/>
+        <rect x="296" y="300" width="50" height="80" rx="3" fill="#6b3f22"/><circle cx="336" cy="342" r="4" fill="#ffc20e"/>
+        <rect x="200" y="250" width="62" height="52" fill="#6ab8ff" opacity=".45"/><rect x="380" y="250" width="62" height="52" fill="#6ab8ff" opacity=".45"/>
+        <ellipse cx="96" cy="414" rx="70" ry="18" fill="#6ab8ff" opacity=".7"/>
+        <circle cx="650" cy="300" r="34" fill="#5fd68a" opacity=".6"/><rect x="646" y="330" width="8" height="50" fill="#6b3f22"/>`,
+      feats:[
+        {n:"Sq feet",v:"1,720",t:"Number",hl:`<rect class="hl" x="170" y="212" width="300" height="168"/>`},
+        {n:"Roof",v:"Shingle",t:"Text",hl:`<path class="hl" d="M146 218 L320 98 L494 218Z"/>`},
+        {n:"Fireplace",v:"Yes",t:"Boolean",hl:`<rect class="hl" x="402" y="112" width="32" height="70"/>`},
+        {n:"Garage spaces",v:"2",t:"Number",hl:`<path class="hl" d="M462 266 L540 222 L618 266 L610 266 L610 380 L470 380 L470 266Z"/>`},
+        {n:"Year built",v:"1998",t:"Date / Time",hl:`<rect class="hl" x="296" y="300" width="50" height="80" rx="3"/>`},
+        {n:"Has pool",v:"Yes",t:"Boolean",hl:`<ellipse class="hl" cx="96" cy="414" rx="72" ry="20"/>`}]},
+    { name:"animal", label:["Class","Mammal"],
+      art:`<rect x="0" y="384" width="700" height="4" fill="#2e2e35"/>
+        <path d="M200 240 Q150 220 140 160" stroke="#9c6a3e" stroke-width="16" fill="none" stroke-linecap="round"/>
+        <rect x="226" y="290" width="28" height="94" rx="12" fill="#9c6a3e"/><rect x="270" y="290" width="28" height="94" rx="12" fill="#8a5c34"/>
+        <rect x="380" y="290" width="28" height="94" rx="12" fill="#9c6a3e"/><rect x="424" y="290" width="28" height="94" rx="12" fill="#8a5c34"/>
+        <ellipse cx="330" cy="262" rx="146" ry="68" fill="#b07a4a"/><path d="M220 214 Q330 176 440 214 Q330 232 220 214Z" fill="#8a5c34"/>
+        <circle cx="500" cy="186" r="56" fill="#b07a4a"/><ellipse cx="552" cy="204" rx="34" ry="22" fill="#c99a6a"/><circle cx="582" cy="198" r="8" fill="#121214"/>
+        <path d="M466 150 Q446 170 452 232 Q476 222 480 160Z" fill="#6b3f22"/><circle cx="512" cy="176" r="6" fill="#121214"/>
+        <path d="M548 222 Q560 230 574 222" stroke="#121214" stroke-width="3" fill="none"/>`,
+      feats:[
+        {n:"Legs",v:"4",t:"Number",hl:`<rect class="hl" x="224" y="300" width="76" height="86" rx="10"/><rect class="hl" x="378" y="300" width="76" height="86" rx="10"/>`},
+        {n:"Weight",v:"30 kg",t:"Number",hl:`<ellipse class="hl" cx="330" cy="268" rx="146" ry="56"/>`},
+        {n:"Fur",v:"Yes",t:"Boolean",hl:`<path class="hl" d="M220 214 Q330 176 440 214 Q330 232 220 214Z"/>`},
+        {n:"Has tail",v:"Yes",t:"Boolean",hl:`<path class="hl" d="M206 250 Q140 230 128 156 L152 150 Q164 210 214 228Z"/>`},
+        {n:"Ears",v:"Floppy",t:"Text",hl:`<path class="hl" d="M466 150 Q446 170 452 232 Q476 222 480 160Z"/>`},
+        {n:"Sound",v:"Bark",t:"Text",hl:`<ellipse class="hl" cx="556" cy="206" rx="38" ry="26"/>`}]}
+  ];
+  const TCLS={"Text":"t-blue","Number":"t-y","Boolean":"t-green","Date / Time":"t-red"};
+  const s=$("foSvg"); let o=0, seen=new Set(), cur=-1;
+  function info(){
+    const O=OBJ[o];
+    if(cur<0) $("foInfo").innerHTML=`<span class="k">The ${O.name}</span><div class="fn" style="color:var(--mute)">Hover a part</div><p class="muted">Each part you can measure or describe is a <b class="y">feature</b>.</p>`;
+    else { const f=O.feats[cur]; $("foInfo").innerHTML=`<span class="k">Feature</span><div class="fn">${f.n}</div><div style="display:flex;gap:14px;align-items:center"><span class="fv">${f.v}</span><span class="tag ${TCLS[f.t]}">${f.t}</span></div>`; }
+    const all=seen.size===O.feats.length;
+    $("foTbl").innerHTML=`<tr><th class="l">Feature</th><th class="l">Value</th></tr>`+O.feats.map((f,i)=>`<tr class="${i===cur?"found":""}"><td class="l ${seen.has(i)?"hF":""}">${seen.has(i)?f.n:"?"}</td><td class="l ${seen.has(i)?"":"q"}">${seen.has(i)?f.v:"?"}</td></tr>`).join("")+
+      `<tr><td class="l hL">${O.label[0]} (label)</td><td class="l hL">${all?O.label[1]:"?"}</td></tr>`;
+    $("foCap").textContent=all?`all ${O.feats.length} features found · this ${O.name} is now one row of data`:`${seen.size} of ${O.feats.length} features found`;
+    s.querySelectorAll(".hs").forEach(g=>{ const i=+g.dataset.i; g.classList.toggle("on",i===cur); g.classList.toggle("seen",seen.has(i)&&i!==cur); });
+  }
+  function pickF(i){ cur=i; if(i>=0) seen.add(i); info(); }
+  function load(i){ o=i; seen=new Set(); cur=-1; const O=OBJ[o];
+    s.innerHTML=O.art+O.feats.map((f,i)=>`<g class="hs" data-i="${i}">${f.hl}</g>`).join(""); info(); }
+  s.addEventListener("mouseover",e=>{ const g=e.target.closest(".hs"); if(g) pickF(+g.dataset.i); });
+  s.addEventListener("click",e=>{ const g=e.target.closest(".hs"); if(g) pickF(+g.dataset.i); });
+  const set=tabs($("foTabs"),k=>load(+k));
+  A.fobj={ enter(d){ const i=d<0?OBJ.length-1:0; set(String(i)); load(i); },
+    step(){ const O=OBJ[o]; const nx=O.feats.findIndex((_,i)=>!seen.has(i)); if(nx>=0){ pickF(nx); return true; } if(o<OBJ.length-1){ set(String(o+1)); load(o+1); return true; } return false; },
+    back(){ if(o>0){ set(String(o-1)); load(o-1); return true; } return false; } };
+})();
+
+/* ---------- structured data table ---------- */
+(() => {
+  const cols=["ID","Name","Job title","Dept","Age","Hire date","Salary","City"];
+  const rows=[["E021","Maya Patel","Analyst","Finance",29,"6/13/2018","$77,203","Chicago"],["E104","Leo Brooks","Engineer","IT",41,"3/2/2014","$118,940","Seattle"],["E257","Ana Ruiz","Manager","Sales",36,"1/25/2019","$113,527","Austin"],["E283","Sam Okafor","Director","IT",55,"4/8/2006","$163,099","Phoenix"],["E316","Kim Tran","Analyst","Accounting",25,"5/16/2020","$51,336","Miami"],["E390","Noah Berg","Sr. Manager","Marketing",48,"2/11/2009","$141,604","Columbus"]];
+  const t=$("stTbl"); t.innerHTML=`<tr>${cols.map((c,i)=>`<th data-c="${i}" class="${i<2?"l":""}">${c}</th>`).join("")}</tr>`+rows.map((r,ri)=>`<tr data-r="${ri}">${r.map((v,i)=>`<td data-c="${i}" class="${i<2?"l":""}">${v}</td>`).join("")}</tr>`).join("");
+  const clear=()=>t.querySelectorAll(".hF,.hL").forEach(e=>e.classList.remove("hF","hL"));
+  t.addEventListener("mouseover",e=>{ const c=e.target.closest("td,th"); if(!c) return; clear();
+    if(c.tagName==="TH"){ const i=c.dataset.c; t.querySelectorAll(`[data-c="${i}"]`).forEach(x=>x.classList.add("hF")); $("stHint").innerHTML=`column <b style="color:var(--blue)">${cols[i]}</b> = one <b style="color:var(--blue)">feature</b>, measured for every employee`; }
+    else { const tr=c.parentElement; tr.querySelectorAll("td").forEach(x=>x.classList.add("hL")); $("stHint").innerHTML=`row ${+tr.dataset.r+1} = one <b class="y">instance</b>: everything we know about ${rows[tr.dataset.r][1]}`; } });
+  t.addEventListener("mouseleave",()=>{ clear(); $("stHint").textContent="hover a column or a row"; });
+  let s=0;
+  A.structured={ enter(){ s=0; clear(); $("stHint").textContent="hover a column or a row"; },
+    step(){ if(s>=2) return false; s++; clear(); if(s===1){ t.querySelectorAll('[data-c="4"]').forEach(x=>x.classList.add("hF")); $("stHint").innerHTML=`column <b style="color:var(--blue)">Age</b> = one <b style="color:var(--blue)">feature</b>`; } else { t.querySelectorAll('tr[data-r="2"] td').forEach(x=>x.classList.add("hL")); $("stHint").innerHTML=`row 3 = one <b class="y">instance</b>: one employee`; } return true; } };
+})();
+
+/* ---------- structured or unstructured? sorter ---------- */
+(() => {
+  const ITEMS=[["📊","Spreadsheet of sales","S"],["🤳","A selfie","U"],["🎙️","Voice memo","U"],["🗃️","Customer database table","S"],["💬","A social media post","U"],["📹","Security camera video","U"],["🌡️","CSV of daily temperatures","S"],["✉️","An email","U"],["🏦","Bank transaction records","S"],["🩻","An X-ray image","U"]];
+  let sel=null, placed={};
+  function render(){
+    $("srtItems").innerHTML=ITEMS.map((it,i)=>placed[i]?"":`<span class="chipx ${sel===i?"sel":""}" data-i="${i}"><span class="e">${it[0]}</span>${it[1]}</span>`).join("")||`<span class="hint">all sorted</span>`;
+    document.querySelectorAll('[data-id="unstructured"] .bin').forEach(b=>{ const k=b.dataset.b; const ids=Object.keys(placed).filter(i=>placed[i]===k);
+      b.querySelector(".in").innerHTML=ids.map(i=>`<span class="chipx ${ITEMS[i][2]===k?"right":"wrong"}"><span class="e">${ITEMS[i][0]}</span>${ITEMS[i][1]}</span>`).join(""); $("srt"+k).textContent=ids.length; });
+    const n=Object.keys(placed).length, ok=Object.keys(placed).filter(i=>ITEMS[i][2]===placed[i]).length;
+    $("srtMsg").innerHTML=n===ITEMS.length?`<span class="${ok===n?"y":""}">${ok} / ${n} correct${ok===n?" ✓":""}</span>`:n?`<span class="muted">${ok} / ${n} correct so far</span>`:"";
+  }
+  $("srtItems").onclick=e=>{ const c=e.target.closest(".chipx"); if(!c) return; sel=+c.dataset.i; render(); };
+  document.querySelectorAll('[data-id="unstructured"] .bin').forEach(b=>b.onclick=()=>{ if(sel===null) return; placed[sel]=b.dataset.b; sel=null; render(); });
+  $("srtReset").onclick=()=>{ placed={}; sel=null; render(); };
+  render();
+  A.unstructured={ enter(){} };
+})();
+
+/* ---------- features & labels ---------- */
+(() => {
+  const F=["Legs","Weight (kg)","Can fly","Fur","Lays eggs","Lives on land"];
+  const R=[["Lion",4,190,"No","Yes","No","Yes","Mammal"],["Chicken",2,2.5,"No","No","Yes","Yes","Bird"],["Monkey",2,9,"No","Yes","No","Yes","Mammal"],["Snake",0,5,"No","No","Yes","Yes","Reptile"],["Frog",4,.1,"No","No","Yes","Yes","Amphibian"],["Llama",4,150,"No","Yes","No","Yes","Mammal"]];
+  const NEW=["Penguin",2,23,"No","No","Yes","Yes","Bird"];
+  const t=$("flTbl"); let mode="", tmr=0;
+  const NOTES={"":"Every row is one animal. Press → to highlight the parts.",
+    f:`<b style="color:var(--blue)">Features</b> are the inputs: measurable facts about each animal.`,
+    l:`The <b class="y">label</b> is the answer we want the model to learn to predict.`,
+    q:`A new animal arrives <b>without</b> a label. From its features alone, a trained model predicts one…`};
+  function render(){
+    const rows=mode==="q"?[...R,NEW]:R;
+    t.innerHTML=`<tr><th class="l">Animal</th>${F.map(f=>`<th class="${mode==="f"||mode==="q"?"hF":""}">${f}</th>`).join("")}<th class="${mode==="l"||mode==="q"?"hL":""}">Class (label)</th></tr>`+
+      rows.map((r,ri)=>`<tr>${r.map((v,i)=>{ const isF=i>=1&&i<=6, isL=i===7, isNew=ri===R.length;
+        const cls=(i===0?"l ":"")+((mode==="f"||mode==="q")&&isF?"hF":"")+((mode==="l"||(mode==="q"&&!isNew))&&isL?"hL":"");
+        return `<td class="${cls}" ${isNew&&isL?'id="flNew"':""}>${isNew&&isL?"?":v}</td>`; }).join("")}</tr>`).join("");
+    $("flNote").innerHTML=NOTES[mode];
+    clearTimeout(tmr); if(mode==="q") tmr=setTimeout(()=>{ const c=$("flNew"); if(c){ c.textContent="Bird"; c.className="hL pop"; $("flNote").innerHTML=NOTES.q+` <b class="y">Bird</b>. That’s supervised learning.`; } },1400);
+  }
+  const ORDER=["","f","l","q"];
+  const set=tabs($("flTabs"),k=>{ mode=k; render(); });
+  A.featlab={ enter(){ mode=""; set(""); render(); },
+    step(){ const i=ORDER.indexOf(mode); if(i>=ORDER.length-1) return false; mode=ORDER[i+1]; set(mode); render(); return true; },
+    back(){ const i=ORDER.indexOf(mode); if(i<=0) return false; mode=ORDER[i-1]; set(mode); render(); return true; } };
+})();
+
+/* ---------- data types quiz ---------- */
+(() => {
+  const TYPES=["Text","Number","Boolean","Date / Time","Category"];
+  const ROWS=[["Name",'"Ember"',0],["Element",'"Fire"',4],["Level","12",1],["HP","48.5",1],["Shiny","Yes",2],["Can evolve","No",2],["Caught on","2026-10-15",3]];
+  let ans=[];
+  const s=$("critSvg");
+  s.innerHTML=`<path d="M128 120c30-6 40-40 22-62 4 20-8 30-16 26 8-18-4-34-14-40 2 16-8 22-14 18" fill="#ff8a1f" stroke="#ffc20e" stroke-width="3" stroke-linejoin="round"/>
+    <ellipse cx="82" cy="118" rx="46" ry="40" fill="#ff8a1f"/><ellipse cx="82" cy="128" rx="26" ry="22" fill="#ffd9a8"/>
+    <path d="M44 70l8-40 26 30zM120 70l-8-40-26 30z" fill="#ff8a1f"/><path d="M52 62l4-20 12 14zM112 62l-4-20-12 14z" fill="#ffd9a8"/>
+    <ellipse cx="82" cy="84" rx="44" ry="36" fill="#ff8a1f"/><ellipse cx="66" cy="82" rx="7" ry="9" fill="#121214"/><ellipse cx="98" cy="82" rx="7" ry="9" fill="#121214"/>
+    <circle cx="68" cy="79" r="2.5" fill="#fff"/><circle cx="100" cy="79" r="2.5" fill="#fff"/><path d="M76 98q6 6 12 0" stroke="#121214" stroke-width="3" fill="none" stroke-linecap="round"/>
+    <circle cx="54" cy="96" r="6" fill="#ff5a4e" opacity=".5"/><circle cx="110" cy="96" r="6" fill="#ff5a4e" opacity=".5"/>`;
+  function render(check){
+    $("tqTbl").innerHTML=`<tr><th class="l">Column</th><th class="l">Value</th><th>Data type</th></tr>`+ROWS.map((r,i)=>{
+      const a=ans[i], st=a===undefined?"":(check?(a===r[2]?"right":"wrong"):"set");
+      return `<tr><td class="l">${r[0]}</td><td class="l" style="color:var(--y)">${r[1]}</td><td><span class="tchip ${st}" data-i="${i}">${a===undefined?"?":TYPES[a]}</span></td></tr>`; }).join("");
+  }
+  $("tqTbl").onclick=e=>{ const c=e.target.closest(".tchip"); if(!c) return; const i=+c.dataset.i; ans[i]=ans[i]===undefined?0:(ans[i]+1)%TYPES.length; $("tqMsg").textContent=""; render(false); };
+  $("tqCheck").onclick=()=>{ render(true); const n=ROWS.filter((r,i)=>ans[i]===r[2]).length; $("tqMsg").innerHTML=n===ROWS.length?`<span class="y">all ${n} correct ✓</span>`:`<span class="muted">${n} / ${ROWS.length} correct</span>`; };
+  $("tqShow").onclick=()=>{ ans=ROWS.map(r=>r[2]); render(true); $("tqMsg").innerHTML=`<span class="muted">"Fire" comes from a fixed set: a category</span>`; };
+  A.dtypes={ enter(){ ans=[]; render(false); $("tqMsg").textContent=""; } };
+})();
+
+/* ---------- house data (supervised, cleaning) ---------- */
+const HOUSES=[[1500,3,1,267],[1600,3,0,234],[1720,4,1,300],[1800,4,1,312]];
+function fitLine(P){ const n=P.length; if(n<2) return null; const mx=P.reduce((s,p)=>s+p[0],0)/n, my=P.reduce((s,p)=>s+p[1],0)/n; let sxy=0,sxx=0; for(const [a,b] of P){ sxy+=(a-mx)*(b-my); sxx+=(a-mx)**2; } if(!sxx) return null; const m=sxy/sxx; return {m,b:my-m*mx}; }
+
+/* ---------- supervised in action ---------- */
+(() => {
+  const cv=$("svCv");
+  $("svTbl").innerHTML=`<tr><th class="hF">Sq Feet</th><th class="hF">Bedrooms</th><th class="hF">Has Pool</th><th class="hL">Price (1k)</th></tr>`+HOUSES.map(r=>`<tr>${r.map((v,i)=>`<td class="${i<3?"hF":"hL"}">${v}</td>`).join("")}</tr>`).join("");
+  const fit=fitLine(HOUSES.map(h=>[h[0],h[3]]));
+  const pred=s=>fit.m*s+fit.b;
+  const upd=()=>{ const v=+$("svX").value; $("svXv").textContent=v; $("svY").textContent=`$${Math.round(pred(v))}k`; };
+  $("svX").oninput=upd; upd();
+  $("svCap").textContent=`learned: price ≈ ${fmt(fit.m,3)} × sq ft ${fit.b<0?"−":"+"} ${fmt(Math.abs(fit.b),1)}`;
+  A.supervised={ enter(){ upd(); }, tick(){
+    const W=cv.offsetWidth, H=cv.offsetHeight, x=ctxOf(cv), L=80, T=40, R=W-36, B=H-70;
+    x.clearRect(0,0,W,H); axes(x,L,T,R,B);
+    const px=s=>L+(s-1300)/800*(R-L), py=p=>B-(p-150)/250*(B-T);
+    for(let s=1300;s<=2100;s+=200) label(x,s,px(s),B+24,MUTE,13,"center");
+    for(let p=150;p<=400;p+=50) label(x,p,L-12,py(p)+5,MUTE,13,"right");
+    label(x,"sq feet →",R,B+50,MUTE,15,"right"); label(x,"price (1k)",L,T-14,MUTE,15);
+    x.strokeStyle=Y; x.lineWidth=3; x.globalAlpha=.7; x.beginPath(); x.moveTo(px(1300),py(pred(1300))); x.lineTo(px(2100),py(pred(2100))); x.stroke(); x.globalAlpha=1;
+    for(const h of HOUSES) dot(x,px(h[0]),py(h[3]),9,BLUE);
+    const v=+$("svX").value, q=pred(v);
+    x.setLineDash([6,6]); x.strokeStyle="rgba(255,194,14,.6)"; x.lineWidth=2; x.beginPath(); x.moveTo(px(v),B); x.lineTo(px(v),py(q)); x.lineTo(L,py(q)); x.stroke(); x.setLineDash([]);
+    dot(x,px(v),py(q),12,null,Y); dot(x,px(v),py(q),5,Y);
+    label(x,"● training examples",R-210,T+6,BLUE,15); label(x,"◎ prediction",R-210,T+30,Y,15);
+  } };
+})();
+
+/* ---------- cleaning problems overview ---------- */
+$("probGrid").innerHTML=[
+  ["∅","Missing data","NA, null, NaN. From entry errors or incomplete collection.","impute (mean / median / mode) or drop"],
+  ["⧉","Duplicate data","Repeated rows, often from merging datasets.","find with duplicated(), then remove"],
+  ["Aa","Inconsistent formatting","Mixed date formats, “Davis” vs “davis”.","standardize, e.g. pd.to_datetime()"],
+  ["\"1\"","Incorrect data types","Text where numbers belong, int vs. float.","convert with astype()"],
+  ["⇡","Outliers","Extreme values: typos or real anomalies.","visualize (box plot), then remove or adjust"],
+  ["✕","Invalid data","Negative ages, impossible dates.","logical checks and filters"],
+  ["−","Irrelevant features","Columns that don’t help the prediction.","feature selection: drop them"],
+  ["↺","Garbage in, garbage out","A model can only be as good as the data it learns from.","clean before you train"]
+].map((p,i)=>`<div class="card prob rise" style="--i:${i+1}"><span class="ic">${p[0]}</span><h3>${p[1]}</h3><div class="ex">${p[2]}</div><div class="fix">${p[3]}</div></div>`).join("");
+
+/* ---------- cleaning lab ---------- */
+(() => {
+  const H=["Sq Feet","Bedrooms","Has Pool","Price (1k)"];
+  const base=()=>HOUSES.map(r=>r.slice());
+  const P=[
+    {name:"Missing data", cols:H, rows:(()=>{ const r=base(); r[2][0]="NaN"; return r; })(), bad:[[2,0]],
+      note:`Row 3 has no square footage. Most models <b>crash or skip</b> on missing values. Pick a fix:`,
+      fixes:[
+        {label:"Fill with mean", set:[[2,0,1633]], note:`<b>Mean</b>: (1500 + 1600 + 1800) / 3 = 4900 / 3 ≈ <b>1633</b>. This is <b>imputation</b>.`},
+        {label:"Fill with median", set:[[2,0,1600]], note:`<b>Median</b>: sort 1500, 1600, 1800 and take the middle → <b>1600</b>. Safer if there are outliers.`},
+        {label:"Drop the row", drop:[2], note:`Dropping is simple, but we <b>lose</b> that house’s other data. Fine when only a few rows are missing.`}]},
+    {name:"Duplicates", cols:H, rows:[...base(),[1800,4,1,312]], badRow:[4],
+      note:`The last row is an exact copy of row 4, maybe from merging two files. It would count that house <b>twice</b>.`,
+      fixes:[{label:"Remove duplicates", drop:[4], note:`<code>df.duplicated()</code> finds them, <code>df.drop_duplicates()</code> removes them.`}]},
+    {name:"Formatting", cols:["Sq Feet","County","Built","Price (1k)"], rows:[[1500,'"Davis"',"10/6/2003",267],[1600,'"Davis"',"3/8/2004",234],[1720,'"Salt Lake"',"15/11/2005",300],[1800,'"davis"',"9-21-2006",312]], bad:[[2,2],[3,1],[3,2]],
+      note:`To a computer, <b>"davis"</b> and <b>"Davis"</b> are different counties, and dates come in three different formats.`,
+      fixes:[{label:"Standardize", set:[[2,2,"11/15/2005"],[3,1,'"Davis"'],[3,2,"9/21/2006"]], note:`One format for everything. In pandas, <code>pd.to_datetime()</code> fixes dates; <code>.str.title()</code> fixes capitals.`}]},
+    {name:"Data types", cols:H, rows:(()=>{ const r=base(); r[1][2]='"0"'; r[2][1]=4.2; return r; })(), bad:[[1,2],[2,1]],
+      note:`<b>"0"</b> is text, not a number, and you can’t have <b>4.2</b> bedrooms: it should be a whole number (int, not float).`,
+      fixes:[{label:"Convert types", set:[[1,2,0],[2,1,4]], note:`Convert with <code>astype()</code>: <code>df["Has Pool"].astype(int)</code>.`}]},
+    {name:"Outliers", cols:H, rows:(()=>{ const r=base(); r[0][3]=47; r[2][3]=850; return r; })(), bad:[[0,3],[2,3]],
+      note:`A $47k house and an $850k house next to $234k–$312k ones? Probably typos. A <b>box plot</b> makes them easy to spot.`,
+      fixes:[{label:"Replace with median", set:[[0,3,273],[2,3,273]], note:`Median of the trustworthy prices: (234 + 312) / 2 = <b>273</b>. The median isn’t dragged around by outliers.`},
+             {label:"Remove rows", drop:[0,2], note:`Removing works too, but with only 4 houses we’d lose half the data.`}]},
+    {name:"Invalid data", cols:H, rows:(()=>{ const r=base(); r[1][1]=-3; return r; })(), bad:[[1,1]],
+      note:`<b>−3 bedrooms</b> is impossible. Write logical checks: bedrooms ≥ 0, age ≥ 0, no dates in the future.`,
+      fixes:[{label:"Fix the sign", set:[[1,1,3]], note:`A filter like <code>df[df.Bedrooms &gt;= 0]</code> catches it. Here it looks like a typo, so we fix it to <b>3</b>.`},
+             {label:"Drop the row", drop:[1], note:`If we can’t tell what it should be, drop the row.`}]},
+    {name:"Irrelevant features", cols:["Sq Feet","Bedrooms","Near Park","Price (1k)"], rows:[[1500,3,1,267],[1600,3,1,234],[1720,4,0,300],[1800,4,0,312]], badCol:[2],
+      note:`Say we found <b>Near Park</b> doesn’t affect price in this market. Extra columns add noise and slow training.`,
+      fixes:[{label:"Drop the column", dropCol:[2], note:`<b>Feature selection</b>: keep only the columns that help predict the label.`}]},
+  ];
+  let idx=0, fixed=[];
+  function render(){
+    const p=P[idx], f=fixed[idx]!=null?p.fixes[fixed[idx]]:null;
+    $("labTitle").textContent=p.name;
+    $("labTabs").innerHTML=P.map((q,i)=>`<button class="${i===idx?"on":""} ${fixed[i]!=null?"done":""}" data-i="${i}">${i+1}. ${q.name}</button>`).join("");
+    const val={}; if(f&&f.set) f.set.forEach(([r,c,v])=>val[r+","+c]=v);
+    const dr=new Set(f&&f.drop||[]), dc=new Set(f&&f.dropCol||[]);
+    const badCells=new Set((p.bad||[]).map(a=>a.join(","))), badRows=new Set(p.badRow||[]), badCols=new Set(p.badCol||[]);
+    $("labTbl").innerHTML=`<tr>${p.cols.map((c,i)=>`<th class="${dc.has(i)?"gone":badCols.has(i)&&!f?"bad":""}">${c}</th>`).join("")}</tr>`+p.rows.map((r,ri)=>`<tr class="${dr.has(ri)?"gone":""}">${r.map((v,ci)=>{
+      const k=ri+","+ci; let cls="";
+      if(k in val) cls="ok pop"; else if(!f&&(badCells.has(k)||badRows.has(ri)||badCols.has(ci))) cls="bad";
+      if(dc.has(ci)) cls="gone";
+      return `<td class="${cls}">${k in val?val[k]:v}</td>`; }).join("")}</tr>`).join("");
+    $("labNote").innerHTML=f?f.note:p.note;
+    $("labActs").innerHTML=p.fixes.map((x,i)=>`<button class="btn ${fixed[idx]===i?"on":""}" data-f="${i}">${x.label}</button>`).join("")+(f?`<button class="btn" data-f="-1">Undo</button>`:"");
+  }
+  $("labTabs").onclick=e=>{ const b=e.target.closest("button"); if(!b) return; idx=+b.dataset.i; render(); };
+  $("labActs").onclick=e=>{ const b=e.target.closest("button"); if(!b) return; const f=+b.dataset.f; fixed[idx]=f<0?null:f; render(); };
+  A.cleanlab={ enter(d){ fixed=[]; idx=d<0?P.length-1:0; render(); },
+    step(){ if(fixed[idx]==null){ fixed[idx]=0; render(); return true; } if(idx<P.length-1){ idx++; render(); return true; } return false; },
+    back(){ if(idx>0){ idx--; render(); return true; } return false; } };
+})();
+
+/* ---------- mean, median, mode on a number line ---------- */
+(() => {
+  const s=$("ctSvg"), X0=70, X1=1310, LY=200, MAX=20, px=v=>X0+v/MAX*(X1-X0);
+  const PRE=[["[2, 4, 6, 8]",[2,4,6,8]],["[2, 3, 3, 4, 5]",[2,3,3,4,5]],["[1, 2, 3, 3, 4, 4]",[1,2,3,3,4,4]],["[1, 3, 5, 7]",[1,3,5,7]],["prices + outlier",[3,4,4,5,6,19]]];
+  let V=[];
+  $("ctPre").innerHTML=PRE.map((p,i)=>`<button class="btn" data-i="${i}">${p[0]}</button>`).join("");
+  $("ctPre").onclick=e=>{ const b=e.target.closest("button"); if(!b) return; V=PRE[+b.dataset.i][1].slice(); render(); };
+  const stats=()=>{ if(!V.length) return null; const so=V.slice().sort((a,b)=>a-b), n=so.length, mean=so.reduce((a,b)=>a+b,0)/n;
+    const med=n%2?so[(n-1)/2]:(so[n/2-1]+so[n/2])/2; const f={}; so.forEach(v=>f[v]=(f[v]||0)+1); const mx=Math.max(...Object.values(f));
+    const mode=mx>1?Object.keys(f).filter(k=>f[k]===mx).map(Number):[]; return {mean,med,mode,n}; };
+  function render(){
+    s.innerHTML=""; svgEl("line",{x1:X0-20,y1:LY,x2:X1+20,y2:LY,stroke:LINE,"stroke-width":3},s);
+    for(let v=0;v<=MAX;v++){ svgEl("line",{x1:px(v),y1:LY-6,x2:px(v),y2:LY+6,stroke:"#55534d","stroke-width":2},s); const t=svgEl("text",{x:px(v),y:LY+34,"text-anchor":"middle",fill:MUTE,"font-size":17,"font-family":"JetBrains Mono"},s); t.textContent=v; }
+    const st=stats(), cnt={};
+    V.forEach((v,i)=>{ const k=cnt[v]=(cnt[v]||0)+1; const c=svgEl("circle",{cx:px(v),cy:LY-14-(k-1)*30,r:13,fill:INK,stroke:"#121214","stroke-width":3,"data-i":i,style:"cursor:pointer"},s); });
+    if(st){
+      // one row per marker (mean on top, median below) so their labels never overlap
+      const mk=(v,col,txt,row)=>{ const g=svgEl("g",{},s), y0=LY+46+row*46, w=txt.length*10+16;
+        if(row) svgEl("line",{x1:px(v),y1:LY+42,x2:px(v),y2:y0,stroke:col,"stroke-width":2,"stroke-dasharray":"4 4"},g);
+        svgEl("path",{d:`M${px(v)-9} ${y0+12}l9 -12l9 12z`,fill:col},g);
+        svgEl("rect",{x:px(v)-w/2,y:y0+15,width:w,height:24,rx:6,fill:"#1c1c20"},g);
+        const t=svgEl("text",{x:px(v),y:y0+32,"text-anchor":"middle",fill:col,"font-size":16,"font-family":"JetBrains Mono","font-weight":600},g); t.textContent=txt; };
+      mk(st.med,BLUE,"median "+fmt(st.med),1); mk(st.mean,Y,"mean "+fmt(st.mean),0);
+      st.mode.forEach(m=>{ const t=svgEl("text",{x:px(m),y:LY-14-cnt[m]*30-4,"text-anchor":"middle",fill:GREEN,"font-size":16,"font-family":"JetBrains Mono","font-weight":600},s); t.textContent="mode"; });
+      $("ctMean").textContent=fmt(st.mean); $("ctMed").textContent=fmt(st.med); $("ctMode").textContent=st.mode.length?st.mode.join(" & "):"none";
+    } else { $("ctMean").textContent=$("ctMed").textContent=$("ctMode").textContent="–"; }
+    const hit=svgEl("rect",{x:X0-30,y:0,width:X1-X0+60,height:340,fill:"transparent",style:"cursor:copy"}); s.insertBefore(hit,s.firstChild);
+  }
+  s.addEventListener("click",e=>{ const d=e.target.closest("circle"); if(d){ V.splice(+d.dataset.i,1); render(); return; } const [x]=svgXY(e,s); const v=Math.round((x-X0)/(X1-X0)*MAX); if(v<0||v>MAX) return; if(V.filter(a=>a===v).length>=5) return; V.push(v); render(); });
+  let pi=0;
+  A.center={ enter(){ pi=0; V=PRE[0][1].slice(); render(); },
+    step(){ if(pi>=PRE.length-1) return false; pi++; V=PRE[pi][1].slice(); render(); return true; },
+    back(){ if(pi<=0) return false; pi--; V=PRE[pi][1].slice(); render(); return true; } };
+})();
+
+/* ---------- transforming values: scaling + encoding ---------- */
+(() => {
+  const upd=()=>{ const h=+$("scH").value, r=(h-150)/40; $("scHv").textContent=h+" cm"; $("scA").textContent=h; $("scR").textContent=r.toFixed(2);
+    $("scT1").querySelector("i").style.left=(r*100)+"%"; $("scT2").querySelector("i").style.left=(r*100)+"%"; };
+  $("scH").oninput=upd; upd();
+  const C=["RED","BLUE","GREEN","BLUE","RED"], HEX={RED:RED,BLUE:BLUE,GREEN:GREEN}, NUM={RED:0,BLUE:1,GREEN:2};
+  let mode="label";
+  function render(){
+    const sw=c=>`<span class="sw8" style="background:${HEX[c]}"></span>${c}`;
+    if(mode==="label"){ $("encTbl").innerHTML=`<tr><th class="l">Color</th><th>→</th><th>#</th></tr>`+C.map(c=>`<tr><td class="l">${sw(c)}</td><td class="muted">→</td><td class="hL">${NUM[c]}</td></tr>`).join("");
+      $("encP").innerHTML=`<b>Label encoding</b>: give each category a number. Simple, but it hints that GREEN (2) is “bigger” than RED (0).`; }
+    else { $("encTbl").innerHTML=`<tr><th class="l">Color</th><th>is_red</th><th>is_blue</th><th>is_green</th></tr>`+C.map(c=>`<tr><td class="l">${sw(c)}</td>${["RED","BLUE","GREEN"].map(k=>`<td class="${k===c?"hL":"muted"}">${k===c?1:0}</td>`).join("")}</tr>`).join("");
+      $("encP").innerHTML=`<b>One-hot encoding</b>: one yes/no column per category. No fake ordering.`; }
+  }
+  const set=tabs($("encTabs"),k=>{ mode=k; render(); }); render();
+  A.transform={ enter(){ mode="label"; set("label"); render(); $("scH").value=172; upd(); },
+    step(){ if(mode==="label"){ mode="onehot"; set(mode); render(); return true; } return false; } };
+})();
+
+/* ---------- feature engineering pipeline ---------- */
+(() => {
+  const RAW=[["J. Smith",1998,1720,"Yes",300],["A. Lopez",2010,1500,"No",null],["K. Chen",1985,1800,"Yes",312]];
+  const MSG=["raw data, straight from the listing site","cleaned: missing price filled with the median of 300 and 312 → 306","created: Age = 2026 − Built","selected: the owner’s name and Built (now Age) won’t help predict price","transformed: Yes/No → 1/0, sq ft scaled to 0–1. Ready for a model!"];
+  let s=0;
+  function render(){
+    document.querySelectorAll("#feSteps .fes").forEach((e,i)=>{ e.classList.toggle("on",i===s-1); e.classList.toggle("done",i<s-1); });
+    const cols=["Owner","Built","Sq Ft","Pool"].concat(s>=2?["Age"]:[]).concat(["Price (label)"]);
+    const gone=c=>s>=3&&(c==="Owner"||c==="Built");
+    $("feTbl").innerHTML=`<tr>${cols.map(c=>`<th class="${gone(c)?"gone":c==="Price (label)"?"hL":""}">${c}</th>`).join("")}</tr>`+RAW.map(r=>{
+      const v={Owner:r[0],Built:r[1],"Sq Ft":r[2],Pool:r[3],Age:2026-r[1],"Price (label)":r[4]};
+      return `<tr>${cols.map(c=>{ let x=v[c], cls="";
+        if(c==="Price (label)"){ if(x==null){ if(s>=1){ x=306; cls=s===1?"ok pop":""; } else { x="NaN"; cls="bad"; } } }
+        if(c==="Age"&&s===2) cls="ok pop";
+        if(s>=4&&c==="Pool"){ x=x==="Yes"?1:0; cls=s===4?"ok pop":""; }
+        if(s>=4&&c==="Sq Ft"){ x=((x-1500)/300).toFixed(2); cls=s===4?"ok pop":""; }
+        if(gone(c)) cls="gone";
+        return `<td class="${cls}">${x}</td>`; }).join("")}</tr>`; }).join("");
+    $("feMsg").textContent=MSG[s]; $("feNext").textContent=s<4?`Apply step ${s+1} ▶`:"Done ✓"; $("feNext").disabled=s>=4;
+  }
+  document.querySelectorAll("#feSteps .fes").forEach(e=>e.onclick=()=>{ s=+e.dataset.s+1; render(); });
+  $("feNext").onclick=()=>{ if(s<4){ s++; render(); } }; $("feReset").onclick=()=>{ s=0; render(); };
+  A.feateng={ enter(){ s=0; render(); }, step(){ if(s<4){ s++; render(); return true; } return false; }, back(){ if(s>0){ s--; render(); return true; } return false; } };
+})();
+
+/* ---------- why charts ---------- */
+(() => {
+  const M=["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"], V=[42.1,45.3,47.8,51.2,49.6,53.4,38.7,55.1,58.3,60.2,57.9,64.5];
+  $("vzTbl").innerHTML=`<tr><th>Month</th><th>Sales ($k)</th><th style="width:60px"></th><th>Month</th><th>Sales ($k)</th></tr>`+[0,1,2,3,4,5].map(i=>`<tr><td>${M[i]}</td><td>${V[i]}</td><td></td><td>${M[i+6]}</td><td>${V[i+6]}</td></tr>`).join("");
+  const s=$("vzChart"), L=70, R=830, T=30, B=350, px=i=>L+i/11*(R-L), py=v=>B-(v-30)/40*(B-T);
+  function draw(){ s.innerHTML="";
+    for(let v=30;v<=70;v+=10){ svgEl("line",{x1:L,y1:py(v),x2:R,y2:py(v),stroke:LINE},s); const t=svgEl("text",{x:L-12,y:py(v)+5,"text-anchor":"end",fill:MUTE,"font-size":15,"font-family":"JetBrains Mono"},s); t.textContent=v; }
+    M.forEach((m,i)=>{ const t=svgEl("text",{x:px(i),y:B+30,"text-anchor":"middle",fill:MUTE,"font-size":15,"font-family":"JetBrains Mono"},s); t.textContent=m; });
+    const d=V.map((v,i)=>`${i?"L":"M"}${px(i)} ${py(v)}`).join(" ");
+    svgEl("path",{d:d+` L${R} ${B} L${L} ${B}Z`,fill:"rgba(255,194,14,.08)"},s);
+    const p=svgEl("path",{d,fill:"none",stroke:Y,"stroke-width":4,"stroke-linejoin":"round"},s); const len=p.getTotalLength(); p.style.strokeDasharray=len; p.style.strokeDashoffset=len; p.style.transition="stroke-dashoffset 1.4s ease"; requestAnimationFrame(()=>requestAnimationFrame(()=>p.style.strokeDashoffset=0));
+    V.forEach((v,i)=>svgEl("circle",{cx:px(i),cy:py(v),r:i===6?9:5,fill:i===6?RED:Y},s));
+    const t=svgEl("text",{x:px(6),y:py(V[6])+40,"text-anchor":"middle",fill:RED,"font-size":18,"font-family":"JetBrains Mono","font-weight":600},s); t.textContent="July dip";
+  }
+  let mode="t";
+  const show=k=>{ mode=k; $("vzTable").classList.toggle("off",k!=="t"); s.classList.toggle("off",k!=="c"); if(k==="c") draw(); };
+  const set=tabs($("vzTabs"),show);
+  A.vizwhy={ enter(){ set("t"); show("t"); }, step(){ if(mode==="t"){ set("c"); show("c"); return true; } return false; } };
+})();
+
+/* ---------- chart types ---------- */
+(() => {
+  const C=[Y,BLUE,GREEN,RED,AMBER,PURPLE];
+  const R=(x,y,w,h,f)=>`<rect x="${x}" y="${y}" width="${w}" height="${h}" rx="2" fill="${f}"/>`;
+  const AX=`<path d="M12 8V100H190" stroke="#55534d" stroke-width="2" fill="none"/>`;
+  const T=[
+    ["Bar chart","Compares values across categories (horizontal bars).","Comparing amounts, ranking, long category names.",AX+[70,40,60,25].map((w,i)=>R(14,14+i*22,w*2,14,C[i])).join("")],
+    ["Column chart","Compares values across categories (vertical bars).","Comparing amounts, ranking categories.",AX+[40,62,80,52].map((h,i)=>R(30+i*40,100-h,26,h,C[i])).join("")],
+    ["Line chart","How values change over time.","Trends, changes over time, continuous data.",AX+`<polyline points="20,82 55,70 90,74 125,48 160,40 185,22" fill="none" stroke="${BLUE}" stroke-width="4"/><polyline points="20,92 55,88 90,80 125,74 160,64 185,58" fill="none" stroke="${AMBER}" stroke-width="4"/>`],
+    ["Pie chart","Parts of a whole.","Percentages of a total, with only a few categories.",`<circle cx="100" cy="55" r="44" fill="${BLUE}"/><path d="M100 55V11A44 44 0 0 1 141 70Z" fill="${RED}"/><path d="M100 55L141 70A44 44 0 0 1 90 98Z" fill="${Y}"/><path d="M100 55L90 98A44 44 0 0 1 58 70Z" fill="${GREEN}"/>`],
+    ["Scatter plot","The relationship between two numeric variables.","Finding patterns, correlation, relationships.",AX+[[24,88],[40,80],[52,84],[66,70],[80,72],[94,60],[106,64],[120,50],[134,52],[148,40],[160,36],[176,26],[186,30]].map(p=>`<circle cx="${p[0]}" cy="${p[1]}" r="5" fill="${BLUE}"/>`).join("")],
+    ["Histogram","The distribution of one numeric variable.","Seeing spread, range and frequency.",AX+[14,30,52,74,60,36,18].map((h,i)=>R(18+i*24,100-h,23,h,BLUE)).join("")],
+    ["Box plot","Median, spread and outliers at a glance.","Comparing distributions across groups.",`<path d="M30 56H66M134 56H170M30 40V72M170 40V72" stroke="${INK}" stroke-width="3"/><rect x="66" y="36" width="68" height="40" fill="rgba(106,184,255,.25)" stroke="${BLUE}" stroke-width="3"/><path d="M96 36V76" stroke="${Y}" stroke-width="4"/><circle cx="188" cy="56" r="4" fill="${RED}"/><circle cx="14" cy="56" r="4" fill="${RED}"/>`],
+    ["Area chart","Change over time, area filled below.","Trends and cumulative totals.",AX+`<path d="M14 100L14 80 60 70 100 72 140 50 188 34 188 100Z" fill="${BLUE}" opacity=".9"/><path d="M14 100L14 92 60 86 100 88 140 74 188 62 188 100Z" fill="${AMBER}"/>`],
+    ["Stacked bar","Parts of a whole, across several categories.","Comparing multiple series within each category.",[0,1,2].map(i=>R(14,18+i*28,50-i*6,18,BLUE)+R(64-i*6,18+i*28,40+i*8,18,AMBER)+R(104+i*2,18+i*28,44,18,GREEN)+R(148+i*2,18+i*28,30,18,RED)).join("")],
+    ["Heatmap","Values as colors in a grid.","Spotting high/low values and patterns in big tables.",Array.from({length:30},(_,i)=>{ const r=i/6|0, c=i%6, v=(Math.sin(r*1.3+c*.9)+1)/2; return R(14+c*30,6+r*20,27,17,`rgba(255,${Math.round(90+v*104)},${Math.round(14+(1-v)*60)},${.25+v*.75})`); }).join("")],
+    ["Treemap","Hierarchy as nested rectangles.","Part-to-whole with many categories.",R(10,8,92,96,BLUE)+R(106,8,84,50,AMBER)+R(106,62,40,42,GREEN)+R(150,62,40,20,PURPLE)+R(150,86,40,18,RED)],
+    ["Radar chart","Several variables for one item, around a circle.","Comparing profiles: stats of players, products.",`<polygon points="100,10 146,40 140,92 60,92 54,40" fill="none" stroke="#55534d" stroke-width="2"/><polygon points="100,30 128,46 124,80 76,84 70,44" fill="none" stroke="#3a3a42" stroke-width="2"/><polygon points="100,16 136,44 116,84 70,88 66,46" fill="rgba(95,214,138,.25)" stroke="${GREEN}" stroke-width="3"/>`]
+  ];
+  let on=0;
+  $("cgGrid").innerHTML=T.map((t,i)=>`<div class="card cg" data-i="${i}"><svg viewBox="0 0 200 110">${t[3]}</svg><span>${t[0]}</span></div>`).join("");
+  const sel=i=>{ on=i; document.querySelectorAll("#cgGrid .cg").forEach((e,j)=>e.classList.toggle("on",j===i)); const t=T[i];
+    $("cgInfo").innerHTML=`<h3>${t[0]}</h3><div><div class="k">Shows</div><p>${t[1]}</p></div><div><div class="k">Use for</div><p>${t[2]}</p></div>`; };
+  $("cgGrid").onclick=e=>{ const c=e.target.closest(".cg"); if(c) sel(+c.dataset.i); };
+  A.charts={ enter(){ sel(0); } };
+})();
+
+/* ---------- venn: where data fits ---------- */
+(() => {
+  const s=$("vnSvg");
+  const Rg=[
+    {k:"cs",n:"Computer science",c:BLUE,e:[450,310,440,300],t:[450,70],d:"The broad field of computing: programming, software development, databases, and much more."},
+    {k:"ds",n:"Data science",c:GREEN,e:[450,360,370,220],t:[450,190],d:"Uses computing, statistics and domain knowledge to extract insights and predictions from data. Includes gathering and cleaning data, finding patterns, building models and communicating results."},
+    {k:"da",n:"Data analytics",c:AMBER,e:[320,410,180,110],t:[250,400],d:"Collecting, cleaning, exploring and interpreting data to find patterns and insights. Essential to AI, since AI systems learn from data."},
+    {k:"ml",n:"Machine learning",c:PURPLE,e:[580,410,180,110],t:[650,400],d:"Algorithms that learn from data to make predictions, instead of following hand-written rules."},
+    {k:"ai",n:"AI",c:RED,e:[450,410,90,90],t:[450,410],d:"Building systems that can perform tasks that normally take human intelligence. Modern AI sits where analytics and machine learning meet."},
+  ];
+  Rg.forEach(r=>{ const g=svgEl("g",{class:"rg","data-k":r.k},s); svgEl("ellipse",{cx:r.e[0],cy:r.e[1],rx:r.e[2],ry:r.e[3],fill:r.c,"fill-opacity":.1,stroke:r.c,"stroke-width":3},g);
+    const t=svgEl("text",{x:r.t[0],y:r.t[1],"text-anchor":"middle",fill:r.c,"font-size":r.k==="ai"?34:26,"font-weight":700,"font-family":"Space Grotesk"},g); t.textContent=r.n; });
+  const sel=k=>{ const r=Rg.find(x=>x.k===k); s.querySelectorAll(".rg").forEach(g=>{ const on=g.dataset.k===k; g.querySelector("ellipse").setAttribute("stroke-width",on?6:3); g.querySelector("ellipse").setAttribute("fill-opacity",on?.26:.1); });
+    $("vnInfo").innerHTML=`<h3 style="color:${r.c}">${r.n}</h3><p>${r.d}</p>`; };
+  s.addEventListener("click",e=>{ const g=e.target.closest(".rg"); if(g) sel(g.dataset.k); });
+  const ORD=["cs","ds","da","ml","ai"]; let i=0;
+  A.fields={ enter(){ i=1; sel("ds"); }, step(){ if(i>=ORD.length-1) return false; i++; sel(ORD[i]); return true; }, back(){ if(i<=0) return false; i--; sel(ORD[i]); return true; } };
+})();
+
+/* ---------- be the annotator ---------- */
+(() => {
+  const RV=[["This game is absolutely amazing!","p"],["The controls are terrible and frustrating.","n"],["The game was released yesterday.","u"],["I love the graphics and soundtrack!","p"],["The game crashes every time I start it.","n"],["The game supports four players.","u"],["Best game I've played all year!","p"],["The loading times are way too long.","n"],["The game is available on PC and Xbox.","u"],["The story was boring and disappointing.","n"]];
+  let L=[], checked=false;
+  function render(){
+    $("anList").innerHTML=RV.map((r,i)=>`<div class="rv ${checked&&L[i]?(L[i]===r[1]?"hit":"miss"):""}"><span class="id">${i+1}</span><span class="tx">${r[0]}</span><span class="lb">${[["p","POSITIVE"],["u","NEUTRAL"],["n","NEGATIVE"]].map(([k,t])=>`<button class="${k} ${L[i]===k?"on":""}" data-i="${i}" data-k="${k}">${t}</button>`).join("")}</span></div>`).join("");
+    const n=L.filter(Boolean).length; $("anCount").textContent=`${n} / 10 labeled`;
+  }
+  $("anList").onclick=e=>{ const b=e.target.closest("button"); if(!b) return; L[+b.dataset.i]=b.dataset.k; checked=false; render(); };
+  $("anCheck").onclick=()=>{ checked=true; render(); const hit=RV.filter((r,i)=>L[i]===r[1]).length;
+    $("anNote").innerHTML=`<b>${hit} / 10</b> match the key. Disagreements usually happen on the borderline ones. Real projects have several people label each item and keep the majority vote.`; };
+  $("anReset").onclick=()=>{ L=[]; checked=false; render(); $("anNote").innerHTML="Label every review. Do your answers match your neighbor’s? Annotators disagree, and that disagreement ends up in the data."; };
+  render();
+  A.annotate={ enter(){} };
+})();
+
+/* ---------- llm: text pouring into a model ---------- */
+(() => {
+  const cv=$("llmCv"); const SRC=[["web page",BLUE],["book",Y],["forum",GREEN],["news",AMBER],["wiki",PURPLE],["code",RED]];
+  const WORDS="the of and to in is was for on that with as it by at from his an were are which this be or has had not first one their its new after but who they have her she two been other when there all during into school time may years more most only over city some world would where later up such used many can state about national out known university united then made".split(" ");
+  let P=[], tokens=0, spawn=0;
+  A.llm={ enter(){ P=[]; tokens=0; },
+    tick(dt){ const W=cv.offsetWidth, H=cv.offsetHeight, x=ctxOf(cv), mx=W-140, my=H/2;
+      spawn+=dt; while(spawn>90){ spawn-=90; const s=pick(SRC); P.push({x:110,y:rnd(40,H-60),w:pick(WORDS),c:s[1],sp:rnd(2.2,3.6),t:0}); }
+      x.clearRect(0,0,W,H);
+      SRC.forEach((s,i)=>label(x,s[0],18,42+i*((H-80)/5),s[1],15));
+      const f=dt/16.7;
+      P=P.filter(p=>{ p.t+=dt/1000; const dx=mx-p.x, dy=my-p.y, d=Math.hypot(dx,dy); const v=p.sp*f*(1+p.t*.5); p.x+=dx/Math.max(d,1)*v; p.y+=dy/Math.max(d,1)*v*Math.min(1,p.t*1.5); if(d<60||p.x>W){ tokens+=1; return false; }
+        x.globalAlpha=clamp(d/300,.2,1); label(x,p.w,p.x,p.y,p.c,16); x.globalAlpha=1; return true; });
+      const pulse=1+Math.sin(performance.now()/300)*.04;
+      const g=x.createRadialGradient(mx,my,10,mx,my,110*pulse); g.addColorStop(0,"rgba(255,194,14,.35)"); g.addColorStop(1,"rgba(255,194,14,0)"); x.fillStyle=g; x.beginPath(); x.arc(mx,my,110*pulse,0,7); x.fill();
+      dot(x,mx,my,64,"#1c1c20",Y); label(x,"LLM",mx,my+8,Y,24,"center");
+      $("llmCap").textContent=`words read: ${tokens.toLocaleString()} · real models read trillions`;
+    } };
+})();
+
+/* ---------- bias: ask for a picture ---------- */
+(() => {
+  let rev=false;
+  const show=()=>{ rev=true; document.querySelectorAll("#mkGrid figure").forEach(f=>{ f.classList.add("rev"); if(f.dataset.ai==="1"){ f.classList.add("ai"); f.querySelector("figcaption").textContent="C · AI-generated"; } }); $("mkIdea").classList.add("on"); $("mkHint").style.visibility="hidden"; };
+  document.querySelectorAll("#mkGrid figure").forEach(f=>f.onclick=show);
+  A.market={ enter(){ rev=false; $("mkIdea").classList.remove("on"); $("mkHint").style.visibility=""; document.querySelectorAll("#mkGrid figure").forEach((f,i)=>{ f.classList.remove("rev","ai"); f.querySelector("figcaption").textContent="ABC"[i]; }); },
+    step(){ if(!rev){ show(); return true; } return false; } };
+})();
+
+/* ---------- bias in, bias out ---------- */
+(() => {
+  const cv=$("bsCv"); let gen=[], shown=0, acc=0;
+  const sharpen=p=>{ const a=p**3, b=(1-p)**3; return a/(a+b); };
+  const run=()=>{ const p=+$("bsMix").value/100, q=sharpen(p); gen=Array.from({length:40},()=>Math.random()<q?1:0); shown=0; acc=0; $("bsGen").textContent="…"; };
+  $("bsMix").oninput=()=>{ $("bsTrain").textContent=$("bsMix").value+"%"; gen=[]; $("bsGen").textContent="–"; };
+  $("bsGo").onclick=run;
+  function person(x,px,py,col,a=1){ x.globalAlpha=a; x.fillStyle=col; x.beginPath(); x.arc(px,py-12,9,0,7); x.fill(); x.beginPath(); x.moveTo(px-14,py+16); x.quadraticCurveTo(px-14,py,px,py); x.quadraticCurveTo(px+14,py,px+14,py+16); x.closePath(); x.fill(); x.globalAlpha=1; }
+  A.biassim={ enter(){ $("bsMix").value=70; $("bsTrain").textContent="70%"; run(); },
+    tick(dt){ const W=cv.offsetWidth, H=cv.offsetHeight, x=ctxOf(cv); x.clearRect(0,0,W,H);
+      const p=+$("bsMix").value/100, nA=Math.round(p*40), cols=10, gx=(W-80)/cols;
+      label(x,"TRAINING DATA",40,44,MUTE,15); label(x,"GENERATED",40,H/2+30,MUTE,15);
+      for(let i=0;i<40;i++){ const c=i%cols, r=i/cols|0; person(x,40+gx*c+gx/2,80+r*56,i<nA?Y:BLUE); }
+      acc+=dt; while(acc>45&&shown<gen.length){ acc-=45; shown++; }
+      const sorted=gen.slice(0,shown);
+      for(let i=0;i<shown;i++){ const c=i%cols, r=i/cols|0; person(x,40+gx*c+gx/2,H/2+66+r*56,sorted[i]?Y:BLUE,Math.min(1,(shown-i)/3)); }
+      if(shown===gen.length&&gen.length){ $("bsGen").textContent=Math.round(gen.filter(Boolean).length/gen.length*100)+"%"; }
+      x.strokeStyle=LINE; x.beginPath(); x.moveTo(30,H/2+4); x.lineTo(W-30,H/2+4); x.stroke();
+      label(x,"● group A",W-210,44,Y,15); label(x,"● group B",W-110,44,BLUE,15);
+    } };
+})();
+
+/* ---------- regression: click to add houses ---------- */
+(() => {
+  const cv=$("rgCv"); let P=[];
+  const INIT=[[1300,205],[1450,221],[1500,267],[1600,234],[1660,262],[1720,300],[1800,312],[1880,322],[2010,355],[2200,402]];
+  const geo=()=>{ const W=cv.offsetWidth, H=cv.offsetHeight; return {W,H,L:80,T:40,R:W-30,B:H-70}; };
+  const toPx=(g,s,p)=>[g.L+(s-1200)/1200*(g.R-g.L), g.B-(p-150)/300*(g.B-g.T)];
+  cv.addEventListener("click",e=>{ const g=geo(), [mx,my]=localXY(e,cv);
+    const hit=P.findIndex(p=>{ const [a,b]=toPx(g,p[0],p[1]); return Math.hypot(a-mx,b-my)<14; });
+    if(hit>=0){ P.splice(hit,1); return; }
+    if(mx<g.L||mx>g.R||my<g.T||my>g.B) return;
+    P.push([1200+(mx-g.L)/(g.R-g.L)*1200, 150+(g.B-my)/(g.B-g.T)*300]); });
+  A.regression={ enter(){ P=INIT.map(p=>p.slice()); },
+    tick(){ const g=geo(), x=ctxOf(cv); x.clearRect(0,0,g.W,g.H); axes(x,g.L,g.T,g.R,g.B);
+      for(let s=1200;s<=2400;s+=200){ const [a]=toPx(g,s,0); label(x,s,a,g.B+24,MUTE,13,"center"); }
+      for(let p=150;p<=450;p+=50){ const [,b]=toPx(g,0,p); label(x,p,g.L-12,b+5,MUTE,13,"right"); }
+      label(x,"sq feet (feature) →",g.R,g.B+50,MUTE,15,"right"); label(x,"price, 1k (label)",g.L,g.T-14,MUTE,15);
+      const f=fitLine(P);
+      if(f){ x.setLineDash([4,5]); x.strokeStyle="rgba(255,90,78,.6)"; x.lineWidth=2;
+        for(const p of P){ const [a,b]=toPx(g,p[0],p[1]), [,c]=toPx(g,p[0],f.m*p[0]+f.b); x.beginPath(); x.moveTo(a,b); x.lineTo(a,c); x.stroke(); }
+        x.setLineDash([]); x.save(); x.beginPath(); x.rect(g.L,g.T,g.R-g.L,g.B-g.T); x.clip();
+        const [a1,b1]=toPx(g,1200,f.m*1200+f.b), [a2,b2]=toPx(g,2400,f.m*2400+f.b); x.strokeStyle=Y; x.lineWidth=4; x.beginPath(); x.moveTo(a1,b1); x.lineTo(a2,b2); x.stroke(); x.restore();
+        $("rgCap").textContent=`${P.length} houses · price ≈ ${fmt(f.m,3)} × sq ft ${f.b<0?"−":"+"} ${fmt(Math.abs(f.b),0)} · red = error`;
+      } else $("rgCap").textContent="add at least 2 houses";
+      for(const p of P){ const [a,b]=toPx(g,p[0],p[1]); dot(x,a,b,8,BLUE); }
+    } };
+})();
+
+/* ---------- classification ---------- */
+(() => {
+  const F=[["fins","Has fins"],["feathers","Has feathers"],["fur","Has fur"],["eggs","Lays eggs"]];
+  let S={};
+  $("clTog").innerHTML=F.map(([k,t])=>`<div class="switch card" data-k="${k}"><span class="lbl">${t}</span><div class="tog"></div></div>`).join("");
+  function predict(){
+    const sc=[ (S.fins?3:0)+(S.eggs?1:0)-(S.fur?3:0)-(S.feathers?3:0), (S.feathers?4:0)+(S.eggs?1:0)-(S.fur?2:0), (S.fur?4:0)+(S.eggs?0:1)-(S.feathers?3:0)-(S.fins?1:0) ];
+    const any=Object.values(S).some(Boolean); const c=any?sc.indexOf(Math.max(...sc)):-1;
+    document.querySelectorAll("#clTog .switch").forEach(e=>e.classList.toggle("on",!!S[e.dataset.k]));
+    document.querySelectorAll("#clOut .cls").forEach(e=>e.classList.toggle("on",+e.dataset.c===c));
+    const nm=["fish","bird","mammal"][c];
+    $("clWhy").innerHTML=!any?"Switch on some features.":S.fur&&S.eggs?`Fur <b>and</b> eggs? That’s a platypus: a mammal that lays eggs. Real data has odd cases the model may get wrong.`:S.fins&&S.fur?`Fins and fur… a seal? Edge cases like these are why we need lots of varied training data.`:`Model output: <b class="y">${c}</b> → ${nm}. The number is the encoded label.`;
+  }
+  $("clTog").onclick=e=>{ const s=e.target.closest(".switch"); if(!s) return; S[s.dataset.k]=!S[s.dataset.k]; predict(); };
+  A.classification={ enter(){ S={fins:true,eggs:true}; predict(); } };
+})();
+
+/* ---------- unsupervised: k-means ---------- */
+(() => {
+  const cv=$("usCv"); let P=[], Cn=[], iter=0, running=false, acc=0, done=false, seed=5;
+  const COL=[Y,BLUE,GREEN];
+  function data(){ const r=srand(seed++); const ctr=[[.25,.3],[.72,.28],[.5,.75]].map(c=>[c[0]+(r()-.5)*.12,c[1]+(r()-.5)*.12]); P=[];
+    ctr.forEach(c=>{ for(let i=0;i<34;i++) P.push({x:clamp(c[0]+gauss(r)*.08,.03,.97),y:clamp(c[1]+gauss(r)*.08,.03,.97),k:-1}); }); Cn=[]; iter=0; running=false; done=false; $("usCap").textContent="k-means: unlabeled points"; $("usRun").textContent="Find 3 clusters ▶"; }
+  function stepK(){
+    if(!Cn.length){ Cn=[0,1,2].map(()=>{ const p=pick(P); return {x:p.x,y:p.y,tx:p.x,ty:p.y}; }); iter=0; $("usCap").textContent="step 0: drop 3 random centers"; return; }
+    let moved=false;
+    P.forEach(p=>{ let b=0,bd=1e9; Cn.forEach((c,i)=>{ const d=(p.x-c.tx)**2+(p.y-c.ty)**2; if(d<bd){ bd=d; b=i; } }); if(p.k!==b){ p.k=b; moved=true; } });
+    Cn.forEach((c,i)=>{ const m=P.filter(p=>p.k===i); if(m.length){ c.tx=m.reduce((s,p)=>s+p.x,0)/m.length; c.ty=m.reduce((s,p)=>s+p.y,0)/m.length; } });
+    iter++; $("usCap").textContent=`step ${iter}: color each point by nearest center, move centers to the middle`;
+    if(!moved&&iter>1){ done=true; running=false; $("usCap").textContent=`converged after ${iter} steps: 3 groups found with no labels`; $("usRun").textContent="Run again ▶"; }
+  }
+  $("usRun").onclick=()=>{ if(done){ Cn=[]; P.forEach(p=>p.k=-1); done=false; } running=true; acc=600; };
+  $("usNew").onclick=data;
+  data();
+  A.unsupervised={ enter(){ seed=5; data(); }, step(){ if(!running&&!done){ running=true; acc=600; return true; } return false; },
+    tick(dt){ if(running){ acc+=dt; if(acc>700){ acc=0; stepK(); } }
+      const W=cv.offsetWidth, H=cv.offsetHeight, x=ctxOf(cv), m=40; x.clearRect(0,0,W,H);
+      for(const p of P) dot(x,m+p.x*(W-2*m),m+p.y*(H-2*m),7,p.k<0?"#77746d":COL[p.k]);
+      Cn.forEach((c,i)=>{ c.x=lerp(c.x,c.tx,.15); c.y=lerp(c.y,c.ty,.15); const px=m+c.x*(W-2*m), py=m+c.y*(H-2*m);
+        x.strokeStyle=COL[i]; x.lineWidth=4; x.beginPath(); x.moveTo(px-12,py-12); x.lineTo(px+12,py+12); x.moveTo(px+12,py-12); x.lineTo(px-12,py+12); x.stroke(); dot(x,px,py,18,null,COL[i]); });
+    } };
+})();
+
+/* ---------- train / test split ---------- */
+(() => {
+  const cv=$("spCv"); let D=[];
+  const r=srand(8); const ORDER=Array.from({length:100},(_,i)=>i).sort(()=>r()-.5);
+  const upd=()=>{ const t=+$("spT").value; $("spTr").textContent=100-t; $("spTe").textContent=t; };
+  $("spT").oninput=upd;
+  A.split={ enter(){ D=Array.from({length:100},(_,i)=>({x:0,y:0,init:true})); upd(); },
+    tick(){ const W=cv.offsetWidth, H=cv.offsetHeight, x=ctxOf(cv); x.clearRect(0,0,W,H);
+      const t=+$("spT").value, test=new Set(ORDER.slice(0,t));
+      const bx=[[30,70,W*.6-45,H-110],[W*.6+15,70,W*.4-45,H-110]];
+      [["TRAINING",GREEN],["TESTING",BLUE]].forEach(([n,c],i)=>{ const [a,b,w,h]=bx[i]; x.strokeStyle=c; x.globalAlpha=.5; x.lineWidth=2; x.setLineDash([8,6]); x.strokeRect(a,b,w,h); x.setLineDash([]); x.globalAlpha=1; label(x,n,a,b-16,c,16); });
+      label(x,`${100-t} rows → the model learns from these`,30,H-16,GREEN,15); label(x,`${t} rows, hidden until the end`,W*.6+15,H-16,BLUE,15);
+      let ti=0, ri=0;
+      D.forEach((d,i)=>{ const isT=test.has(i); let tx,ty;
+        if(isT){ const cols=Math.max(1,Math.floor((bx[1][2]-20)/30)); tx=bx[1][0]+24+(ti%cols)*30; ty=bx[1][1]+26+(ti/cols|0)*30; ti++; }
+        else { const cols=Math.floor((bx[0][2]-20)/30); tx=bx[0][0]+24+(ri%cols)*30; ty=bx[0][1]+26+(ri/cols|0)*30; ri++; }
+        if(d.init){ d.x=tx; d.y=ty; d.init=false; } d.x=lerp(d.x,tx,.12); d.y=lerp(d.y,ty,.12); dot(x,d.x,d.y,10,isT?BLUE:GREEN); });
+    } };
+})();
+
+/* ---------- random_state ---------- */
+(() => {
+  let seed="42", runs=[];
+  function split(){ const r=seed==="none"?Math.random:srand(+seed*2654435761); const idx=Array.from({length:10},(_,i)=>i+1);
+    for(let i=idx.length-1;i>0;i--){ const j=Math.floor(r()*(i+1)); [idx[i],idx[j]]=[idx[j],idx[i]]; } return idx.slice(0,3).sort((a,b)=>a-b); }
+  function run(){ const t=split(); const prev=runs[0]; const same=prev&&prev.seed===seed&&prev.t.join()===t.join(); runs.unshift({seed,t,same}); runs=runs.slice(0,4);
+    $("sdRow").innerHTML=Array.from({length:10},(_,i)=>`<div class="${t.includes(i+1)?"te":"tr"}">${i+1}</div>`).join("");
+    $("sdLog").innerHTML=runs.map((r,i)=>`<div>${i===0?"<b>":""}random_state=${r.seed==="none"?"None":r.seed} → test rows [${r.t.join(", ")}]${i===0?"</b>":""} ${r.same?'<span style="color:var(--green)">same as last run ✓</span>':""}</div>`).join(""); }
+  tabs($("sdTabs"),k=>{ seed=k; $("sdCode").textContent=k==="none"?"None":k; run(); });
+  $("sdRun").onclick=run;
+  A.seed={ enter(){ runs=[]; run(); } };
+})();
+
+/* ---------- spread: range, variance, sd ---------- */
+(() => {
+  const s=$("spSvg"), X0=70, X1=1310, LY=210, MAX=20, px=v=>X0+v/MAX*(X1-X0);
+  const PRE=[["[2, 4, 6, 8, 10]",[2,4,6,8,10]],["tight",[8,9,10,10,11]],["spread out",[1,5,10,15,19]],["+ outlier",[8,9,10,10,11,19.5]]];
+  let V=[], drag=-1;
+  $("sdPre").innerHTML=PRE.map((p,i)=>`<button class="btn" data-i="${i}">${p[0]}</button>`).join("");
+  $("sdPre").onclick=e=>{ const b=e.target.closest("button"); if(!b) return; V=PRE[+b.dataset.i][1].slice(); render(); };
+  function render(){
+    s.innerHTML=""; const n=V.length, mu=V.reduce((a,b)=>a+b,0)/n, va=V.reduce((a,b)=>a+(b-mu)**2,0)/n, sd=Math.sqrt(va), mn=Math.min(...V), mx=Math.max(...V);
+    svgEl("rect",{x:px(mu-sd),y:16,width:px(mu+sd)-px(mu-sd),height:LY-16,fill:"rgba(255,194,14,.07)"},s);
+    svgEl("line",{x1:X0-20,y1:LY,x2:X1+20,y2:LY,stroke:LINE,"stroke-width":3},s);
+    for(let v=0;v<=MAX;v+=2){ svgEl("line",{x1:px(v),y1:LY-6,x2:px(v),y2:LY+6,stroke:"#55534d","stroke-width":2},s); const t=svgEl("text",{x:px(v),y:LY+32,"text-anchor":"middle",fill:MUTE,"font-size":16,"font-family":"JetBrains Mono"},s); t.textContent=v; }
+    svgEl("line",{x1:px(mn),y1:LY+46,x2:px(mx),y2:LY+46,stroke:GREEN,"stroke-width":3},s);
+    const rt=svgEl("text",{x:(px(mn)+px(mx))/2,y:LY+42+20,"text-anchor":"middle",fill:GREEN,"font-size":14,"font-family":"JetBrains Mono"},s); rt.textContent="range";
+    svgEl("line",{x1:px(mu),y1:10,x2:px(mu),y2:LY,stroke:Y,"stroke-width":3},s);
+    const mt=svgEl("text",{x:px(mu)+8,y:26,fill:Y,"font-size":17,"font-family":"JetBrains Mono","font-weight":600},s); mt.textContent="μ = "+fmt(mu);
+    const order=V.map((v,i)=>i).sort((a,b)=>V[a]-V[b]);
+    order.forEach((i,k)=>{ const y=LY-30-k*(150/Math.max(1,n-1||1));
+      svgEl("line",{x1:px(mu),y1:y,x2:px(V[i]),y2:y,stroke:"rgba(255,90,78,.7)","stroke-width":2,"stroke-dasharray":"6 5"},s);
+      svgEl("circle",{cx:px(V[i]),cy:y,r:14,fill:INK,stroke:"#121214","stroke-width":3,"data-i":i,style:"cursor:grab"},s); });
+    $("rgV").textContent=fmt(mx-mn,1); $("vaV").textContent=fmt(va,2); $("sdV").textContent=fmt(sd,2);
+  }
+  s.addEventListener("pointerdown",e=>{ const c=e.target.closest("circle"); if(!c) return; drag=+c.dataset.i; s.setPointerCapture(e.pointerId); });
+  s.addEventListener("pointermove",e=>{ if(drag<0) return; const [x]=svgXY(e,s); V[drag]=clamp(Math.round((x-X0)/(X1-X0)*MAX*2)/2,0,MAX); render(); });
+  s.addEventListener("pointerup",()=>drag=-1);
+  let pi=0;
+  A.spread={ enter(){ pi=0; V=PRE[0][1].slice(); render(); },
+    step(){ if(pi>=PRE.length-1) return false; pi++; V=PRE[pi][1].slice(); render(); return true; },
+    back(){ if(pi<=0) return false; pi--; V=PRE[pi][1].slice(); render(); return true; } };
+})();
+
+/* ---------- normalization vs standardization ---------- */
+(() => {
+  const cv=$("nsCv"); const r=srand(21); const D=Array.from({length:400},()=>clamp(1700+gauss(r)*260,950,2500));
+  const mn=Math.min(...D), mx=Math.max(...D), mu=D.reduce((a,b)=>a+b,0)/D.length, sd=Math.sqrt(D.reduce((a,b)=>a+(b-mu)**2,0)/D.length);
+  const BINS=26, bins=new Array(BINS).fill(0); D.forEach(v=>bins[Math.min(BINS-1,Math.floor((v-mn)/(mx-mn)*BINS))]++);
+  let mode="raw", fade=1;
+  const MODES={raw:{f:v=>v,d:0,cap:`raw sq ft · mean ${Math.round(mu)}, sd ${Math.round(sd)}`},mm:{f:v=>(v-mn)/(mx-mn),d:2,cap:"min-max: 0 to 1 · same shape, new scale"},z:{f:v=>(v-mu)/sd,d:1,cap:"z-score: mean 0, sd 1 · same shape, centered"}};
+  const set=tabs($("nsTabs"),k=>{ mode=k; fade=0; });
+  const ORD=["raw","mm","z"];
+  A.normstd={ enter(){ mode="raw"; set("raw"); fade=1; },
+    step(){ const i=ORD.indexOf(mode); if(i>=2) return false; mode=ORD[i+1]; set(mode); fade=0; return true; },
+    back(){ const i=ORD.indexOf(mode); if(i<=0) return false; mode=ORD[i-1]; set(mode); fade=0; return true; },
+    tick(dt){ fade=Math.min(1,fade+dt/500); const W=cv.offsetWidth, H=cv.offsetHeight, x=ctxOf(cv), L=60, R=W-40, T=50, B=H-110; x.clearRect(0,0,W,H);
+      const bm=Math.max(...bins), bw=(R-L)/BINS;
+      bins.forEach((c,i)=>{ const h=c/bm*(B-T); x.fillStyle=mode==="raw"?"rgba(243,241,234,.55)":mode==="mm"?"rgba(255,194,14,.75)":"rgba(106,184,255,.75)"; x.fillRect(L+i*bw+1,B-h,bw-2,h); });
+      axes(x,L,T,R,B);
+      const M=MODES[mode]; x.globalAlpha=ease(fade);
+      for(let k=0;k<=6;k++){ const v=mn+(mx-mn)*k/6, pxx=L+(R-L)*k/6; x.strokeStyle="#55534d"; x.beginPath(); x.moveTo(pxx,B); x.lineTo(pxx,B+8); x.stroke(); label(x,M.f(v).toFixed(M.d),pxx,B+30,mode==="raw"?INK:mode==="mm"?Y:BLUE,16,"center"); }
+      const mpx=L+(mu-mn)/(mx-mn)*(R-L); x.strokeStyle=RED; x.lineWidth=2; x.setLineDash([6,5]); x.beginPath(); x.moveTo(mpx,T); x.lineTo(mpx,B); x.stroke(); x.setLineDash([]);
+      label(x,"mean = "+M.f(mu).toFixed(mode==="raw"?0:2),mpx+8,T+16,RED,15);
+      x.globalAlpha=1; label(x,mode==="raw"?"house size (sq ft)":mode==="mm"?"scaled value":"z-score (standard deviations from mean)",(L+R)/2,B+64,MUTE,15,"center");
+      $("nsCap").textContent=M.cap;
+    } };
+})();
+
+/* ---------- min-max worked example ---------- */
+(() => {
+  const D=[10,20,30,40]; let n=0;
+  function render(){
+    $("mmRows").innerHTML=D.slice(0,n).map(v=>`<div class="fx pop" style="font-size:22px"><b class="y" style="min-width:40px">${v}</b>→ <span class="frac"><span>${v} − 10</span><span>40 − 10</span></span> = <span class="frac"><span>${v-10}</span><span>30</span></span> = <b class="y">${fmt((v-10)/30)}</b></div>`).join("");
+    $("mmRes").innerHTML=n>=4?`result: [<b class="y">0, 0.33, 0.67, 1</b>]`:"";
+    $("mmNext").textContent=n<4?`Next value ▶`:"Done ✓";
+  }
+  $("mmNext").onclick=()=>{ if(n<4){ n++; render(); } }; $("mmReset").onclick=()=>{ n=0; render(); };
+  A.howto={ enter(){ n=0; render(); }, step(){ if(n<4){ n++; render(); return true; } return false; }, back(){ if(n>0){ n--; render(); return true; } return false; } };
+})();
+
+/* ---------- when to normalize: knn ---------- */
+(() => {
+  const cv=$("knCv"); let mode="raw";
+  const Q={n:"You",m:200,a:30};
+  const P=[{n:"Ari",m:205,a:62},{n:"Bea",m:250,a:31},{n:"Cal",m:150,a:45},{n:"Dee",m:120,a:33},{n:"Eli",m:330,a:28},{n:"Flo",m:420,a:50},{n:"Gus",m:60,a:25},{n:"Hal",m:480,a:60},{n:"Ivy",m:300,a:55},{n:"Jo",m:90,a:40}];
+  const dist=(p,sc)=>sc?Math.hypot((p.m-Q.m)/500,(p.a-Q.a)/45):Math.hypot(p.m-Q.m,p.a-Q.a);
+  const set=tabs($("knTabs"),k=>{ mode=k; });
+  A.whennorm={ enter(){ mode="raw"; set("raw"); }, step(){ if(mode==="raw"){ mode="sc"; set("sc"); return true; } return false; },
+    tick(){ const W=cv.offsetWidth, H=cv.offsetHeight, x=ctxOf(cv), L=80, T=40, R=W-30, B=H-70; x.clearRect(0,0,W,H); axes(x,L,T,R,B);
+      const sc=mode==="sc", px=m=>L+m/500*(R-L), py=a=>B-(a-20)/45*(B-T);
+      for(let m=0;m<=500;m+=100) label(x,sc?(m/500).toFixed(1):m,px(m),B+24,MUTE,13,"center");
+      for(let a=20;a<=65;a+=15) label(x,sc?((a-20)/45).toFixed(1):a,L-12,py(a)+5,MUTE,13,"right");
+      label(x,sc?"distance (scaled 0–1) →":"distance (miles) →",R,B+52,MUTE,15,"right"); label(x,sc?"age (scaled 0–1)":"age (years)",L,T-14,MUTE,15);
+      const nn=P.slice().sort((p,q)=>dist(p,sc)-dist(q,sc))[0];
+      x.strokeStyle=Y; x.lineWidth=3; x.setLineDash([8,6]); x.beginPath(); x.moveTo(px(Q.m),py(Q.a)); x.lineTo(px(nn.m),py(nn.a)); x.stroke(); x.setLineDash([]);
+      for(const p of P){ dot(x,px(p.m),py(p.a),9,p===nn?Y:BLUE); label(x,p.n,px(p.m)+13,py(p.a)+5,p===nn?Y:MUTE,14); }
+      dot(x,px(Q.m),py(Q.a),12,null,INK); dot(x,px(Q.m),py(Q.a),5,INK); label(x,"you",px(Q.m)+16,py(Q.a)+5,INK,15);
+      $("knCap").textContent=sc?"each feature counts equally":"1 mile counts the same as 1 year of age";
+      $("knRes").innerHTML=sc?`Nearest: <b>${nn.n}</b>, close in both miles and age.`:`Nearest: <b>${nn.n}</b>, 32 years older! Miles drown out age.`;
+    } };
+})();
+
+/* ---------- navigation ---------- */
+const countEl=$("count"), prog=$("progress");
+/* ---------- live class sync: instructor drives, students follow ---------- */
+// a backend "adapter" plugs in here: claude artifacts (below) or firebase (live.js on the web site)
+// adapter = { role:"presenter"|"student", get(), set(state), subscribe(cb) -> unsub, followers?(cb) -> unsub }
+const Live={role:"solo",ad:null,state:null,locked:false,writing:false,want:null,written:null,room:false,followers:0,unsub:[]};
+const liveBar=document.getElementById("livebar"), toastEl=document.getElementById("toast");
+function toast(msg){ toastEl.textContent=msg; toastEl.classList.add("on"); clearTimeout(toast.t); toast.t=setTimeout(()=>toastEl.classList.remove("on"),2200); }
+function liveCap(){ return Live.role==="student"&&Live.state&&Live.state.locked ? Live.state.slide : Infinity; }
+function clampSlide(v){ v=Math.floor(+v); return Number.isFinite(v)?Math.max(0,Math.min(slides.length-1,v)):0; }
+function renderLive(){
+  if(Live.role==="presenter"){
+    liveBar.innerHTML=`<button class="lv ${Live.locked?"on":""}" id="lvBtn" title="Lock students to your slide"><span class="dot"></span>${Live.locked?"Class follows you":"Class can roam"}</button>`+(Live.room?`<span class="lvc">${Live.followers} student${Live.followers===1?"":"s"} watching</span>`:"");
+    document.getElementById("lvBtn").onclick=toggleLock;
+  } else if(Live.role==="student"&&Live.state&&Live.state.locked){
+    liveBar.innerHTML=`<span class="lv on"><span class="dot"></span>Following your instructor</span>`;
+  } else liveBar.innerHTML="";
+  document.getElementById("next").disabled = cur>=liveCap();
+}
+async function pushLive(){
+  if(Live.role!=="presenter"||!Live.ad) return;
+  Live.want={slide:cur,locked:Live.locked};
+  if(Live.writing) return; Live.writing=true;
+  try{ while(Live.want && JSON.stringify(Live.want)!==JSON.stringify(Live.written)){ const w=Live.want; await Live.ad.set(w); Live.written=w; } }
+  catch(e){ console.warn("live sync write failed",e); toast("Couldn’t sync the class. Check your connection."); }
+  Live.writing=false;
+}
+function toggleLock(){ Live.locked=!Live.locked; renderLive(); pushLive(); toast(Live.locked?"Students now follow your slides":"Students can move freely"); }
+function onLiveState(d){
+  const prev=Live.state;
+  Live.state=d?{slide:clampSlide(d.slide),locked:d.locked===true}:null;
+  const s=Live.state;
+  if(s&&s.locked&&(!prev||!prev.locked||prev.slide!==s.slide||cur>s.slide)) go(s.slide);
+  renderLive();
+}
+async function attachLive(ad){
+  Live.unsub.forEach(u=>{ try{ u&&u(); }catch(e){} }); Live.unsub=[];
+  Live.ad=ad; Live.role=ad?ad.role:"solo"; Live.state=null; Live.written=null; Live.room=false;
+  if(!ad){ renderLive(); return; }
+  if(ad.role==="presenter"){
+    try{ const d=await ad.get(); if(d){ Live.locked=d.locked===true; Live.written={slide:clampSlide(d.slide),locked:Live.locked}; if(Live.locked) go(clampSlide(d.slide)); } else Live.locked=false; }catch(e){}
+  } else Live.unsub.push(ad.subscribe(onLiveState));
+  if(ad.followers){ try{ Live.unsub.push(ad.followers(n=>{ Live.room=true; Live.followers=n; renderLive(); })); }catch(e){} }
+  renderLive();
+}
+// backend 1: claude artifact capabilities (db + room + user)
+async function claudeAdapter(){
+  const C=window.claude; if(!C||typeof C.use!=="function") return;
+  let user=null, db=null, room=null;
+  try{ [user,db,room]=await Promise.all([C.use("user"),C.use("db"),C.use("room")]); }catch(e){ return; }
+  if(!db) return;
+  let pres=false; try{ pres=!!user&&(!!(await user.isOwner())||!!(await user.canEdit())); }catch(e){}
+  const ref=db.doc("live/state");
+  attachLive({
+    role:pres?"presenter":"student",
+    get:async()=>{ const s=await ref.get(); return s.exists?s.data():null; },
+    set:w=>ref.set(w),
+    subscribe:cb=>ref.onSnapshot(s=>cb(s.exists?s.data():null),e=>console.warn("live sync stopped",e)),
+    followers:room?cb=>{ if(!pres) room.presence({following:true}).catch(()=>{}); return room.onPeers(ch=>cb(ch.peers.filter(p=>!p.isMe&&p.presence&&p.presence.following).length)); }:null,
+  });
+}
+// backend 2 (web site): live.js calls window.Deck.attachLive(...)
+window.Deck={attachLive,toast,current:()=>cur,count:slides.length};
+
+
+function go(i,fromHash){
+  i=Math.max(0,Math.min(slides.length-1,i));
+  const capS=liveCap(); if(i>capS){ if(cur>=capS) toast("Waiting for your instructor…"); i=capS; }
+  if(i===cur) return;
+  const dir=i>cur?1:-1;
+  if(cur>=0) slides[cur].classList.remove("active");
+  cur=i; const s=slides[cur]; s.classList.add("active");
+  s.querySelectorAll("canvas").forEach(fitCanvas);
+  const a=A[s.dataset.id]; if(a&&a.enter) a.enter(dir);
+  countEl.textContent=`${cur+1} / ${slides.length}`; prog.style.width=((cur+1)/slides.length*100)+"%";
+  if(!fromHash){ try{ history.replaceState(null,"","#s"+(cur+1)); }catch(e){} }
+  if(Live.role==="presenter"&&Live.locked) pushLive();
+  if(Live.role!=="solo") renderLive();
+}
+function fromHash(){ const m=/^#s(\d+)$/.exec(location.hash); go(m?+m[1]-1:0,true); }
+addEventListener("hashchange",fromHash);
+function advance(){ const a=A[slides[cur].dataset.id]; if(a&&a.step&&a.step()) return; go(cur+1); }
+function retreat(){ const a=A[slides[cur].dataset.id]; if(a&&a.back&&a.back()) return; go(cur-1); }
+$("prev").onclick=retreat; $("next").onclick=advance;
+function toggleFS(){ try{ if(document.fullscreenElement) document.exitFullscreen(); else document.documentElement.requestFullscreen().catch(()=>{}); }catch(e){} }
+$("fs").onclick=toggleFS;
+addEventListener("keydown",e=>{
+  if(e.target.tagName==="INPUT") return;
+  const k=e.key;
+  if(["ArrowRight","PageDown"].includes(k)||(k===" "&&e.target.tagName!=="BUTTON")){ advance(); e.preventDefault(); }
+  else if(["ArrowLeft","PageUp"].includes(k)){ retreat(); e.preventDefault(); }
+  else if(k==="Home") go(0); else if(k==="End") go(slides.length-1);
+  else if(k==="f"||k==="F") toggleFS();
+});
+let sx=null; stage.addEventListener("touchstart",e=>{ if(e.target.closest("input,button,.switch,.chipx,.bin,.tchip,svg,canvas,table")) return; sx=e.touches[0].clientX; },{passive:true});
+stage.addEventListener("touchend",e=>{ if(sx===null) return; const dx=e.changedTouches[0].clientX-sx; if(Math.abs(dx)>60) (dx<0?advance:retreat)(); sx=null; });
+addEventListener("resize",fitStage);
+fitStage(); fromHash(); claudeAdapter();
+let last=performance.now();
+function loop(now){ const dt=Math.min(100,now-last); last=now; const s=slides[cur], a=s&&A[s.dataset.id]; if(a&&a.tick){ try{ a.tick(dt,now); }catch(err){ console.error(err); } } requestAnimationFrame(loop); }
+requestAnimationFrame(loop);
+})();
+
+</script>
+<script type="module" src="../live.js"></script>
+</body>
+</html>

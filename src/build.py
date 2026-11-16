@@ -13,26 +13,26 @@ read = lambda p: open(f"{SRC}/{p}", encoding="utf-8").read()
 b64 = lambda p, mime: f"data:{mime};base64," + base64.b64encode(open(f"{SRC}/{p}", "rb").read()).decode()
 LOGO = b64("logo.png", "image/png")
 
-def ai_history_1():
-    s = read("decks/ai-history-1/shell.html")
-    s = s.replace("{{LOGO}}", LOGO).replace("{{COVER}}", b64("decks/ai-history-1/cover.jpg", "image/jpeg"))
-    return s.replace("{{APP}}", read("decks/ai-history-1/app.js").replace("/*LIVE_CORE*/", CORE))
+def ai_history():
+    s = read("decks/ai-history/shell.html")
+    s = s.replace("{{LOGO}}", LOGO).replace("{{COVER}}", b64("decks/ai-history/cover.jpg", "image/jpeg"))
+    return s.replace("{{APP}}", read("decks/ai-history/app.js").replace("/*LIVE_CORE*/", CORE))
 
-def ai_history_2():
-    s = read("decks/ai-history-2/shell.html").replace("{{LOGO}}", LOGO)
-    return s.replace("{{APP}}", read("decks/ai-history-2/app.js").replace("/*LIVE_CORE*/", CORE))
+def data():
+    s = read("decks/data/shell.html").replace("{{LOGO}}", LOGO)
+    return s.replace("{{APP}}", read("decks/data/app.js").replace("/*LIVE_CORE*/", CORE))
 
 def cellular_automata():
     return read("decks/cellular-automata/deck.html").replace("/*LIVE_CORE*/", CORE)
 
 DECKS = [
     # slug, builder, number, title, blurb
-    ("ai-history-1", ai_history_1, "01", "AI History · Part 1",
-     "From Aristotle and Boole to the Turing Test, neural networks, ELIZA, expert systems and Deep Blue."),
-    ("ai-history-2", ai_history_2, "02", "AI History · Part 2",
-     "From backprop and Roomba to AlexNet, transformers and ChatGPT, with hands-on demos."),
-    ("cellular-automata", cellular_automata, "03", "Cellular Automata",
+    ("ai-history", ai_history, "01", "AI History",
+     "From Aristotle and Boole to Deep Blue, then backprop, AlexNet, transformers and ChatGPT, with hands-on demos."),
+    ("cellular-automata", cellular_automata, "02", "Cellular Automata",
      "Simple rules, complex worlds: Conway’s Game of Life, patterns, and a sandbox to play in."),
+    ("data", data, "03", "Data",
+     "Features and labels, cleaning messy data, mean/median/mode, bias, supervised vs. unsupervised, and scaling."),
 ]
 
 def stamp():

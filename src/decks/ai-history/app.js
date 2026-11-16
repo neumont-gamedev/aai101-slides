@@ -31,10 +31,961 @@ function ctxOf(c){ const x=c.getContext("2d"); x.setTransform(c._k||1,0,0,c._k||
 function ptr(e,c){ const r=c.getBoundingClientRect(), s=r.width/c.offsetWidth; return {x:(e.clientX-r.left)/s, y:(e.clientY-r.top)/s}; }
 const A={};
 
-/* ---------- title: drifting network ---------- */
+/* ================= PART 1 ================= */
+{
+/* ---------- 1 title: drifting network ---------- */
 (() => {
   const cv=$("bgNet"); let N=[], P=[];
   A.title={
+    enter(){ N=Array.from({length:80},()=>({x:rnd(0,1600),y:rnd(0,900),vx:rnd(-.25,.25),vy:rnd(-.25,.25),g:0})); P=[]; },
+    tick(dt){
+      const x=ctxOf(cv), f=dt/16.7; x.fillStyle="#121214"; x.fillRect(0,0,1600,900);
+      for(const n of N){ n.x+=n.vx*f; n.y+=n.vy*f; if(n.x<0||n.x>1600) n.vx*=-1; if(n.y<0||n.y>900) n.vy*=-1; n.g*=.95; }
+      x.lineWidth=1;
+      for(let i=0;i<N.length;i++) for(let j=i+1;j<N.length;j++){
+        const a=N[i], b=N[j], d=Math.hypot(a.x-b.x,a.y-b.y);
+        if(d<190){ x.strokeStyle=`rgba(255,194,14,${(1-d/190)*.22})`; x.beginPath(); x.moveTo(a.x,a.y); x.lineTo(b.x,b.y); x.stroke();
+          if(Math.random()<.0008*f) P.push({a,b,t:0}); }
+      }
+      P=P.filter(p=>{ p.t+=dt/700; if(p.t>=1){ p.b.g=1; return false; } const px=p.a.x+(p.b.x-p.a.x)*p.t, py=p.a.y+(p.b.y-p.a.y)*p.t;
+        x.fillStyle=Y; x.beginPath(); x.arc(px,py,3,0,7); x.fill(); return true; });
+      for(const n of N){ x.fillStyle=n.g>.05?`rgba(255,194,14,${.4+n.g*.6})`:"rgba(243,241,234,.35)"; x.beginPath(); x.arc(n.x,n.y,2.5+n.g*4,0,7); x.fill(); }
+    }
+  };
+})();
+
+/* ---------- 3 aristotle: euler diagram ---------- */
+(() => {
+  const svg=$("euler"), lines=[...document.querySelectorAll("#sylA .l")];
+  svg.innerHTML=`
+    <defs><filter id="glow" x="-150%" y="-150%" width="400%" height="400%"><feGaussianBlur stdDeviation="8" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter></defs>
+    <circle id="eM" cx="320" cy="296" r="245" fill="rgba(106,184,255,.06)" stroke="${BLUE}" stroke-width="3"/>
+    <text id="eMl" x="320" y="98" text-anchor="middle" fill="${BLUE}" font-family="JetBrains Mono, Consolas, monospace" font-size="20" letter-spacing="3">MORTAL THINGS</text>
+    <circle id="eH" cx="320" cy="346" r="140" fill="rgba(255,194,14,.08)" stroke="${Y}" stroke-width="3"/>
+    <text id="eHl" x="320" y="256" text-anchor="middle" fill="${Y}" font-family="JetBrains Mono, Consolas, monospace" font-size="20" letter-spacing="3">HUMANS</text>
+    <g id="eS"><circle cx="320" cy="376" r="18" fill="${GREEN}" filter="url(#glow)"/><text x="320" y="428" text-anchor="middle" fill="${GREEN}" font-family="Space Grotesk, system-ui, sans-serif" font-size="24" font-weight="700">Socrates</text></g>`;
+  const M=$("eM"), H=$("eH"), S=$("eS"), Ml=$("eMl"), Hl=$("eHl");
+  const circ=(el,r)=>{ const L=2*Math.PI*r; el.style.strokeDasharray=L; return L; };
+  const LM=circ(M,245), LH=circ(H,140);
+  // click-through build: 0 = nothing, 1 = premise 1, 2 = premise 2, 3 = therefore
+  const cap=$("eulerCap"), slide=svg.closest(".slide"), idea=$("aristIdea");
+  const HINTS=["click to show premise 1","click to show premise 2","click for the conclusion","the classic example, drawn as sets"];
+  let stage=0, since=[0,0,0,0], now=0;
+  function setStage(n,instant){ stage=Math.max(0,Math.min(3,n)); for(let k=1;k<=3;k++) since[k]=k<=stage?(instant?-1e9:(since[k]>-1e8&&k<stage?since[k]:now)):Infinity; cap.textContent=HINTS[stage]; }
+  slide.addEventListener("click",e=>{ if(e.target.closest("a,button")) return; if(stage<3) setStage(stage+1); });
+  A.aristotle={
+    enter(dir){ now=0; setStage(dir<0?3:0,true); },
+    step(){ if(stage>=3) return false; setStage(stage+1); return true; },
+    back(){ if(stage<=0) return false; setStage(stage-1,true); return true; },
+    tick(dt){
+      now+=dt;
+      const el=k=>(now-since[k])/1000;               // seconds since stage k began (negative = not yet)
+      const pm=ease(el(1)/1.1), ph=ease((el(1)-.7)/1.0), ps=ease(el(2)/.9), pc=stage>=3;
+      M.style.strokeDashoffset=LM*(1-pm); M.style.fillOpacity=pm; Ml.style.opacity=pm;
+      H.style.strokeDashoffset=LH*(1-ph); H.style.fillOpacity=ph; Hl.style.opacity=ph;
+      S.style.opacity=ps; S.style.transform=`translateY(${(1-ps)*-360}px)`;
+      const pulse = pc ? Math.max(0,1-Math.max(0,el(3))/1.6)*(.5+.5*Math.sin(el(3)*7)) : 0;  // a few pulses, then settles
+      M.setAttribute("stroke-width", 3+(pc?2:0)+pulse*3); M.setAttribute("fill", `rgba(106,184,255,${.06+(pc?.05:0)+pulse*.06})`);
+      lines.forEach((l,i)=>l.classList.toggle("on", stage>i));
+      idea.classList.toggle("on", stage>=3);
+    }
+  };
+})();
+
+/* ---------- lovelace: can a machine…? ---------- */
+(() => {
+  const C=[
+    ["do math?","yes","YES","That’s what it was built for. Lovelace’s program computed Bernoulli numbers."],
+    ["compose music?","yes","YES","Lovelace predicted it in 1843. Today, AI composes music."],
+    ["beat a world chess champion?","yes","YES","IBM’s Deep Blue did it in 1997. You’ll see it at the end of today."],
+    ["come up with something truly original?","maybe","STILL DEBATED","Lovelace said no. Turing said maybe. People still argue about it today."],
+  ];
+  const box=$("llCards"), idea=$("llIdea"); let seen=new Set();
+  box.innerHTML=C.map(([q,c,v,t],i)=>`<div class="flip3" data-i="${i}"><div class="in"><div class="f"><span class="k">CAN A MACHINE…</span><span class="t">${q}</span></div><div class="b"><span class="v ${c}">${v}</span><span class="t">${t}</span></div></div></div>`).join("");
+  box.querySelectorAll(".flip3").forEach(el=>el.onclick=()=>{ el.classList.toggle("on"); seen.add(el.dataset.i); idea.classList.toggle("on", seen.has("3")); });
+  A.lovelace={ enter(){ seen=new Set(); idea.classList.remove("on"); box.querySelectorAll(".flip3").forEach(el=>el.classList.remove("on")); } };
+})();
+
+/* ---------- 5 boole ---------- */
+(() => {
+  const sa=$("swA"), sb=$("swB"), tt=$("tt"); let a=0,b=0, auto=true, t=0, k=0;
+  const rows=[[0,0],[0,1],[1,0],[1,1]].map(([x,y])=>{ const r=document.createElement("tr"); r.innerHTML=[x,y,x&y,x|y].map(v=>`<td class="${v?"one":""}">${v}</td>`).join(""); tt.appendChild(r); return r; });
+  function render(){
+    sa.classList.toggle("on",!!a); sb.classList.toggle("on",!!b); sa.querySelector(".val").textContent=a; sb.querySelector(".val").textContent=b;
+    const g=[["gAND",a&b],["gOR",a|b]];
+    g.forEach(([id,v])=>{ $(id).classList.toggle("on",!!v); $(id).querySelector(".bulb").textContent=v; });
+    rows.forEach((r,i)=>r.classList.toggle("hi", i===a*2+b));
+  }
+  sa.onclick=()=>{ auto=false; a^=1; render(); }; sb.onclick=()=>{ auto=false; b^=1; render(); };
+  A.boole={ enter(){ a=0;b=0;auto=true;t=0;k=0; render(); },
+    tick(dt){ if(!auto) return; t+=dt; if(t>1600){ t=0; k=(k+1)%4; a=k>>1; b=k&1; render(); } } };
+})();
+
+/* ---------- 6 shannon: circuits ---------- */
+(() => {
+  const svg=$("circ");
+  const st={andA:0,andB:0,orA:0,orB:0};
+  const W="#4a4a52";
+  svg.innerHTML=`<style>
+    .cw{stroke:${W};stroke-width:5;fill:none;stroke-linecap:round}
+    .cflow{stroke:${Y};stroke-width:5;fill:none;stroke-dasharray:14 16;opacity:0;transition:opacity .3s;stroke-linecap:round}
+    .cflow.on{opacity:1;animation:cfl .8s linear infinite}
+    @keyframes cfl{to{stroke-dashoffset:-30}}
+    .clever{stroke:${INK};stroke-width:6;stroke-linecap:round;transition:transform .35s cubic-bezier(.3,1.4,.5,1)}
+    .chit{fill:transparent;cursor:pointer}
+    .clbl{font-family:'JetBrains Mono',Consolas,monospace;font-size:20px;fill:${MUTE}}
+    .cbig{font-family:'Space Grotesk',system-ui,sans-serif;font-size:26px;font-weight:700;fill:${INK}}
+    .cbulb{transition:fill .3s,filter .3s}
+  </style>`;
+  function battery(x,y){ svgEl("rect",{x:x-20,y:y-26,width:40,height:52,rx:6,fill:"#1c1c20",stroke:INK,"stroke-width":2},svg); svgEl("text",{x,y:y+8,"text-anchor":"middle",class:"clbl",fill:INK},svg).textContent="+"; }
+  function sw(key,x1,x2,y,label){
+    svgEl("circle",{cx:x1,cy:y,r:6,fill:INK},svg); svgEl("circle",{cx:x2,cy:y,r:6,fill:INK},svg);
+    const l=svgEl("line",{x1,y1:y,x2,y2:y,class:"clever"},svg); l.style.transformOrigin=`${x1}px ${y}px`; l.style.transformBox="view-box";
+    svgEl("text",{x:(x1+x2)/2,y:y+38,"text-anchor":"middle",class:"clbl"},svg).textContent=label;
+    const h=svgEl("rect",{x:x1-10,y:y-60,width:x2-x1+20,height:110,class:"chit"},svg);
+    h.addEventListener("click",()=>{ st[key]^=1; render(); });
+    return l;
+  }
+  function bulb(x,y){ const b=svgEl("circle",{cx:x,cy:y,r:28,fill:"#2a2a30",stroke:INK,"stroke-width":2,class:"cbulb"},svg); return b; }
+  // AND (series)
+  svgEl("text",{x:80,y:60,class:"cbig"},svg).textContent="AND · series";
+  svgEl("text",{x:680,y:60,class:"clbl","text-anchor":"end"},svg).textContent="lamp = A AND B";
+  for(const d of ["M80 150 V100 H240","M320 100 H400","M480 100 H680 V147","M680 203 V250 H80 V200"]) svgEl("path",{d,class:"cw"},svg);
+  const fAnd=svgEl("path",{d:"M80 150 V100 H680 V250 H80 Z",class:"cflow"},svg);
+  battery(80,175);
+  const lAA=sw("andA",240,320,100,"A"), lAB=sw("andB",400,480,100,"B"), bA=bulb(680,175);
+  // OR (parallel)
+  svgEl("text",{x:80,y:340,class:"cbig"},svg).textContent="OR · parallel";
+  svgEl("text",{x:680,y:340,class:"clbl","text-anchor":"end"},svg).textContent="lamp = A OR B";
+  for(const d of ["M80 444 V390 H300","M380 390 H680 V442","M680 498 V570 H80 V496","M200 390 V480 H300","M380 480 H520 V390"]) svgEl("path",{d,class:"cw"},svg);
+  const fOrA=svgEl("path",{d:"M80 444 V390 H680 V570 H80 Z",class:"cflow"},svg);
+  const fOrB=svgEl("path",{d:"M80 444 V390 H200 V480 H520 V390 H680 V570 H80 Z",class:"cflow"},svg);
+  battery(80,470);
+  const lOA=sw("orA",300,380,390,"A"), lOB=sw("orB",300,380,480,"B"), bO=bulb(680,470);
+  // keep levers + bulbs above flow lines
+  [lAA,lAB,lOA,lOB,bA,bO].forEach(e=>svg.appendChild(e));
+  function render(){
+    [[lAA,"andA"],[lAB,"andB"],[lOA,"orA"],[lOB,"orB"]].forEach(([l,k])=>l.style.transform=st[k]?"none":"rotate(-32deg)");
+    const and=st.andA&&st.andB, or=st.orA||st.orB;
+    fAnd.classList.toggle("on",!!and); fOrA.classList.toggle("on",!!st.orA); fOrB.classList.toggle("on",!!st.orB);
+    for(const [b,on] of [[bA,and],[bO,or]]){ b.setAttribute("fill",on?Y:"#2a2a30"); b.style.filter=on?"drop-shadow(0 0 18px rgba(255,194,14,.9))":"none"; }
+  }
+  A.shannon={ enter(){ st.andA=1; st.andB=0; st.orA=0; st.orB=1; render(); } };
+})();
+
+/* ---------- talos: watch, or play as talos ---------- */
+(() => {
+  // idle: talos defends crete by himself. game: the player clicks ships to throw boulders,
+  // 3 ships landing = game over, surviving 3 patrol laps (one day) = win.
+  const cv=$("talos"), cap=$("talosCap"), hud=$("talosHud"), over=$("talosOver");
+  let W,H,isl=[],path=[],plen=0,ships=[],rocks=[],splash=[],pos=0,cool=0,lap=0,t=0;
+  let mode="idle", sunk=0, landed=0, spawnT=0, elapsed=0;
+  const LAND_MAX=3, LAPS=3, GAME_SPEED=.0082, IDLE_SPEED=.022, COOL=320;
+  function build(){
+    W=cv.offsetWidth; H=cv.offsetHeight; isl=[]; path=[];
+    const cx=W/2, cy=H/2, rx=W*.3, ry=H*.13;
+    for(let i=0;i<120;i++){ const a=i/120*Math.PI*2; const r=1+.08*Math.sin(3*a+1)+.06*Math.sin(5*a)+.04*Math.sin(9*a+2);
+      isl.push([cx+Math.cos(a)*rx*r, cy+Math.sin(a)*ry*r*(1+.25*Math.sin(2*a))]); }
+    for(const [x,y] of isl){ const dx=x-cx, dy=y-cy, d=Math.hypot(dx,dy); path.push([x+dx/d*22, y+dy/d*22]); }
+    plen=path.length;
+  }
+  function onIsland(px,py){ let inside=false; for(let i=0,j=isl.length-1;i<isl.length;j=i++){ const [xi,yi]=isl[i],[xj,yj]=isl[j];
+    if(((yi>py)!==(yj>py))&&(px<(xj-xi)*(py-yi)/(yj-yi)+xi)) inside=!inside; } return inside; }
+  function talosXY(){ const i=Math.floor(pos)%plen, f=pos-Math.floor(pos), a=path[i], b=path[(i+1)%plen]; return [a[0]+(b[0]-a[0])*f, a[1]+(b[1]-a[1])*f]; }
+  function spawn(speed=1){
+    const side=pick(["l","r","t","b"]); let x,y;
+    if(side==="l"){ x=-30; y=rnd(H*.1,H*.9); } else if(side==="r"){ x=W+30; y=rnd(H*.1,H*.9); }
+    else if(side==="t"){ x=rnd(W*.1,W*.9); y=-30; } else { x=rnd(W*.1,W*.9); y=H+30; }
+    const tx=W/2+rnd(-W*.22,W*.22), ty=H/2+rnd(-H*.06,H*.06), d=Math.hypot(tx-x,ty-y), v=rnd(.27,.4)*speed;
+    ships.push({x,y,vx:(tx-x)/d*v,vy:(ty-y)/d*v,alive:1,sink:0,landed:0,dir:tx>x?1:-1});
+  }
+  function throwAt(tx,ty,ship){ const [sx,sy]=talosXY(); const T=650;
+    const px=ship?ship.x+ship.vx*T/16.7:tx, py=ship?ship.y+ship.vy*T/16.7:ty;
+    rocks.push({x0:sx,y0:sy,t:0,T,x1:px,y1:py}); if(ship) ship.targeted=1; cool=COOL; }
+  function setOverlay(html){ if(!html){ over.classList.add("hide"); return; } over.innerHTML=`<div class="box">${html}</div>`; over.classList.remove("hide");
+    const b=over.querySelector("button"); if(b) b.onclick=start; }
+  function idleOverlay(){ setOverlay(`<h3>Play as Talos</h3><p>Click the enemy ships to hurl boulders at them. If <b>3 ships</b> reach the shore, Crete falls. Survive <b>3 patrol laps</b> to win.</p><button class="btn on">Start ▶</button>`); }
+  function start(){ mode="game"; ships=[]; rocks=[]; splash=[]; sunk=0; landed=0; lap=0; pos=0; cool=0; spawnT=600; elapsed=0; setOverlay(null); }
+  function end(won){ mode="over";
+    setOverlay(won?`<div class="big" style="color:var(--y)">Crete is safe!</div><p>You sank <b>${sunk}</b> ships and lasted a full day of patrols.</p><button class="btn on">Play again ↺</button>`
+                  :`<div class="big" style="color:var(--red)">Crete has fallen</div><p>Three ships made it ashore during lap ${lap+1}. You sank <b>${sunk}</b>.</p><button class="btn on">Try again ↺</button>`); }
+  function renderHud(){ hud.innerHTML = mode==="idle" ? "" : `<span>Lap <b>${Math.min(lap+1,LAPS)}</b> of ${LAPS}</span><span>Sunk <b>${sunk}</b></span><span class="${landed?"bad":""}">Landed <b>${landed}</b> / ${LAND_MAX}</span>`; }
+  cv.addEventListener("pointerdown",e=>{
+    if(mode!=="game"||cool>0) return;
+    const r=cv.getBoundingClientRect(), x=(e.clientX-r.left)*W/r.width, y=(e.clientY-r.top)*H/r.height;
+    let best=null, bd=46; for(const s of ships){ if(!s.alive||s.landed) continue; const d=Math.hypot(s.x-x,s.y-y); if(d<bd){ bd=d; best=s; } }
+    throwAt(x,y,best);
+  });
+  cv._ships=()=>ships.filter(s=>s.alive&&!s.landed).map(s=>({x:s.x,y:s.y,W,H}));   // used by the automated test
+  A.talos={
+    enter(){ build(); mode="idle"; ships=[]; rocks=[]; splash=[]; pos=0; cool=0; lap=0; t=0; for(let i=0;i<3;i++){ spawn(); ships[i].x+=ships[i].vx*400; ships[i].y+=ships[i].vy*400; } idleOverlay(); renderHud(); },
+    tick(dt){
+      if(!W) build();
+      const x=ctxOf(cv), f=dt/16.7; t+=dt;
+      // sea
+      const g=x.createLinearGradient(0,0,0,H); g.addColorStop(0,"#0b1622"); g.addColorStop(1,"#0a1018"); x.fillStyle=g; x.fillRect(0,0,W,H);
+      x.strokeStyle="rgba(106,184,255,.08)"; x.lineWidth=1.5;
+      for(let r=0;r<14;r++){ x.beginPath(); const yy=r*H/13; for(let xx=0;xx<=W;xx+=20) x.lineTo(xx, yy+Math.sin(xx*.02+t*.0012+r)*4); x.stroke(); }
+      // island
+      x.beginPath(); isl.forEach(([a,b],i)=>i?x.lineTo(a,b):x.moveTo(a,b)); x.closePath();
+      x.fillStyle="#2b2721"; x.fill(); x.strokeStyle="rgba(255,194,14,.35)"; x.lineWidth=3; x.stroke();
+      x.fillStyle="rgba(243,241,234,.35)"; x.font="600 22px 'JetBrains Mono',Consolas,monospace"; x.textAlign="center"; x.fillText("CRETE",W/2,H/2+8);
+      x.setLineDash([4,10]); x.strokeStyle="rgba(255,194,14,.25)"; x.lineWidth=2; x.beginPath(); path.forEach(([a,b],i)=>i?x.lineTo(a,b):x.moveTo(a,b)); x.closePath(); x.stroke(); x.setLineDash([]);
+      // talos patrols: 3 laps = one day
+      if(mode!=="over"){ pos+=dt*(mode==="game"?GAME_SPEED:IDLE_SPEED); if(pos>=plen){ pos-=plen; lap++; if(mode==="game"&&lap>=LAPS){ end(true); } else if(mode!=="game") lap%=3; } }
+      cap.textContent = mode==="game" ? "click a ship to hurl a boulder" : `patrol lap ${lap%3+1} of 3`;
+      const [tx,ty]=talosXY();
+      const rg=x.createRadialGradient(tx,ty,0,tx,ty,30); rg.addColorStop(0,"rgba(255,194,14,.9)"); rg.addColorStop(1,"rgba(255,194,14,0)"); x.fillStyle=rg; x.beginPath(); x.arc(tx,ty,30,0,7); x.fill();
+      x.fillStyle="#ffe7a3"; x.beginPath(); x.arc(tx,ty,8,0,7); x.fill();
+      cool-=dt;
+      if(mode==="game"&&cool>0){ x.strokeStyle="rgba(255,231,163,.8)"; x.lineWidth=3; x.beginPath(); x.arc(tx,ty,14,-Math.PI/2,-Math.PI/2+Math.PI*2*(1-cool/COOL)); x.stroke(); }
+      // ships: spawn faster as the day goes on
+      if(mode==="game"){ elapsed+=dt; spawnT-=dt; const prog=Math.min(1,elapsed/40000);
+        if(spawnT<=0){ spawn(1+prog*1.1); if(prog>.55&&Math.random()<prog*.5) spawn(1+prog*1.1);   // late in the day: faster, and often two at once
+          spawnT=rnd(1500,2100)*(1-prog*.55); } }
+      else if(mode==="idle"&&Math.random()<.006*f&&ships.filter(s=>s.alive&&!s.landed).length<5) spawn();
+      for(const s of ships){
+        if(s.alive&&!s.landed){ s.x+=s.vx*f; s.y+=s.vy*f;
+          if(onIsland(s.x+s.vx*12,s.y+s.vy*12)){
+            if(mode==="game"){ s.landed=1; landed++; if(landed>=LAND_MAX) end(false); }
+            else s.alive=0;  // idle: talos never lets one through
+          }
+          if(mode==="idle"&&cool<=0&&!s.targeted&&Math.hypot(s.x-tx,s.y-ty)<260) throwAt(0,0,s);
+        } else if(!s.alive) s.sink+=dt/1200;
+        if(s.sink>=1) continue;
+        x.save(); x.translate(s.x,s.y); x.globalAlpha=1-s.sink; x.rotate(s.sink*.6*s.dir); const sc=1-s.sink*.5; x.scale(sc*s.dir,sc);
+        x.fillStyle=s.landed?"#6b5236":"#8a6b45"; x.beginPath(); x.moveTo(-18,0); x.lineTo(18,0); x.lineTo(12,8); x.lineTo(-14,8); x.closePath(); x.fill();
+        x.fillStyle=s.landed?RED:INK; x.beginPath(); x.moveTo(0,-2); x.lineTo(0,-26); x.lineTo(14,-4); x.closePath(); x.fill();
+        x.restore();
+      }
+      ships=ships.filter(s=>s.sink<1 && s.x>-60 && s.x<W+60 && s.y>-60 && s.y<H+60);
+      // boulders
+      rocks=rocks.filter(r=>{ r.t+=dt; const p=Math.min(1,r.t/r.T); const rx=r.x0+(r.x1-r.x0)*p, ry=r.y0+(r.y1-r.y0)*p-Math.sin(p*Math.PI)*120;
+        x.fillStyle="#b9b2a5"; x.beginPath(); x.arc(rx,ry,6+Math.sin(p*Math.PI)*4,0,7); x.fill();
+        if(p>=1){ splash.push({x:r.x1,y:r.y1,t:0});
+          for(const s of ships){ if(s.alive&&!s.landed&&Math.hypot(s.x-r.x1,s.y-r.y1)<34){ s.alive=0; if(mode==="game") sunk++; } else if(s.targeted&&s.alive) s.targeted=0; }
+          return false; } return true; });
+      splash=splash.filter(s=>{ s.t+=dt/700; x.strokeStyle=`rgba(243,241,234,${1-s.t})`; x.lineWidth=2; x.beginPath(); x.arc(s.x,s.y,8+s.t*34,0,7); x.stroke(); return s.t<1; });
+      renderHud();
+    }
+  };
+})();
+
+/* ---------- 8 automaton: three machines, auto or hand-cranked ---------- */
+(() => {
+  const svg=$("gears");
+  function gearPath(n,ro,ri,rh){
+    let d=""; for(let i=0;i<n;i++){ const a=i/n*Math.PI*2, s=Math.PI*2/n;
+      const pts=[[a-s*.25,ri],[a-s*.15,ro],[a+s*.15,ro],[a+s*.25,ri],[a+s*.75,ri]];
+      pts.forEach(([ang,r],k)=>d+=(i===0&&k===0?"M":"L")+(Math.cos(ang)*r).toFixed(1)+" "+(Math.sin(ang)*r).toFixed(1)+" "); }
+    d+="Z M"+rh+" 0 A"+rh+" "+rh+" 0 1 0 "+(-rh)+" 0 A"+rh+" "+rh+" 0 1 0 "+rh+" 0Z"; return d;
+  }
+  svg.innerHTML=`<style>.gr{fill:#2a2a30;stroke:${Y};stroke-width:2.5;fill-rule:evenodd}.rod{stroke:${INK};stroke-width:5;stroke-linecap:round}.pin{fill:${INK}}</style>`;
+  const D={x:170,y:440};                                   // drive gear (the crank turns this one)
+  const gear=(parent,n,ro,ri,rh)=>{ const g=svgEl("g",{},parent); svgEl("path",{d:gearPath(n,ro,ri,rh),class:"gr"},g);
+    for(let k=0;k<4;k++) svgEl("line",{x1:0,y1:0,x2:Math.cos(k*Math.PI/2)*(ri-6),y2:Math.sin(k*Math.PI/2)*(ri-6),stroke:Y,"stroke-width":2,opacity:.4},g); return g; };
+  const place=(g,x,y,ang)=>g.setAttribute("transform",`translate(${x} ${y}) rotate(${ang*180/Math.PI})`);
+
+  // --- spinner: a windmill. a small gear multiplies the crank's speed; a belt carries it up to the sails ---
+  const m1=svgEl("g",{},svg);
+  const PIN={x:298,y:440}, HUB={x:470,y:245}, PR=24;
+  const w1g2=gear(m1,6,40,28,9);
+  svgEl("rect",{x:350,y:398,width:250,height:12,rx:4,fill:"#3a3a42"},m1);
+  svgEl("path",{d:`M${HUB.x-26} 398 L${HUB.x-12} ${HUB.y+18} L${HUB.x+12} ${HUB.y+18} L${HUB.x+26} 398Z`,fill:"#2f2a22",stroke:"#5a5040","stroke-width":2},m1);
+  const beltA=svgEl("line",{stroke:"#77746d","stroke-width":4,"stroke-dasharray":"10 8"},m1), beltB=svgEl("line",{stroke:"#77746d","stroke-width":4,"stroke-dasharray":"10 8"},m1);
+  const pulleyP=svgEl("circle",{cx:PIN.x,cy:PIN.y,r:PR,fill:"none",stroke:"#77746d","stroke-width":3},m1);
+  const pulleyH=svgEl("circle",{cx:HUB.x,cy:HUB.y,r:PR,fill:"#1c1c20",stroke:"#77746d","stroke-width":3},m1);
+  const sails=svgEl("g",{},m1);
+  for(let k=0;k<4;k++){ const g=svgEl("g",{transform:`rotate(${k*90})`},sails);
+    svgEl("line",{x1:0,y1:0,x2:0,y2:-122,stroke:INK,"stroke-width":5,"stroke-linecap":"round"},g);
+    svgEl("rect",{x:2,y:-120,width:30,height:94,rx:3,fill:"rgba(255,194,14,.22)",stroke:Y,"stroke-width":2},g);
+    for(let r=1;r<5;r++) svgEl("line",{x1:2,y1:-120+r*18.8,x2:32,y2:-120+r*18.8,stroke:Y,"stroke-width":1,opacity:.5},g); }
+  svgEl("circle",{cx:0,cy:0,r:12,fill:INK},sails);
+  const w1ratio=svgEl("text",{x:362,y:446,fill:MUTE,"font-family":"JetBrains Mono, Consolas, monospace","font-size":15},m1);
+  // belt: two straight runs between the pulleys (equal radius, so the runs are parallel)
+  (()=>{ const dx=HUB.x-PIN.x, dy=HUB.y-PIN.y, d=Math.hypot(dx,dy), nx=-dy/d*PR, ny=dx/d*PR;
+    [[beltA,1],[beltB,-1]].forEach(([l,s])=>{ l.setAttribute("x1",PIN.x+nx*s); l.setAttribute("y1",PIN.y+ny*s); l.setAttribute("x2",HUB.x+nx*s); l.setAttribute("y2",HUB.y+ny*s); }); })();
+
+  // --- machine 2: drawing machine (two wheels, two arms, one pen) ---
+  const m2=svgEl("g",{},svg);
+  svgEl("rect",{x:110,y:90,width:420,height:215,rx:6,fill:"#e9e4d6",opacity:.95},m2);
+  const ink=svgEl("polyline",{fill:"none",stroke:"#1d1d24","stroke-width":1.6,"stroke-linejoin":"round",opacity:.9},m2);
+  const idl=gear(m2,6,40,28,9), whB=gear(m2,13,80,66,16);
+  const armA=svgEl("line",{class:"rod","stroke-width":4},m2), armB=svgEl("line",{class:"rod","stroke-width":4},m2);
+  const pinA=svgEl("circle",{r:7,class:"pin"},m2), pinB=svgEl("circle",{r:7,class:"pin"},m2);
+  const pen=svgEl("circle",{r:7,fill:RED,stroke:"#121214","stroke-width":2},m2);
+  const IDL={x:298,y:440}, WB={x:406,y:440}, L=280;
+  let trail=[];
+
+  // --- machine 3: digesting duck ---
+  const m3=svgEl("g",{},svg);
+  const d3g2=gear(m3,10,62,48,13);
+  svgEl("rect",{x:300,y:300,width:290,height:14,rx:4,fill:"#3a3a42"},m3);
+  const plate=svgEl("ellipse",{cx:545,cy:298,rx:34,ry:6,fill:"#55534d"},m3);
+  const d3rod=svgEl("line",{class:"rod"},m3), d3pin=svgEl("circle",{r:8,class:"pin"},m3);
+  const duck=svgEl("g",{},m3);
+  svgEl("path",{d:"M380 240 C380 205 420 190 470 198 C505 203 525 222 522 246 C518 272 480 282 430 280 C400 279 380 266 380 240Z",fill:"#e8e2d0"},duck);
+  svgEl("line",{x1:430,y1:280,x2:426,y2:300,stroke:"#ff8a1f","stroke-width":5},duck); svgEl("line",{x1:460,y1:280,x2:462,y2:300,stroke:"#ff8a1f","stroke-width":5},duck);
+  const neck=svgEl("g",{},duck);
+  svgEl("path",{d:"M392 232 C380 210 372 180 372 160",stroke:"#e8e2d0","stroke-width":22,fill:"none","stroke-linecap":"round"},neck);
+  svgEl("circle",{cx:368,cy:152,r:24,fill:"#e8e2d0"},neck); svgEl("circle",{cx:360,cy:146,r:4.5,fill:"#121214"},neck);
+  svgEl("path",{d:"M348 154 L318 160 L348 166Z",fill:"#ff8a1f"},neck);
+  const wing=svgEl("path",{d:"M420 222 C450 200 500 205 520 228 C495 236 450 240 420 222Z",fill:"#cfc7b0",stroke:"#121214","stroke-width":1.5},duck);
+  let pellets=[], lastTurn=0;
+
+  // --- shared drive gear + crank handle ---
+  const drive=gear(svg,16,100,84,18);
+  const crankArm=svgEl("line",{stroke:Y,"stroke-width":6,"stroke-linecap":"round"},svg);
+  const crank=svgEl("g",{class:"crank"},svg);
+  svgEl("circle",{r:26,fill:"rgba(255,194,14,.18)"},crank); svgEl("circle",{r:15,fill:Y,stroke:"#121214","stroke-width":3},crank);
+
+  const M=[
+    {key:"duck",g:m3,name:"Digesting Duck",note:"Vaucanson, 1739: it flapped, ate, and appeared to digest. (The digestion was faked.)",speed:.0013},
+    {key:"spin",g:m1,name:"Windmill",note:"Gears multiply speed: one slow turn of the crank spins the sails almost 3 times.",speed:.0009},
+    {key:"draw",g:m2,name:"Drawing machine",note:"Inspired by Jaquet-Droz’s Writer (1770s): two turning wheels guide one pen.",speed:.0024},
+  ];
+  let mi=0, a=0, auto=true, drag=null;
+  const btn=$("amAuto"), dots=$("amDots");
+  dots.innerHTML=M.map(()=>"<i></i>").join("");
+  function show(i){ mi=(i+M.length)%M.length; M.forEach((m,k)=>m.g.style.display=k===mi?"":"none"); $("amName").textContent=`${mi+1} / ${M.length} · ${M[mi].name}`; $("amNote").textContent=M[mi].note;
+    [...dots.children].forEach((d,k)=>d.classList.toggle("on",k===mi)); trail=[]; ink.setAttribute("points",""); pellets.forEach(p=>p.el.remove()); pellets=[]; lastTurn=Math.floor(a/(Math.PI*2)); }
+  function setAuto(v){ auto=v; btn.textContent=v?"❚❚ Pause":"▶ Auto"; btn.classList.toggle("on",v); }
+  $("amPrev").onclick=()=>show(mi-1); $("amNext").onclick=()=>show(mi+1); btn.onclick=()=>setAuto(!auto);
+  // drag the crank: turn the drive gear by the change in angle around its center
+  const toSvg=e=>{ const p=svg.createSVGPoint(); p.x=e.clientX; p.y=e.clientY; return p.matrixTransform(svg.getScreenCTM().inverse()); };
+  const angAt=e=>{ const p=toSvg(e); return Math.atan2(p.y-D.y,p.x-D.x); };
+  const startDrag=e=>{ e.preventDefault(); setAuto(false); drag=angAt(e); svg.setPointerCapture(e.pointerId); };
+  crank.addEventListener("pointerdown",startDrag); drive.addEventListener("pointerdown",startDrag); drive.style.cursor="grab";
+  svg.addEventListener("pointermove",e=>{ if(drag===null) return; const n=angAt(e); let d=n-drag; if(d>Math.PI) d-=2*Math.PI; if(d<-Math.PI) d+=2*Math.PI; a+=d; drag=n; });
+  const end=()=>drag=null; svg.addEventListener("pointerup",end); svg.addEventListener("pointercancel",end);
+
+  function circleX(p1,p2,r){ // upper intersection of two circles of radius r
+    const dx=p2.x-p1.x, dy=p2.y-p1.y, d=Math.hypot(dx,dy), h=Math.sqrt(Math.max(0,r*r-d*d/4)), mx=(p1.x+p2.x)/2, my=(p1.y+p2.y)/2;
+    return {x:mx+dy/d*h, y:my-dx/d*h};
+  }
+  function render(){
+    place(drive,D.x,D.y,a);
+    const hx=D.x+Math.cos(a)*74, hy=D.y+Math.sin(a)*74;
+    crankArm.setAttribute("x1",D.x); crankArm.setAttribute("y1",D.y); crankArm.setAttribute("x2",hx); crankArm.setAttribute("y2",hy);
+    crank.setAttribute("transform",`translate(${hx} ${hy})`);
+    const key=M[mi].key;
+    if(key==="spin"){
+      const g2=-a*16/6+Math.PI/6; place(w1g2,PIN.x,PIN.y,g2);
+      sails.setAttribute("transform",`translate(${HUB.x} ${HUB.y}) rotate(${g2*180/Math.PI})`);
+      const off=(-g2*PR)%18; beltA.setAttribute("stroke-dashoffset",off); beltB.setAttribute("stroke-dashoffset",-off);
+      w1ratio.textContent=`crank ${(a/(2*Math.PI)).toFixed(1)} turns · sails ${(-g2/(2*Math.PI)+1/12).toFixed(1)}`;
+    } else if(key==="draw"){
+      const ai=-a*16/6, bi=a*16/13; place(idl,IDL.x,IDL.y,ai); place(whB,WB.x,WB.y,bi);
+      const pA={x:D.x+Math.cos(a+Math.PI)*62,y:D.y+Math.sin(a+Math.PI)*62}, pB={x:WB.x+Math.cos(bi)*52,y:WB.y+Math.sin(bi)*52};
+      const P=circleX(pA,pB,L);
+      [[pinA,pA],[pinB,pB]].forEach(([el,p])=>{ el.setAttribute("cx",p.x); el.setAttribute("cy",p.y); });
+      [[armA,pA],[armB,pB]].forEach(([el,p])=>{ el.setAttribute("x1",p.x); el.setAttribute("y1",p.y); el.setAttribute("x2",P.x); el.setAttribute("y2",P.y); });
+      pen.setAttribute("cx",P.x); pen.setAttribute("cy",P.y);
+      const last=trail[trail.length-1]; if(!last||Math.hypot(last[0]-P.x,last[1]-P.y)>1.2){ trail.push([P.x.toFixed(1),P.y.toFixed(1)]); if(trail.length>6000) trail.splice(0,trail.length-6000); ink.setAttribute("points",trail.join(" ")); }
+    } else {
+      const g2=-a*16/10+Math.PI/10; place(d3g2,318,440,g2);
+      const px=318+Math.cos(g2)*40, py=440+Math.sin(g2)*40; d3pin.setAttribute("cx",px); d3pin.setAttribute("cy",py);
+      d3rod.setAttribute("x1",px); d3rod.setAttribute("y1",py); d3rod.setAttribute("x2",452); d3rod.setAttribute("y2",300);
+      wing.setAttribute("transform",`rotate(${-12-22*Math.sin(g2)} 425 222)`);
+      neck.setAttribute("transform",`translate(0 ${10*Math.sin(2*g2)}) rotate(${6*Math.sin(2*g2)} 392 232)`);
+      const turn=Math.floor(a/(Math.PI*2)); if(turn>lastTurn && pellets.length<6){ pellets.push({el:svgEl("circle",{cx:516,cy:258,r:6,fill:"#8a6b45"},m3),y:258,v:0,x:516}); } lastTurn=turn;
+    }
+  }
+  A.automaton={
+    enter(){ setAuto(true); show(mi); },
+    tick(dt){
+      if(auto) a+=dt*M[mi].speed;
+      if(M[mi].key==="duck") pellets.forEach(p=>{ if(p.y<292){ p.v+=dt*.002; p.y=Math.min(292,p.y+p.v*dt); p.x+= (545-p.x)*Math.min(1,dt*.004); p.el.setAttribute("cy",p.y); p.el.setAttribute("cx",p.x); } });
+      render();
+    }
+  };
+  show(0);
+})();
+
+/* ---------- 9 gulliver ---------- */
+(() => {
+  const V={D:["the","a","every","no"],A:["wise","bronze","silent","ancient","golden","mad","tiny"],N:["machine","king","scholar","island","star","truth","number","word","mind","ship","giant","horse"],V:["thinks","rules","eats","builds","writes","loves","sees","fears","counts"],O:["of","and","why","not"]};
+  const Wt=[["D",.22],["A",.14],["N",.34],["V",.24],["O",.06]];
+  const grid=$("lagado"), found=$("lagFound"), cnt=$("lagCount"), COLS=7, ROWS=6;
+  const tiles=[]; let words=[], turns=0, busy=false, hist=[];
+  for(let i=0;i<COLS*ROWS;i++){ const d=document.createElement("div"); d.style.cssText="font-family:var(--mono);font-size:17px;text-align:center;padding:12px 4px;border-radius:8px;background:#2a2620;border:1px solid #3a342a;color:#e8dcc0;transition:background .3s,border-color .3s,color .3s"; grid.appendChild(d); tiles.push(d); }
+  function rw(){ let r=Math.random(), p; for(const [k,w] of Wt){ r-=w; if(r<=0){ p=k; break; } } p=p||"N"; return {p,w:pick(V[p])}; }
+  function scan(){
+    const hits=[];
+    for(let r=0;r<ROWS;r++){ const row=words.slice(r*COLS,(r+1)*COLS);
+      for(let i=0;i<COLS;i++){ let j=i; if(row[j]?.p!=="D") continue; j++; if(row[j]?.p==="A") j++; if(row[j]?.p!=="N") continue; j++; if(row[j]?.p!=="V") continue; j++;
+        let k=j; if(row[k]?.p==="D"){ k++; if(row[k]?.p==="A") k++; if(row[k]?.p==="N") j=k+1; } else if(row[k]?.p==="N") j=k+1;
+        hits.push({r,i,j}); i=j-1; } }
+    return hits;
+  }
+  function crank(){
+    if(busy) return; busy=true; turns++; cnt.textContent=`${turns} turn${turns>1?"s":""}`;
+    words=tiles.map(()=>rw());
+    tiles.forEach((d,k)=>{ d.style.background="#2a2620"; d.style.borderColor="#3a342a"; d.style.color="#e8dcc0";
+      setTimeout(()=>{ d.classList.remove("flip"); void d.offsetWidth; d.classList.add("flip"); d.textContent=words[k].w; }, (k%COLS)*60+((k/COLS)|0)*30); });
+    setTimeout(()=>{
+      const hits=scan();
+      hits.forEach(h=>{ for(let c=h.i;c<h.j;c++){ const d=tiles[h.r*COLS+c]; d.style.background="rgba(255,194,14,.2)"; d.style.borderColor=Y; d.style.color=Y; } });
+      if(hits.length){ hits.forEach(h=>{ const s=words.slice(h.r*COLS+h.i,h.r*COLS+h.j).map(w=>w.w).join(" "); hist.unshift(s.charAt(0).toUpperCase()+s.slice(1)+"."); }); hist=hist.slice(0,4); }
+      found.innerHTML = hist.length ? hist.map((s,i)=>`<div style="opacity:${1-i*.2}">${i===0&&hits.length?"<span class='y'>+ </span>":"· "}${s}</div>`).join("") : "<span class='muted'>Nothing meaningful yet. Turn again!</span>";
+      if(!hits.length && hist.length) found.insertAdjacentHTML("afterbegin","<div class='muted'>(nothing this turn)</div>");
+      busy=false;
+    }, 900);
+  }
+  $("crank").onclick=crank;
+  A.gulliver={ enter(){ if(!turns) setTimeout(crank,700); } };
+})();
+
+/* ---------- timeline ---------- */
+const AVATARS={"1950":"{{IMG:turing.jpg}}","1956":"{{IMG:mccarthy.jpg}}","1957":"{{IMG:rosenblatt.jpg}}"};
+const EVENTS=[
+  ["1950","Alan Turing publishes “Computing Machinery and Intelligence” and proposes the Turing Test."],
+  ["1956","John McCarthy coins “Artificial Intelligence” at the Dartmouth Conference. AI becomes a field."],
+  ["1957","Frank Rosenblatt invents the Perceptron, an early artificial neural network."],
+  ["1965","Joseph Weizenbaum at MIT builds ELIZA, a natural-language chatbot."],
+  ["1970s","The first “AI Winter”: unmet expectations and reduced funding."],
+  ["1980","Expert systems such as DENDRAL and MYCIN find commercial success. The winter ends."],
+  ["1986","Rumelhart, Hinton & Williams publish backpropagation, a breakthrough for training neural networks."],
+  ["1997","IBM’s Deep Blue defeats world chess champion Garry Kasparov."],
+];
+document.querySelectorAll(".slide.tl:not(.tl2)").forEach(sl=>{
+  const k=+sl.dataset.upto, n=EVENTS.length, xp=i=>(i+.5)/n*100;
+  const hd=document.createElement("div");
+  hd.innerHTML=`<h2 class="rise" style="--i:0"><span class="n">TIMELINE</span>The road to AI</h2>`;
+  sl.appendChild(hd);
+  const wrap=document.createElement("div"); wrap.className="tlwrap";
+  wrap.innerHTML=`<div class="tlaxis"></div><div class="tlfill"></div><div class="tlarrow"></div>`;
+  EVENTS.forEach(([yr,tx],i)=>{
+    const e=document.createElement("div");
+    e.className="ev "+(i%2?"dn":"up")+" "+(i<k?"done":i===k?"now new":"future")+(i===4&&i<=k?" winter":"");
+    e.style.left=xp(i)+"%"; e.style.top="0"; e.style.height="100%";
+    e.innerHTML=`<div class="stem"></div><div class="dot"></div><div class="box"><div class="yrow">${AVATARS[yr]?`<img class="av" src="${AVATARS[yr]}" alt="">`:""}<div class="yr">${yr}</div></div><div class="tx">${tx}</div></div>`;
+    wrap.appendChild(e);
+  });
+  sl.appendChild(wrap);
+  const fill=wrap.querySelector(".tlfill");
+  const prev = k>0 ? xp(k-1) : 0;
+  const snow = sl.querySelector(".snow");
+  let flakes=[], winter=0, pile=null, cap=null;
+  // the winter slide gets a second step: the timeline fades, the snow thickens and piles up
+  if(snow){ cap=document.createElement("div"); cap.className="winterCap"; cap.innerHTML=`<div class="wt">The first AI Winter</div><div class="ws">1970s · unmet expectations, reduced funding</div>`; sl.appendChild(cap); }
+  const flake=()=>({x:rnd(0,1600),y:rnd(-900,0),r:rnd(1,3.2),v:rnd(.4,1.3),s:rnd(0,6)});
+  function setWinter(v){ winter=v; sl.classList.toggle("winterOnly",!!v);
+    if(v) while(flakes.length<520) flakes.push(flake()); else flakes.length=Math.min(flakes.length,160); }
+  A[sl.dataset.id]={
+    enter(dir){ fill.style.transition="none"; fill.style.width=prev+"%"; void fill.offsetWidth; fill.style.transition=""; fill.style.width=xp(k)+"%";
+      if(snow){ flakes=Array.from({length:160},()=>({...flake(),y:rnd(-900,900)})); pile=new Float32Array(161); setWinter(dir<0?1:0); } },
+    step(){ if(!snow||winter) return false; setWinter(1); return true; },
+    back(){ if(!snow||!winter) return false; setWinter(0); return true; },
+    tick(dt,now){ if(!snow) return; const x=ctxOf(snow), f=dt/16.7; x.clearRect(0,0,1600,900);
+      for(const p of flakes){ p.y+=p.v*f*(winter?1.25:1); p.x+=Math.sin(now*.001+p.s)*.4*f;
+        const col=Math.max(0,Math.min(160,Math.round(p.x/10))), ground=900-(winter?pile[col]:0);
+        if(p.y>ground){ if(winter&&pile[col]<130){ for(let d=-3;d<=3;d++){ const c=col+d; if(c>=0&&c<=160) pile[c]+=p.r*(d?0.9:2.2)*(1-Math.abs(d)*.15); } } p.y=-10; p.x=rnd(0,1600); }
+        x.fillStyle=`rgba(200,225,255,${.35+p.r*.15})`; x.beginPath(); x.arc(p.x,p.y,p.r,0,7); x.fill(); }
+      if(winter){ for(let c=0;c<=160;c++){ const shape=.75+.25*Math.sin(c*.11)+.15*Math.sin(c*.37+1); if(pile[c]<130*shape) pile[c]+=dt*.009*shape; }   // drift builds up over ~12 s
+        x.fillStyle="rgba(225,238,255,.88)"; x.beginPath(); x.moveTo(0,900);
+        for(let c=0;c<=160;c++) x.lineTo(c*10,900-pile[c]); x.lineTo(1600,900); x.closePath(); x.fill(); } }
+  };
+});
+
+/* ---------- turing ---------- */
+(() => {
+  const mA=$("mA"), mB=$("mB"), rA=$("revA"), rB=$("revB"); let timers=[], guessed=false;
+  const S=[
+    [600,"j","Hi! What did you have for breakfast?"],
+    [1900,"A","Toast. Burnt it again, as usual."],[2700,"B","nothing lol, overslept. running on coffee"],
+    [4400,"j","What’s 3,487 × 29?"],
+    [5800,"A","Hmm, give me a sec… roughly 101,000?"],[6500,"B","dude I’m not a calculator"],
+    [8200,"j","Describe the smell of rain."],
+    [9600,"A","Earthy. Like warm concrete after a storm."],[10400,"B","wet dirt? kinda nice honestly"],
+  ];
+  function add(box,cls,txt){ const m=document.createElement("div"); m.className="msg "+cls; m.textContent=txt; box.appendChild(m); while(box.children.length>7) box.removeChild(box.firstChild); return m; }
+  function run(){
+    timers.forEach(clearTimeout); timers=[]; mA.innerHTML=""; mB.innerHTML=""; guessed=false;
+    [rA,rB].forEach(r=>{ r.textContent="?"; r.className="reveal"; });
+    S.forEach(([t,who,txt])=>{
+      if(who==="j"){ timers.push(setTimeout(()=>{ add(mA,"j",txt); add(mB,"j",txt); },t)); }
+      else { const box=who==="A"?mA:mB; let typing;
+        timers.push(setTimeout(()=>{ typing=add(box,"a typing","typing…"); },t-800));
+        timers.push(setTimeout(()=>{ typing&&typing.remove(); add(box,"a",txt); },t)); }
+    });
+  }
+  document.querySelectorAll("[data-guess]").forEach(b=>b.onclick=()=>{
+    if(guessed) { run(); return; } guessed=true;
+    rA.textContent="MACHINE"; rA.className="reveal tag t-red"; rB.textContent="HUMAN"; rB.className="reveal tag t-green";
+    add(mA,"a",b.dataset.guess==="A"?"You got me. 🤖":"Fooled you. I was the machine.");
+  });
+  A.turing={ enter(){ run(); } };
+})();
+
+/* ---------- dartmouth ---------- */
+(() => {
+  const el=$("dq"), Q="Every aspect of learning or any other feature of intelligence can in principle be so precisely described that a machine can be made to simulate it.”";
+  let t=0;
+  A.dartmouth={ enter(){ t=-900; el.textContent=""; }, tick(dt){ t+=dt; const n=Math.max(0,Math.min(Q.length,Math.floor(t/32))); if(el.textContent.length!==n) el.textContent=Q.slice(0,n); } };
+})();
+
+/* ---------- neurons ---------- */
+(() => {
+  // 4 layers (2-3-3-2). a pulse adds to the target's charge; enough charge arriving close together makes it fire,
+  // which sends pulses on to the next layer. charge leaks away slowly, and a neuron rests briefly after firing.
+  const cv=$("neuro"); let W,H,N=[],E=[],P=[],stim=0, last=0;
+  const LEAK=.00028, REST=450, TRAVEL=[750,1050];
+  function build(){
+    W=cv.offsetWidth; H=cv.offsetHeight; N=[]; E=[]; P=[]; cv._fires=[0,0,0,0];
+    const sizes=[2,3,3,2];
+    sizes.forEach((rows,c)=>{ for(let r=0;r<rows;r++){
+      const n={x:W*(.13+c*.25)+rnd(-20,20), y:H*((r+1)/(rows+1))+rnd(-30,30), v:0, g:0, col:c, den:[], rest:0, ins:0};
+      for(let d=0;d<6;d++){ const a=rnd(0,Math.PI*2); let px=n.x, py=n.y; const seg=[]; for(let k=0;k<4;k++){ px+=Math.cos(a+rnd(-.5,.5))*rnd(10,16); py+=Math.sin(a+rnd(-.5,.5))*rnd(10,16); seg.push([px,py]); } n.den.push(seg); }
+      N.push(n); } });
+    const link=(a,b)=>{ if(!E.some(e=>e.a===a&&e.b===b)){ E.push({a,b,cx:(a.x+b.x)/2+rnd(-40,40),cy:(a.y+b.y)/2+rnd(-60,60),ms:rnd(...TRAVEL)}); b.ins++; } };
+    for(let c=0;c<3;c++){
+      const A_=N.filter(n=>n.col===c), B_=N.filter(n=>n.col===c+1);
+      A_.forEach(a=>B_.forEach(b=>{ if(Math.random()<.7) link(a,b); }));
+      B_.forEach(b=>{ while(b.ins<2) link(pick(A_),b); });                    // every neuron listens to at least 2
+      A_.forEach(a=>{ if(!E.some(e=>e.a===a)) link(a,pick(B_)); });           // and talks to at least 1
+    }
+    E.forEach(e=>e.w=1.35/e.b.ins);                                           // ~3/4 of a neuron's inputs make it fire
+  }
+  const bez=(e,t)=>{ const u=1-t; return [u*u*e.a.x+2*u*t*e.cx+t*t*e.b.x, u*u*e.a.y+2*u*t*e.cy+t*t*e.b.y]; };
+  function fire(n){ n.g=1; n.v=0; n.rest=REST; cv._fires[n.col]++; E.filter(e=>e.a===n).forEach(e=>P.push({e,t:0})); }
+  A.neurons={
+    enter(){ build(); stim=300; last=-1; },
+    tick(dt){
+      const x=ctxOf(cv); x.fillStyle="#0d0d0f"; x.fillRect(0,0,W,H);
+      // the inputs: both input neurons usually fire close together, sometimes only one does
+      stim-=dt; if(stim<=0){ stim=rnd(1400,2300); const ins=N.filter(n=>n.col===0); const first=pick(ins); fire(first);
+        if(Math.random()<.8){ const other=ins.find(n=>n!==first); setTimeout(()=>{ if(other) fire(other); },rnd(80,350)); } }
+      for(const e of E){ x.strokeStyle="rgba(106,184,255,.22)"; x.lineWidth=2.5; x.beginPath(); x.moveTo(e.a.x,e.a.y); x.quadraticCurveTo(e.cx,e.cy,e.b.x,e.b.y); x.stroke(); }
+      const arrived=[];   // fire after the sweep, so new pulses aren't dropped by the filter
+      P=P.filter(p=>{ p.t+=dt/p.e.ms; if(p.t>=1){ const b=p.e.b; if(b.rest<=0){ b.v+=p.e.w; if(b.v>=1&&!arrived.includes(b)) arrived.push(b); } return false; }
+        for(let k=0;k<6;k++){ const [px,py]=bez(p.e,Math.max(0,p.t-k*.025)); x.fillStyle=`rgba(255,194,14,${1-k/6})`; x.beginPath(); x.arc(px,py,4.5-k*.5,0,7); x.fill(); }
+        return true; });
+      arrived.forEach(fire);
+      for(const n of N){
+        n.v=Math.max(0,n.v-dt*LEAK); n.g*=.93; n.rest-=dt;
+        x.strokeStyle=`rgba(243,241,234,${.25+n.g*.5})`; x.lineWidth=2;
+        n.den.forEach(seg=>{ x.beginPath(); x.moveTo(n.x,n.y); seg.forEach(([a,b])=>x.lineTo(a,b)); x.stroke(); });
+        if(n.g>.05){ const rg=x.createRadialGradient(n.x,n.y,0,n.x,n.y,50); rg.addColorStop(0,`rgba(255,194,14,${n.g*.7})`); rg.addColorStop(1,"rgba(255,194,14,0)"); x.fillStyle=rg; x.beginPath(); x.arc(n.x,n.y,50,0,7); x.fill(); }
+        x.fillStyle=n.g>.3?Y:"#3a3a44"; x.beginPath(); x.arc(n.x,n.y,15,0,7); x.fill();
+        x.strokeStyle=Y; x.lineWidth=3; x.beginPath(); x.arc(n.x,n.y,20,-Math.PI/2,-Math.PI/2+Math.PI*2*Math.min(1,n.v)); x.stroke();
+      }
+    }
+  };
+})();
+
+/* ---------- perceptron: a guided playground ---------- */
+(() => {
+  const T=0.75, MIN=-1, MAX=2;                                   // threshold and the sum bar's range
+  const IN=[{n:"It’s sunny"},{n:"Friends are going"},{n:"I have to study"}];
+  const START=[.2,.2,.2];
+  const w=[...START], x=[1,1,0];
+  // guided steps: each sets up a situation, gives a tip, and checks itself
+  const out=xs=>xs.reduce((a,v,i)=>a+v*w[i],0)>=T-1e-9;
+  const STEPS=[
+    {goal:"It’s sunny and your friends are going. Make the neuron say GO.",
+     tip:"Drag the weights for <b>sunny</b> and <b>friends</b> to the right until the bar crosses the <b>0.75</b> line.",
+     setup:[1,1,0], done:()=>out([1,1,0])},
+    {goal:"Now you also have to study. Make it say STAY.",
+     tip:"Studying should push <i>against</i> going: drag the <b>study</b> weight to the left, below zero. Negative weights subtract.",
+     setup:[1,1,1], done:()=>!out([1,1,1])},
+    {goal:"Check your neuron: GO when you’re free, STAY when you have to study.",
+     tip:"Click <b>I have to study</b> on and off. If it’s wrong either way, adjust the weights. The neuron has to get <b>both</b> right with the same weights.",
+     setup:null, done:()=>seen.size===2&&out([1,1,0])&&!out([1,1,1])},
+  ];
+  let step=0, finished=false, seen=new Set();   // step 3: which study values the student has tried
+  const rowsBox=$("ptRows"), goal=$("ptGoal");
+  const rows=IN.map((inp,i)=>{
+    const r=document.createElement("div"); r.className="prow card";
+    r.innerHTML=`<span class="nm">${inp.n}</span><span class="x"></span><input type="range" min="-1" max="1" step="0.05" aria-label="weight for ${inp.n}"><span class="w"></span>`;
+    const xb=r.querySelector(".x"), sl=r.querySelector("input");
+    xb.onclick=()=>{ x[i]^=1; if(i===2) seen.add(x[2]); upd(); }; sl.value=w[i]; sl.oninput=()=>{ w[i]=+sl.value; upd(); };
+    rowsBox.appendChild(r); return {r,xb,sl,wv:r.querySelector(".w")};
+  });
+  const pct=v=>(Math.max(MIN,Math.min(MAX,v))-MIN)/(MAX-MIN)*100;
+  $("ptLine").style.left=pct(T)+"%";
+  const f=v=>(v<0?"−":"+")+Math.abs(v).toFixed(2);
+  function setup(i){ step=i; finished=false; seen=new Set([x[2]]); const s=STEPS[i].setup; if(s){ s.forEach((v,k)=>x[k]=v); rows.forEach((o,k)=>{ o.r.classList.remove("flash"); void o.r.offsetWidth; if(s[k]) o.r.classList.add("flash"); }); } upd(); }
+  function renderGoal(){
+    const st=STEPS[step], ok=st.done(), last=step===STEPS.length-1;
+    const dots=STEPS.map((_,k)=>`<i class="${k<step||(k===step&&ok)?"done":k===step?"on":""}"></i>`).join("");
+    goal.classList.toggle("win",ok);
+    let status;
+    if(!ok) status=`<span class="tag t-y">Not yet</span>`;
+    else if(!last) status=`<span class="tag t-green">✓ Done!</span><button class="btn on" id="ptNextStep">Next step →</button>`;
+    else status=`<span class="tag t-green">✓ You trained a neuron!</span><span class="muted" style="font-size:16px">Real training adjusts weights like this automatically, thousands of times.</span>`;
+    goal.innerHTML=`<div class="gh"><span>YOUR GOAL · STEP ${step+1} OF ${STEPS.length}</span><span class="dots">${dots}</span></div><div class="gt">${st.goal}</div><div class="tip">💡 ${st.tip}</div><div class="gs">${status}${step>0||ok&&last?`<button class="btn" id="ptRestart" style="margin-left:auto">Start over</button>`:""}</div>`;
+    const n=$("ptNextStep"); if(n) n.onclick=()=>setup(step+1);
+    const r=$("ptRestart"); if(r) r.onclick=()=>{ START.forEach((v,k)=>{ w[k]=v; rows[k].sl.value=v; }); setup(0); };
+  }
+  function upd(){
+    let s=0;
+    rows.forEach((o,i)=>{ s+=x[i]*w[i]; o.xb.textContent=x[i]?"yes":"no"; o.xb.classList.toggle("on",!!x[i]); o.wv.textContent="w "+f(w[i]); o.wv.classList.toggle("neg",w[i]<0); });
+    const go=s>=T-1e-9, z=pct(0), p=pct(s), fill=$("ptFill");
+    fill.style.left=Math.min(z,p)+"%"; fill.style.width=Math.abs(p-z)+"%"; fill.classList.toggle("go",go);
+    $("ptSum").textContent=(s<0?"−":"")+Math.abs(s).toFixed(2);
+    const res=$("ptRes"); res.textContent=go?"GO":"STAY"; res.classList.toggle("on",go); res.classList.toggle("stay",!go);
+    renderGoal();
+  }
+  A.perceptron={ enter(){ upd(); } };
+  setup(0);
+})();
+
+/* ---------- eliza ---------- */
+(() => {
+  const log=$("elog"), form=$("eform"), inp=$("ein");
+  const REF={i:"you",me:"you",my:"your",am:"are",mine:"yours",myself:"yourself",you:"I",your:"my",yours:"mine",yourself:"myself","i'm":"you are","you're":"I am",are:"am"};
+  const reflect=s=>s.split(/\s+/).map(w=>REF[w]??w).join(" ");
+  const R=[
+    [/\bi need (.+)/,["Why do you need {0}?","Would it really help you to get {0}?"]],
+    [/\b(?:i am|i'm) (.+)/,["How long have you been {0}?","Why do you think you are {0}?","Do you enjoy being {0}?"]],
+    [/\bi feel (.+)/,["Do you often feel {0}?","What makes you feel {0}?"]],
+    [/\bi can'?t (.+)/,["How do you know you can't {0}?","Have you tried?"]],
+    [/\bi want (.+)/,["What would it mean to you if you got {0}?","Why do you want {0}?"]],
+    [/\b(?:you are|you're) (.+)/,["What makes you think I am {0}?","Does it please you to believe I am {0}?"]],
+    [/\bbecause\b/,["Is that the real reason?","What other reasons come to mind?"]],
+    [/\b(mother|father|mom|dad|sister|brother|family|parents)\b/,["Tell me more about your family.","How do you get along with your {0}?"]],
+    [/\b(computers?|machines?|ai|robots?|bots?)\b/,["Do computers worry you?","Why do you mention machines?","Are you sure you're not talking to a human?"]],
+    [/^(hello|hi|hey)\b/,["Hello. What's on your mind?"]],
+    [/^(yes|yeah|yep)\b/,["You seem quite sure.","I see. Go on."]],
+    [/^(no|nope)\b/,["Why not?","Are you saying no just to be negative?"]],
+  ];
+  const DEF=["Please tell me more.","How does that make you feel?","I see. Go on.","Can you elaborate on that?","Why do you say that?"];
+  function reply(raw){
+    const s=raw.toLowerCase().replace(/[.!,;]+/g,"").trim();
+    for(const [re,outs] of R){ const m=s.match(re); if(m){ const g=m[1]?reflect(m[1].replace(/\?$/,"")):""; return pick(outs).replace("{0}",g); } }
+    if(/\?\s*$/.test(raw)) return pick(["Why do you ask?","What do you think?","Does that question interest you?"]);
+    return pick(DEF);
+  }
+  function line(who,txt){ const d=document.createElement("div"); d.className=who; d.innerHTML=`<b>${who==="e"?"ELIZA":"YOU"}:</b> `; d.appendChild(document.createTextNode(txt)); log.appendChild(d); while(log.children.length>13) log.removeChild(log.firstChild); return d; }
+  function type(txt){ const d=line("e",""); const tn=d.lastChild; let i=0; const iv=setInterval(()=>{ tn.textContent=txt.slice(0,++i); if(i>=txt.length) clearInterval(iv); },22); }
+  form.addEventListener("submit",e=>{ e.preventDefault(); const v=inp.value.trim(); if(!v) return; line("u",v); inp.value=""; setTimeout(()=>type(reply(v)),450); });
+  let started=false;
+  A.eliza={ enter(){ if(started) return; started=true;
+    const demo=[["e","Hello. I am ELIZA. What is troubling you?"],["u","I am worried about my exams"],["e","How long have you been worried about your exams?"],["u","My mom says I work too hard"],["e","Tell me more about your family."],["e","(your turn: type below)"]];
+    demo.forEach(([w,t],i)=>setTimeout(()=>w==="e"?type(t):line("u",t),400+i*1300)); } };
+})();
+
+/* ---------- expert systems ---------- */
+(() => {
+  const RULES=["IF fever AND cough THEN flu (0.7)","IF engine cranks AND no start THEN check fuel","IF no spark THEN check ignition coil","IF rash AND fever THEN see doctor (0.6)","IF mass peak = 43 THEN propyl group","IF battery < 12V THEN replace battery","IF enemy visible THEN attack"];
+  const kbo=$("kbRules"); kbo.innerHTML=`<div class="in">${[...RULES,...RULES].map(r=>`<div>${r}</div>`).join("")}</div>`; const kb=kbo.firstChild;
+  let t=0;
+  A.expert={ enter(){}, tick(dt){ t+=dt; const lh=24.3, tot=RULES.length*lh; kb.style.transform=`translateY(${-((t*.02)%tot)}px)`; } };
+})();
+
+/* ---------- dendral + mycin ---------- */
+(() => {
+  const mol=$("mol"), myc=$("myc");
+  const atoms=[], bonds=[];
+  // butanol-ish: C-C-C-C-O with hydrogens
+  const chain=[[-1.9,0,0],[-.65,.75,0],[.65,0,0],[1.9,.75,0]];
+  chain.forEach(p=>atoms.push({p,e:"C"})); atoms.push({p:[3.1,0,0],e:"O"});
+  for(let i=0;i<4;i++) bonds.push([i,i+1]);
+  const addH=(i,v)=>{ atoms.push({p:atoms[i].p.map((c,k)=>c+v[k]),e:"H"}); bonds.push([i,atoms.length-1]); };
+  addH(0,[-.6,-.9,0]); addH(0,[-.6,.4,.9]); addH(0,[-.6,.4,-.9]);
+  addH(1,[0,.5,.9]); addH(1,[0,.5,-.9]); addH(2,[0,-.5,.9]); addH(2,[0,-.5,-.9]); addH(3,[0,.5,.9]); addH(3,[0,.5,-.9]); addH(4,[.7,-.7,0]);
+  const COL={C:Y,O:RED,H:"#d8d5cc"}, RAD={C:15,O:16,H:9};
+  let a=0, bars=[], bt=0;
+  const ORG=["E. coli","Pseudomonas","Klebsiella","Proteus"];
+  function newBars(){ const v=[rnd(.55,.85),rnd(.25,.5),rnd(.08,.3),rnd(.02,.15)].sort(()=>Math.random()-.5); bars=ORG.map((n,i)=>({n,v:v[i],c:0})).sort((p,q)=>q.v-p.v); }
+  A.dendral={ enter(){ newBars(); bt=0; }, tick(dt){
+    a+=dt*.0008; bt+=dt; if(bt>4200){ bt=0; newBars(); }
+    { const x=ctxOf(mol), W=mol.offsetWidth, H=mol.offsetHeight; x.clearRect(0,0,W,H);
+      const ca=Math.cos(a), sa=Math.sin(a), cb=Math.cos(a*.6), sb=Math.sin(a*.6);
+      const P=atoms.map(at=>{ let [px,py,pz]=at.p; px-=.6; let x1=px*ca+pz*sa, z1=-px*sa+pz*ca; let y1=py*cb-z1*sb, z2=py*sb+z1*cb; const s=34/(1+z2*.08); return {x:W/2+x1*s,y:H/2+y1*s,z:z2,at}; });
+      x.strokeStyle="rgba(243,241,234,.5)"; x.lineWidth=4; bonds.forEach(([i,j])=>{ x.beginPath(); x.moveTo(P[i].x,P[i].y); x.lineTo(P[j].x,P[j].y); x.stroke(); });
+      [...P].sort((p,q)=>p.z-q.z).forEach(p=>{ const r=RAD[p.at.e]*(1-p.z*.05); const g=x.createRadialGradient(p.x-r*.35,p.y-r*.35,1,p.x,p.y,r); g.addColorStop(0,"#fff"); g.addColorStop(.35,COL[p.at.e]); g.addColorStop(1,"#222"); x.fillStyle=g; x.beginPath(); x.arc(p.x,p.y,r,0,7); x.fill(); });
+    }
+    { const x=ctxOf(myc), W=myc.offsetWidth; x.clearRect(0,0,W,250);
+      x.fillStyle=MUTE; x.font="14px 'JetBrains Mono',Consolas,monospace"; x.textAlign="left"; x.fillText("likely organism · confidence",0,22);
+      bars.forEach((b,i)=>{ b.c+=(b.v-b.c)*Math.min(1,dt/250); const y=50+i*50;
+        x.fillStyle=i===0?INK:MUTE; x.font=(i===0?"600 ":"")+"16px 'JetBrains Mono',Consolas,monospace"; x.fillText(b.n,0,y);
+        x.fillStyle="#2a2a30"; x.fillRect(0,y+8,W-60,12); x.fillStyle=i===0?Y:"rgba(255,194,14,.45)"; x.fillRect(0,y+8,(W-60)*b.c,12);
+        x.fillStyle=i===0?Y:MUTE; x.textAlign="right"; x.fillText(b.c.toFixed(2),W,y+20); x.textAlign="left"; });
+    }
+  } };
+})();
+
+/* ---------- decision tree ---------- */
+(() => {
+  const svg=$("dtSvg"), factBox=$("dtFacts");
+  const F={visible:{q:"Enemy visible?",v:1},audible:{q:"Enemy audible?",v:0},near:{q:"Enemy < 10 m away?",v:0},flank:{q:"Enemy on flank?",v:1}};
+  const N={
+    vis:{x:450,y:60,f:"visible",yes:"near",no:"aud"},
+    aud:{x:210,y:220,f:"audible",yes:"creep",no:"idle"},
+    near:{x:670,y:220,f:"near",yes:"atk1",no:"flank"},
+    creep:{x:110,y:400,a:"Creep"}, idle:{x:310,y:400,a:"Do nothing"},
+    atk1:{x:800,y:400,a:"Attack"}, flank:{x:560,y:400,f:"flank",yes:"move",no:"atk2"},
+    move:{x:680,y:570,a:"Move"}, atk2:{x:440,y:570,a:"Attack"},
+  };
+  svg.innerHTML=`<style>.e{stroke:#3a3a42;stroke-width:3;fill:none;transition:stroke .3s}.e.on{stroke:${Y}}
+    .nd rect{fill:#1c1c20;stroke:#3a3a42;stroke-width:2;transition:all .3s}.nd text{font-family:'Space Grotesk',system-ui,sans-serif;font-size:21px;fill:${MUTE};transition:fill .3s}
+    .nd.on rect{stroke:${Y};fill:#2a2617}.nd.on text{fill:${INK}}.nd.act rect{fill:#24242a}.nd.act.on rect{fill:${Y}}.nd.act.on text{fill:#121214;font-weight:700}
+    .el{font-family:'JetBrains Mono',Consolas,monospace;font-size:15px;fill:${MUTE}}</style>`;
+  const eG=svgEl("g",{},svg), nG=svgEl("g",{},svg); const edges={}, nodes={};
+  for(const [k,n] of Object.entries(N)){
+    for(const b of ["yes","no"]) if(n[b]){ const c=N[n[b]]; const e=svgEl("path",{d:`M${n.x} ${n.y+27} C${n.x} ${(n.y+c.y)/2}, ${c.x} ${(n.y+c.y)/2}, ${c.x} ${c.y-27}`,class:"e"},eG); edges[k+b]=e;
+      const t=svgEl("text",{x:(n.x+c.x)/2+(b==="yes"?14:-14),y:(n.y+c.y)/2+4,class:"el","text-anchor":b==="yes"?"start":"end"},eG); t.textContent=b; }
+    const g=svgEl("g",{class:"nd"+(n.a?" act":"")},nG); const w=n.a?150:236;
+    svgEl("rect",{x:n.x-w/2,y:n.y-27,width:w,height:54,rx:n.a?27:10},g);
+    const t=svgEl("text",{x:n.x,y:n.y+7,"text-anchor":"middle"},g); t.textContent=n.a||F[n.f].q; nodes[k]=g;
+  }
+  const dot=svgEl("circle",{r:9,fill:Y},svg); let route=[], rt=0;
+  const rows={};
+  for(const [k,f] of Object.entries(F)){ const r=document.createElement("div"); r.className="fact card"; r.innerHTML=`<span>${f.q}</span><span class="yn"></span>`; r.onclick=()=>{ f.v^=1; render(); }; factBox.appendChild(r); rows[k]=r; }
+  function render(){
+    Object.values(edges).forEach(e=>e.classList.remove("on")); Object.values(nodes).forEach(n=>n.classList.remove("on"));
+    let k="vis"; route=[]; const asked=new Set();
+    while(true){ nodes[k].classList.add("on"); const n=N[k]; if(n.a) break; asked.add(n.f); const b=F[n.f].v?"yes":"no"; edges[k+b].classList.add("on"); route.push(edges[k+b]); k=n[b]; }
+    for(const [key,f] of Object.entries(F)){ const yn=rows[key].querySelector(".yn"); yn.textContent=f.v?"YES":"NO"; yn.className="yn "+(f.v?"yes":"no"); rows[key].style.opacity=asked.has(key)?1:.4; }
+    rt=0;
+  }
+  A.dtree={ enter(){ render(); }, tick(dt){ if(!route.length) return; rt+=dt; const per=900, tot=route.length*per+800; const tt=rt%tot; const i=Math.min(route.length-1,Math.floor(tt/per)); const p=Math.min(1,(tt-i*per)/per);
+    const e=route[i], L=e.getTotalLength(), pt=e.getPointAtLength(ease(p)*L); dot.setAttribute("cx",pt.x); dot.setAttribute("cy",pt.y); dot.style.opacity=tt>route.length*per?0:1; } };
+})();
+
+/* ---------- cold, flu, or allergies: a tiny MYCIN-style expert system ---------- */
+(() => {
+  const card=$("sickCard"), trail=$("sickTrail");
+  // knowledge base: each answer adds evidence for (+) or against (−) each condition
+  const Q=[
+    {k:"fever",      q:"Do you have a fever?",               hint:"A temperature above normal",
+     yes:{flu:3.5,cold:0,allergies:-4},  no:{flu:-1.5,cold:.5,allergies:.5}},
+    {k:"body_aches", q:"Does your body ache?",               hint:"Sore muscles, achy all over",
+     yes:{flu:2,cold:.5,allergies:-1},   no:{flu:-1,cold:0,allergies:.5}},
+    {k:"itchy_eyes", q:"Are your eyes itchy or watery?",      hint:"",
+     yes:{allergies:3,cold:-.5,flu:-1},  no:{allergies:-1.5,cold:.5,flu:0}},
+    {k:"sudden",     q:"Did it come on suddenly?",            hint:"Fine one hour, sick the next",
+     yes:{flu:2,allergies:.5,cold:-1},   no:{cold:1,flu:-1.5,allergies:0}},
+    {k:"sneezing",   q:"Are you sneezing a lot?",             hint:"",
+     yes:{cold:1.5,allergies:1.5,flu:-.5}, no:{flu:.5,cold:-.5,allergies:-1}},
+  ];
+  const NAMES={cold:"Cold",flu:"Flu",allergies:"Allergies"};
+  let ans=[];
+  const dots=()=>`<span class="qdots">${Q.map((_,i)=>`<i class="${i<ans.length?"done":i===ans.length?"on":""}"></i>`).join("")}</span>`;
+  function diagnose(){
+    const sc={cold:0,flu:0,allergies:0};
+    ans.forEach((v,i)=>{ const ev=Q[i][v?"yes":"no"]; for(const c in ev) sc[c]+=ev[c]; });
+    const ex=Object.fromEntries(Object.entries(sc).map(([c,v])=>[c,Math.exp(v*.45)])), tot=Object.values(ex).reduce((a,b)=>a+b,0);
+    const conf=Object.entries(ex).map(([c,v])=>[c,v/tot]).sort((p,q)=>q[1]-p[1]);
+    const none=ans.every(v=>!v);
+    return {conf,none};
+  }
+  function render(){
+    // the rule trail on the left
+    let t=ans.map((v,i)=>`<div>${i?"AND":"IF&nbsp;"} ${Q[i].k} = <b>${v?"YES":"NO"}</b></div>`).join("");
+    if(ans.length===Q.length){
+      const {conf,none}=diagnose(), [top,p]=conf[0];
+      t+= none?`<div>THEN <b>none of these</b></div>`:`<div>THEN <b>${NAMES[top].toUpperCase()}</b> (confidence ${p.toFixed(2)})</div>`;
+      trail.innerHTML=t;
+      card.innerHTML=`<div class="qn"><div class="eyebrow">Diagnosis</div>${dots()}</div>`+
+        (none?`<div class="ans flip">Probably none of these. Maybe you’re just tired!</div>`:`<div class="ans flip">Most likely: ${NAMES[top]}</div>`)+
+        `<div class="dx">${conf.map(([c,v],i)=>`<div class="row ${i===0&&!none?"top":""}"><span>${NAMES[c]}</span><span class="bar"><i data-w="${(v*100).toFixed(0)}"></i></span><span>${(v*100).toFixed(0)}%</span></div>`).join("")}</div>`+
+        `<button class="btn" id="sickRe">Start over ↺</button>`;
+      requestAnimationFrame(()=>requestAnimationFrame(()=>card.querySelectorAll(".bar i").forEach(i=>i.style.width=i.dataset.w+"%")));
+      $("sickRe").onclick=()=>{ ans=[]; render(); };
+      return;
+    }
+    trail.innerHTML=t||`<div class="muted">rules will appear here as you answer…</div>`;
+    const q=Q[ans.length];
+    card.innerHTML=`<div class="qn"><div class="eyebrow">Question ${ans.length+1} of ${Q.length}</div>${dots()}</div><div class="qq flip">${q.q}</div>${q.hint?`<div class="qhint">${q.hint}</div>`:""}<div class="yesno"><button class="btn b-yes">YES</button><button class="btn b-no">NO</button></div>`;
+    card.querySelector(".b-yes").onclick=()=>{ ans.push(1); render(); };
+    card.querySelector(".b-no").onclick=()=>{ ans.push(0); render(); };
+  }
+  A.sick={ enter(){ ans=[]; render(); } };
+})();
+
+/* ---------- the trouble with rules ---------- */
+(() => {
+  // one rule about birds, then exceptions pile up until two rules contradict each other
+  const CASES=[
+    {q:"a penguin", note:"Penguins are birds, but they can’t fly.", add:["penguin"]},
+    {q:"an ostrich", note:"Also a bird. Also can’t fly. Neither can emus or kiwis.", add:["ostrich","emu","kiwi"]},
+    {q:"a bird with a broken wing", note:"Normally it flies. Just not today.", add:["injured"]},
+    {q:"a baby bird", note:"Chicks can’t fly yet.", add:["too_young"]},
+    {q:"a bird in a cage", note:"It can fly, but it can’t go anywhere. Our rule needs a special case.", rule:["bird","in_cage","can_fly_but_stays_put"]},
+    {q:"a bat", note:"Not a bird at all, but it flies. Our rules never even covered it.", rule:["bat",null,"can_fly"]},
+    {q:"a penguin on an airplane", note:"Rule 1 says it can’t fly. But it’s flying at 35,000 feet. Now the rules contradict each other.", clash:true},
+  ];
+  let step=0, fixed=false, nots=[], extra=[], fresh=null;
+  const kb=$("rtKb"), box=$("rtCase"), idea=$("rtIdea");
+  const K=w=>`<span class="kw">${w}</span>`;
+  function bump(id,v){ const el=$(id); if(el.textContent!==String(v)){ el.textContent=v; el.classList.remove("bump"); void el.offsetWidth; el.classList.add("bump"); } }
+  function render(){
+    const conds=["bird",...nots.map(n=>"NOT "+n)];
+    const base=`${K("IF")} bird${nots.map(n=>` ${K("AND")} <span class="${fresh&&fresh.includes(n)?"new":""}">NOT ${n}</span>`).join("")} ${K("THEN")} <span class="th">can_fly</span>`;
+    const clash=step>=CASES.length-1&&fixed;
+    let html=`<div class="r ${clash?"clash":""}">${base}</div>`;
+    html+=extra.map((r,i)=>`<div class="r ${fresh==="rule"&&i===extra.length-1?"newr":""}">${K("IF")} ${r[0]}${r[1]?` ${K("AND")} ${r[1]}`:""} ${K("THEN")} <span class="th">${r[2]}</span></div>`).join("");
+    if(clash) html+=`<div class="r clash newr">${K("IF")} in_airplane ${K("THEN")} <span class="th">is_flying</span> <span style="color:var(--red)">⚠ conflicts with rule 1</span></div>`;
+    kb.innerHTML=html;
+    bump("rtRules",1+extra.length+(clash?1:0));
+    bump("rtConds",conds.length+extra.reduce((a,r)=>a+(r[1]?2:1),0)+(clash?1:0));
+    bump("rtFixes",step+(fixed?1:0));
+    idea.classList.toggle("on",clash);
+    if(step===0&&!fixed&&!box.dataset.started){
+      box.innerHTML=`<div class="q">Seems reasonable.</div><div class="note">Birds fly. Done! Is one rule enough?</div><div class="acts"><button class="btn on" id="rtAsk">But what about…?</button></div>`;
+    } else if(!fixed){
+      const c=CASES[step];
+      box.innerHTML=`<div class="eyebrow" style="font-size:14px">Exception ${step+1} of ${CASES.length}</div><div class="q flip">But what about <span>${c.q}</span>?</div><div class="note">${c.note}</div><div class="acts"><button class="btn on" id="rtFix">${c.clash?"Try to fix it…":"Fix the rules"}</button></div>`;
+    } else if(step<CASES.length-1){
+      box.innerHTML=`<div class="q">Patched.</div><div class="note">The rule works again… for now.</div><div class="acts"><button class="btn on" id="rtAsk">But what about…?</button></div>`;
+    } else {
+      box.innerHTML=`<div class="q" style="color:var(--red)">There’s no clean fix.</div><div class="note">Every patch makes the rules longer, and some situations just contradict each other. Real experts handle this with common sense, which is very hard to write down.</div><div class="acts"><button class="btn" id="rtRe">Start over ↺</button></div>`;
+    }
+    const ask=$("rtAsk"); if(ask) ask.onclick=()=>{ box.dataset.started=1; if(fixed){ step++; fixed=false; } fresh=null; render(); };
+    const fix=$("rtFix"); if(fix) fix.onclick=()=>{ const c=CASES[step]; fixed=true;
+      if(c.add){ nots.push(...c.add); fresh=c.add; } else if(c.rule){ extra.push(c.rule); fresh="rule"; } else fresh=null; render(); };
+    const re=$("rtRe"); if(re) re.onclick=reset;
+  }
+  function reset(){ step=0; fixed=false; nots=[]; extra=[]; fresh=null; delete box.dataset.started; render(); }
+  A["rules-trouble"]={ enter(){ if(!box.dataset.started) reset(); } };
+  reset();
+})();
+
+/* ---------- pong ---------- */
+(() => {
+  const cv=$("pong"); let b,p1,p2;
+  A.games={
+    enter(){ b={x:800,y:450,vx:7,vy:rnd(-4,4)}; p1={y:450}; p2={y:450}; },
+    tick(dt){
+      const x=ctxOf(cv), f=dt/16.7;
+      b.x+=b.vx*f; b.y+=b.vy*f; if(b.y<20||b.y>880){ b.vy*=-1; b.y=Math.max(20,Math.min(880,b.y)); }
+      const track=(p,side)=>{ const coming=side<0?b.vx<0:b.vx>0; const tgt=coming?b.y:450; p.y+=Math.max(-6.5,Math.min(6.5,(tgt-p.y)*.09))*f; };
+      track(p1,-1); track(p2,1);
+      if(b.x<80 && b.vx<0 && Math.abs(b.y-p1.y)<80){ b.vx*=-1; b.vy+=(b.y-p1.y)*.06; }
+      if(b.x>1520 && b.vx>0 && Math.abs(b.y-p2.y)<80){ b.vx*=-1; b.vy+=(b.y-p2.y)*.06; }
+      if(b.x<-40||b.x>1640){ b.x=800; b.y=450; b.vx=(b.vx>0?-7:7); b.vy=rnd(-4,4); }
+      b.vy=Math.max(-9,Math.min(9,b.vy));
+      x.fillStyle="rgba(18,18,20,.35)"; x.fillRect(0,0,1600,900);
+      x.setLineDash([16,18]); x.strokeStyle="rgba(243,241,234,.12)"; x.lineWidth=4; x.beginPath(); x.moveTo(800,0); x.lineTo(800,900); x.stroke(); x.setLineDash([]);
+      x.fillStyle="rgba(243,241,234,.55)"; x.fillRect(50,p1.y-70,16,140); x.fillRect(1534,p2.y-70,16,140);
+      x.fillStyle=Y; x.fillRect(b.x-10,b.y-10,20,20);
+    }
+  };
+})();
+
+/* ---------- tic tac toe ---------- */
+(() => {
+  const board=$("tttBoard"), status=$("tttStatus"); let B, over, aiFirst=false, busy=false; const sc={Y:0,D:0,A:0};
+  const L=[[0,1,2],[3,4,5],[6,7,8],[0,3,6],[1,4,7],[2,5,8],[0,4,8],[2,4,6]];
+  const cells=[...Array(9)].map((_,i)=>{ const c=document.createElement("div"); c.className="cell"; c.onclick=()=>play(i); board.appendChild(c); return c; });
+  const win=b=>{ for(const l of L) if(b[l[0]]&&b[l[0]]===b[l[1]]&&b[l[0]]===b[l[2]]) return {p:b[l[0]],l}; return b.every(Boolean)?{p:"D"}:null; };
+  function mm(b,turn,d){ const w=win(b); if(w) return w.p==="O"?10-d:w.p==="X"?d-10:0;
+    let best=turn==="O"?-99:99; for(let i=0;i<9;i++) if(!b[i]){ b[i]=turn; const v=mm(b,turn==="O"?"X":"O",d+1); b[i]=null; best=turn==="O"?Math.max(best,v):Math.min(best,v); } return best; }
+  function aiMove(){ let best=-99, moves=[]; for(let i=0;i<9;i++) if(!B[i]){ B[i]="O"; const v=mm(B,"X",1); B[i]=null; if(v>best){ best=v; moves=[i]; } else if(v===best) moves.push(i); } return pick(moves); }
+  function draw(i){ const p=B[i]; cells[i].innerHTML=p==="X"?`<svg viewBox="0 0 100 100" class="X"><line x1="22" y1="22" x2="78" y2="78"/><line x1="78" y1="22" x2="22" y2="78"/></svg>`:`<svg viewBox="0 0 100 100" class="O"><circle cx="50" cy="50" r="34"/></svg>`; }
+  function end(){ const w=win(B); if(!w) return false; over=true;
+    if(w.l) w.l.forEach(i=>cells[i].classList.add("win"));
+    if(w.p==="X"){ sc.Y++; status.textContent="You win?! That shouldn’t happen."; } else if(w.p==="O"){ sc.A++; status.textContent="AI wins. It saw that coming."; } else { sc.D++; status.textContent="Draw. Minimax can’t lose."; }
+    $("scY").textContent=sc.Y; $("scD").textContent=sc.D; $("scA").textContent=sc.A; return true; }
+  function ai(){ busy=true; status.textContent="Thinking…"; setTimeout(()=>{ const m=aiMove(); B[m]="O"; draw(m); busy=false; if(!end()) status.textContent="Your move."; },480); }
+  function play(i){ if(over||busy||B[i]) return; B[i]="X"; draw(i); if(!end()) ai(); }
+  function reset(){ B=Array(9).fill(null); over=false; busy=false; cells.forEach(c=>{ c.innerHTML=""; c.classList.remove("win"); }); status.textContent="Your move."; if(aiFirst) ai(); }
+  $("tttNew").onclick=reset; $("tttFirst").onclick=e=>{ aiFirst=!aiFirst; e.target.classList.toggle("on",aiFirst); reset(); };
+  reset();
+  A.ttt={ enter(){} };
+})();
+
+/* ---------- minimax: practice it by hand ---------- */
+(() => {
+  const svg=$("mmSvg"), msg=$("mmMsg");
+  const ROOT={x:380,y:70}, MINS=[0,1,2].map(i=>({x:140+i*240,y:200})), LEAF_Y=330;
+  let vals, mins, best, stage, done;
+  // deal a tree whose biggest number is a trap: it sits in a branch the opponent would answer badly
+  function deal(){
+    for(;;){
+      vals=Array.from({length:9},()=>1+Math.floor(Math.random()*9));
+      mins=[0,1,2].map(g=>Math.min(...vals.slice(g*3,g*3+3)));
+      const top=Math.max(...mins); best=mins.indexOf(top);
+      const bigLeaf=vals.indexOf(Math.max(...vals)), trapGroup=Math.floor(bigLeaf/3);
+      if(mins.filter(m=>m===top).length===1 && trapGroup!==best && Math.max(...vals)-mins[trapGroup]>=4 && vals.filter(v=>v===Math.max(...vals)).length===1) break;
+    }
+    stage="min"; done=[null,null,null]; draw(); say();
+  }
+  function tri(x,y,up,cls){ const r=34; return up?`M${x} ${y-r} L${x+r*1.05} ${y+r*.7} L${x-r*1.05} ${y+r*.7}Z`:`M${x} ${y+r} L${x+r*1.05} ${y-r*.7} L${x-r*1.05} ${y-r*.7}Z`; }
+  function draw(){
+    const L=i=>({x:MINS[Math.floor(i/3)].x+(i%3-1)*72,y:LEAF_Y});
+    let s=`<text x="20" y="${ROOT.y+6}" fill="${Y}" font-family="JetBrains Mono, Consolas, monospace" font-size="15">MAX · you</text>
+           <text x="20" y="${MINS[0].y-46}" fill="${BLUE}" font-family="JetBrains Mono, Consolas, monospace" font-size="15">MIN · opponent</text>`;
+    MINS.forEach((m,g)=>{ const on=stage==="done"&&g===best; s+=`<line x1="${ROOT.x}" y1="${ROOT.y+24}" x2="${m.x}" y2="${m.y-24}" stroke="${on?Y:"#2e2e35"}" stroke-width="${on?5:2}"/>`; });
+    vals.forEach((v,i)=>{ const g=Math.floor(i/3), p=L(i), on=done[g]===i; s+=`<line x1="${MINS[g].x}" y1="${MINS[g].y+24}" x2="${p.x}" y2="${p.y-24}" stroke="${on?BLUE:"#2e2e35"}" stroke-width="${on?4:2}"/>`; });
+    s+=`<g><path d="${tri(ROOT.x,ROOT.y,true)}" fill="${stage==="done"?Y:"#1c1c20"}" stroke="${Y}" stroke-width="2.5"/>${stage==="done"?`<text x="${ROOT.x}" y="${ROOT.y+12}" text-anchor="middle" font-family="JetBrains Mono, Consolas, monospace" font-weight="700" font-size="20" fill="#121214">${mins[best]}</text>`:""}</g>`;
+    MINS.forEach((m,g)=>{ const filled=done[g]!==null; s+=`<g class="mnode ${stage==="max"?"pick":""}" data-g="${g}"><path d="${tri(m.x,m.y,false)}" fill="${filled?BLUE:"#1c1c20"}" stroke="${BLUE}" stroke-width="2.5"/>${filled?`<text x="${m.x}" y="${m.y+4}" text-anchor="middle" font-family="JetBrains Mono, Consolas, monospace" font-weight="700" font-size="20" fill="#121214">${mins[g]}</text>`:""}</g>`; });
+    vals.forEach((v,i)=>{ const p=L(i), g=Math.floor(i/3), on=done[g]===i;
+      s+=`<g class="leaf" data-i="${i}"><rect x="${p.x-24}" y="${p.y-24}" width="48" height="48" rx="9" fill="${on?"rgba(106,184,255,.25)":"#24242a"}" stroke="${on?BLUE:MUTE}" stroke-width="2"/><text x="${p.x}" y="${p.y+8}" text-anchor="middle" font-family="JetBrains Mono, Consolas, monospace" font-weight="600" font-size="21" fill="${INK}">${v}</text></g>`; });
+    svg.innerHTML=s;
+    svg.querySelectorAll(".leaf").forEach(el=>el.onclick=()=>pickLeaf(+el.dataset.i,el));
+    svg.querySelectorAll(".mnode").forEach(el=>el.onclick=()=>pickMove(+el.dataset.g,el));
+  }
+  function say(fb="",cls=""){
+    const left=done.filter(d=>d===null).length;
+    const st= stage==="min"?`STEP 1 · THEIR REPLY`: stage==="max"?`STEP 2 · YOUR MOVE`:`SOLVED`;
+    const tx= stage==="min"?`Your opponent always picks the <b>lowest</b> score. Click the lowest number in each group. (${3-left} of 3)`
+            : stage==="max"?`Which move should you make? Click the blue triangle with the <b>highest</b> guaranteed score.`
+            : `That’s minimax: assume the opponent’s best reply, then pick the move with the best worst case.`;
+    msg.innerHTML=`<div class="st">${st}</div><div class="tx">${tx}</div><div class="fb ${cls}">${fb}</div>`+(stage==="done"?`<button class="btn on" id="mmNew">New tree ↻</button>`:"");
+    const n=$("mmNew"); if(n) n.onclick=deal;
+  }
+  function shake(el){ el.classList.remove("shake"); void el.getBBox(); el.classList.add("shake"); }
+  function pickLeaf(i,el){
+    if(stage!=="min") return; const g=Math.floor(i/3); if(done[g]!==null) return;
+    if(vals[i]!==mins[g]){ shake(el); say(`Not quite. Your opponent wants the <b>lowest</b> score in that group.`,"bad"); return; }
+    done[g]=i;
+    if(done.every(d=>d!==null)) stage="max";
+    draw(); say(stage==="max"?`✓ Now you know what your opponent will do in each case.`:`✓ They’d answer with ${mins[g]}.`,"good");
+  }
+  function pickMove(g,el){
+    if(stage!=="max") return;
+    if(g===best){ stage="done"; draw(); say(`✓ Best move! Even with their best reply, you’re guaranteed <b>${mins[g]}</b>.`,"good"); return; }
+    shake(el);
+    const grp=vals.slice(g*3,g*3+3), big=Math.max(...vals);
+    if(grp.includes(big)) say(`Tempting! That branch has a ${big}, but your opponent would answer with <b>${mins[g]}</b>. Try again.`,"bad");
+    else say(`That only guarantees ${mins[g]}. Is there a higher one?`,"bad");
+  }
+  A.minimax={ enter(){ if(!vals||stage==="done") deal(); } };
+  deal();
+})();
+
+/* ---------- deep blue chess ---------- */
+(() => {
+  const cv=$("chess"), cap=$("chessCap");
+  const FEN="r1bq1rk1/pp2bppp/2n1pn2/3p4/2PP4/2N1PN2/PP2BPPP/R2QKB1R";
+  const G={k:"♚",q:"♛",r:"♜",b:"♝",n:"♞",p:"♟"};
+  const bd=[]; FEN.split("/").forEach((row,r)=>{ let c=0; for(const ch of row){ if(/\d/.test(ch)) c+=+ch; else { bd.push({r,c,p:ch}); c++; } } });
+  let arrows=[], count=0, t=0, best=null, bt=0;
+  function arrow(x,a,b,col,w){ const dx=b[0]-a[0], dy=b[1]-a[1], L=Math.hypot(dx,dy), ux=dx/L, uy=dy/L; x.strokeStyle=col; x.fillStyle=col; x.lineWidth=w; x.beginPath(); x.moveTo(a[0],a[1]); x.lineTo(b[0]-ux*16,b[1]-uy*16); x.stroke(); x.beginPath(); x.moveTo(b[0],b[1]); x.lineTo(b[0]-ux*20-uy*10,b[1]-uy*20+ux*10); x.lineTo(b[0]-ux*20+uy*10,b[1]-uy*20-ux*10); x.closePath(); x.fill(); }
+  A.deepblue={ enter(){ arrows=[]; count=0; best=null; bt=0; }, tick(dt){
+    t+=dt; bt+=dt; count+=Math.floor(dt*rnd(2600,3400));
+    cap.textContent="positions evaluated: "+count.toLocaleString();
+    const x=ctxOf(cv), W=cv.offsetWidth, H=cv.offsetHeight, S=Math.min(W,H)-80, sq=S/8, ox=(W-S)/2, oy=(H-S)/2-10;
+    x.fillStyle="#0d0d0f"; x.fillRect(0,0,W,H);
+    for(let r=0;r<8;r++) for(let c=0;c<8;c++){ x.fillStyle=(r+c)%2?"#26262d":"#383842"; x.fillRect(ox+c*sq,oy+r*sq,sq,sq); }
+    x.textAlign="center"; x.textBaseline="middle"; x.font=`${sq*.78}px "Segoe UI Symbol","DejaVu Sans","Noto Sans Symbols 2",serif`;
+    bd.forEach(p=>{ const w=p.p===p.p.toUpperCase(); x.fillStyle=w?INK:Y; x.fillText(G[p.p.toLowerCase()],ox+(p.c+.5)*sq,oy+(p.r+.5)*sq+2); });
+    const ctr=(r,c)=>[ox+(c+.5)*sq,oy+(r+.5)*sq];
+    if(Math.random()<dt/40){ const p=pick(bd.filter(q=>q.p===q.p.toUpperCase())); const k=p.p.toLowerCase(); let d;
+      if(k==="n") d=pick([[1,2],[2,1],[-1,2],[-2,1],[1,-2],[2,-1],[-1,-2],[-2,-1]]);
+      else if(k==="p") d=pick([[-1,0],[-2,0],[-1,1],[-1,-1]]);
+      else if(k==="k") d=pick([[0,1],[0,-1],[-1,0],[-1,1],[-1,-1]]);
+      else { const dirs=k==="r"?[[0,1],[0,-1],[1,0],[-1,0]]:k==="b"?[[1,1],[1,-1],[-1,1],[-1,-1]]:[[0,1],[0,-1],[1,0],[-1,0],[1,1],[1,-1],[-1,1],[-1,-1]]; const u=pick(dirs), n=1+((Math.random()*4)|0); d=[u[0]*n,u[1]*n]; }
+      const tr=p.r+d[0], tc=p.c+d[1]; if(tr>=0&&tr<8&&tc>=0&&tc<8&&!bd.some(q=>q.r===tr&&q.c===tc&&q.p===q.p.toUpperCase())) arrows.push({a:ctr(p.r,p.c),b:ctr(tr,tc),life:1}); }
+    arrows=arrows.filter(a=>{ a.life-=dt/450; if(a.life<=0) return false; arrow(x,a.a,a.b,`rgba(106,184,255,${a.life*.55})`,4); return true; });
+    if(bt>2600){ bt=0; best={a:ctr(5,5),b:ctr(3,4)}; }
+    if(best){ arrow(x,best.a,best.b,"rgba(255,194,14,.95)",7); }
+    x.textBaseline="alphabetic";
+  } };
+})();
+
+}
+
+/* ================= PART 2 ================= */
+{
+/* ---------- title: drifting network ---------- */
+(() => {
+  const cv=$("bgNet2"); let N=[], P=[];
+  A.title2={
     enter(){ N=Array.from({length:80},()=>({x:rnd(0,1600),y:rnd(0,900),vx:rnd(-.25,.25),vy:rnd(-.25,.25),g:0})); P=[]; },
     tick(dt){
       const x=ctxOf(cv), f=dt/16.7; x.fillStyle="#121214"; x.fillRect(0,0,1600,900);
@@ -62,7 +1013,7 @@ const EVENTS=[
   ["2017","Google researchers publish “Attention Is All You Need”, introducing the Transformer."],
   ["2022","OpenAI releases ChatGPT (GPT-3.5) to the public on November 30."],
 ];
-document.querySelectorAll(".slide.tl").forEach(sl=>{
+document.querySelectorAll(".slide.tl2").forEach(sl=>{
   const k=+sl.dataset.upto, n=EVENTS.length, xp=i=>(i+.5)/n*100;
   const hd=document.createElement("div");
   hd.innerHTML=`<h2 class="rise" style="--i:0"><span class="n">TIMELINE</span>${k<=2?"Where we left off":"The road to AI"}</h2>`;
@@ -1067,7 +2018,7 @@ const tokId=t=>{ let h=2166136261; for(const c of t) h=Math.imul(h^c.charCodeAt(
     const d=Object.entries(dist()).sort((a,b)=>b[1]-a[1]);
     $("nwHead").textContent=done()?"Sentence finished: “.” ends it":`Next word after “${sent.slice(-2).join(" ")}”`;
     $("nwProbs").innerHTML=done()?`<div class="hint">Press <b>Start over</b>, or try rolling the dice for a different sentence.</div>`:
-      d.map(([w,p],i)=>`<div class="prow ${i===0?"top":""}" data-w="${w}"><span>${w==="."?". (end)":w}</span><span class="bar"><i style="width:${p*100}%"></i></span><span class="pc">${Math.round(p*100)}%</span></div>`).join("");
+      d.map(([w,p],i)=>`<div class="nwRow ${i===0?"top":""}" data-w="${w}"><span>${w==="."?". (end)":w}</span><span class="bar"><i style="width:${p*100}%"></i></span><span class="pc">${Math.round(p*100)}%</span></div>`).join("");
     ["nwTop","nwRoll"].forEach(id=>$(id).disabled=done());
   }
   function add(w){ if(done()) return; const row=[...$("nwProbs").children].find(r=>r.dataset.w===w); if(row) row.classList.add("pk");
@@ -1076,7 +2027,7 @@ const tokId=t=>{ let h=2166136261; for(const c of t) h=Math.imul(h^c.charCodeAt(
   const sample=()=>{ let r=Math.random(); for(const [w,p] of Object.entries(dist())){ r-=p; if(r<=0) return w; } return "."; };
   $("nwTop").onclick=()=>add(greedy()); $("nwRoll").onclick=()=>add(sample());
   $("nwReset").onclick=()=>{ sent=["The"]; fresh=0; render(); };
-  $("nwProbs").onclick=e=>{ const r=e.target.closest(".prow"); if(r) add(r.dataset.w); };
+  $("nwProbs").onclick=e=>{ const r=e.target.closest(".nwRow"); if(r) add(r.dataset.w); };
   A.nextword={ enter(){ sent=["The"]; fresh=0; render(); } };
 })();
 
@@ -1176,6 +2127,8 @@ const tokId=t=>{ let h=2166136261; for(const c of t) h=Math.imul(h^c.charCodeAt(
   A.chatgpt={ enter(){ run++; msgs.innerHTML=""; nx.innerHTML="<span>Pick a prompt above.</span>"; } };
 })();
 
+}
+
 /* ---------- navigation ---------- */
 const countEl=$("count"), prog=$("progress");
 /*LIVE_CORE*/
@@ -1209,7 +2162,7 @@ addEventListener("keydown",e=>{
   else if(k==="Home") go(0); else if(k==="End") go(slides.length-1);
   else if(k==="f"||k==="F") toggleFS();
 });
-let sx=null; stage.addEventListener("touchstart",e=>{ if(e.target.closest("input,button,svg,canvas,.chip,.wb,.atW,.prow")) return; sx=e.touches[0].clientX; },{passive:true});
+let sx=null; stage.addEventListener("touchstart",e=>{ if(e.target.closest("input,button,svg,canvas,.chip,.wb,.atW,.nwRow,.cell,.switch,.fact")) return; sx=e.touches[0].clientX; },{passive:true});
 stage.addEventListener("touchend",e=>{ if(sx===null) return; const dx=e.changedTouches[0].clientX-sx; if(Math.abs(dx)>60) (dx<0?advance:retreat)(); sx=null; });
 addEventListener("resize",fitStage);
 fitStage(); fromHash(); claudeAdapter();

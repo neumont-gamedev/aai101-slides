@@ -1,0 +1,1085 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>AAI101 · Data</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;700&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#121214; --panel:#1c1c20; --panel2:#24242a; --line:#2e2e35;
+    --ink:#f3f1ea; --mute:#9b988f; --y:#ffc20e; --amber:#ff8a1f; --red:#ff5a4e; --green:#5fd68a; --blue:#6ab8ff;
+    --sans:"Space Grotesk",system-ui,-apple-system,"Segoe UI",sans-serif;
+    --mono:"JetBrains Mono",ui-monospace,Consolas,monospace;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  html,body{height:100%;background:#000;overflow:hidden;color:var(--ink);font-family:var(--sans)}
+  #stage{position:absolute;left:50%;top:50%;width:1600px;height:900px;background:var(--bg);overflow:hidden}
+
+  .slide{position:absolute;inset:0;padding:100px 110px 90px;opacity:0;visibility:hidden;transform:scale(1.015);
+    transition:opacity .6s ease,transform .8s cubic-bezier(.2,.7,.2,1),visibility 0s .6s}
+  .slide.active{opacity:1;visibility:visible;transform:none;transition:opacity .6s ease,transform .8s cubic-bezier(.2,.7,.2,1),visibility 0s}
+  .rise{opacity:0;transform:translateY(26px);transition:opacity .7s ease,transform .8s cubic-bezier(.2,.7,.2,1)}
+  .slide.active .rise{opacity:1;transform:none;transition-delay:calc(var(--i,0) * 110ms + 150ms)}
+
+  .bg{position:absolute;inset:0;width:100%;height:100%;display:block}
+  .vignette{position:absolute;inset:0;background:radial-gradient(ellipse at center,rgba(18,18,20,.5) 0%,rgba(18,18,20,.88) 60%,var(--bg) 100%);pointer-events:none}
+  .content{position:relative;z-index:1;height:100%}
+  .center{display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center}
+
+  .eyebrow{font-family:var(--mono);font-size:20px;letter-spacing:.18em;text-transform:uppercase;color:var(--y)}
+  h1{font-size:118px;line-height:.98;font-weight:700;letter-spacing:-.03em;margin:22px 0 34px}
+  h1 span,h2 span.y{color:var(--y)}
+  h2{font-size:56px;font-weight:700;letter-spacing:-.02em;line-height:1.06}
+  h2 .n{font-family:var(--mono);font-size:21px;color:var(--y);font-weight:600;display:block;letter-spacing:.12em;margin-bottom:12px}
+  .lede{font-size:31px;line-height:1.4;color:#d6d3cb;max-width:1100px}
+  p{font-size:25px;line-height:1.45;color:#d6d3cb}
+  b,strong{color:var(--ink)}
+  i.t{font-style:italic;color:var(--ink)}
+  .y{color:var(--y)} .mono{font-family:var(--mono)} .muted{color:var(--mute)}
+  .card{background:var(--panel);border:1px solid var(--line);border-radius:18px}
+
+  .bul{list-style:none;display:flex;flex-direction:column;gap:14px;margin-top:6px}
+  .bul li{font-size:24px;line-height:1.4;color:#d6d3cb;position:relative;padding-left:26px}
+  .bul li::before{content:"";position:absolute;left:0;top:.5em;width:11px;height:11px;background:var(--y);border-radius:3px}
+  .num{list-style:none;counter-reset:n;display:flex;flex-direction:column;gap:14px}
+  .num li{counter-increment:n;font-size:24px;line-height:1.4;color:#d6d3cb;position:relative;padding-left:44px}
+  .num li::before{content:counter(n);position:absolute;left:0;top:.18em;font-family:var(--mono);font-size:16px;line-height:1.4;color:var(--bg);background:var(--y);border-radius:6px;padding:0 9px}
+
+  .two{display:grid;grid-template-columns:1fr 1fr;gap:64px;height:100%;align-items:center}
+  .two.wide-r{grid-template-columns:.85fr 1.15fr}
+  .stack{display:flex;flex-direction:column;gap:26px}
+  .stage-box{position:relative;height:620px;border-radius:20px;overflow:hidden;border:1px solid var(--line);background:#0d0d0f}
+  .stage-box canvas,.stage-box svg{position:absolute;inset:0;width:100%;height:100%}
+  .cap{position:absolute;left:18px;bottom:14px;font-family:var(--mono);font-size:15px;color:var(--mute);background:rgba(13,13,15,.8);padding:6px 10px;border-radius:8px;z-index:2}
+  .callout{border-left:4px solid var(--y);padding:14px 20px;background:rgba(255,194,14,.07);border-radius:0 12px 12px 0;font-size:22px;line-height:1.45;color:#e5e2da}
+  .linkchip{display:inline-flex;align-items:center;gap:10px;font-family:var(--mono);font-size:17px;color:var(--ink);border:1px solid var(--line);background:var(--panel);border-radius:999px;padding:8px 16px;text-decoration:none;width:max-content}
+  .linkchip:hover{border-color:var(--y);color:var(--y)}
+  .linkchip::before{content:"↗";color:var(--y)}
+  .btn{background:var(--panel2);border:1px solid var(--line);color:var(--ink);font:500 19px var(--sans);padding:10px 20px;border-radius:10px;cursor:pointer}
+  .btn:hover{border-color:var(--y);color:var(--y)}
+  .btn.on{background:var(--y);color:var(--bg);border-color:var(--y)}
+  .tag{display:inline-block;font-family:var(--mono);font-size:15px;padding:4px 10px;border-radius:6px;font-weight:600;letter-spacing:.04em}
+  .t-red{background:rgba(255,90,78,.15);color:var(--red)} .t-green{background:rgba(95,214,138,.15);color:var(--green)} .t-blue{background:rgba(106,184,255,.15);color:var(--blue)} .t-y{background:rgba(255,194,14,.15);color:var(--y)}
+
+  /* chrome */
+  #chrome{position:absolute;left:0;right:0;bottom:0;height:56px;display:flex;align-items:center;gap:18px;padding:0 32px;z-index:10;font-family:var(--mono);font-size:16px;color:var(--mute);pointer-events:none}
+  #chrome button{pointer-events:auto}
+  #chrome .sp{flex:1}
+  #brand{position:absolute;left:32px;top:28px;z-index:10;font-family:var(--mono);font-size:15px;letter-spacing:.14em;color:var(--mute);text-transform:uppercase}
+  #brand b{color:var(--y);font-weight:600}
+  #logo{position:absolute;right:32px;top:22px;height:44px;z-index:10;pointer-events:none;filter:drop-shadow(0 2px 8px rgba(0,0,0,.5))}
+  #progress{position:absolute;left:0;bottom:0;height:4px;background:var(--y);transition:width .5s cubic-bezier(.2,.7,.2,1);z-index:11}
+  .nbtn{background:transparent;border:1px solid var(--line);color:var(--ink);font:inherit;width:40px;height:34px;border-radius:8px;cursor:pointer}
+  .nbtn:hover{border-color:var(--y);color:var(--y)}
+
+  /* live class sync */
+  #livewrap{position:absolute;left:32px;bottom:11px;z-index:12;display:flex;gap:12px;align-items:center;font-family:var(--mono);font-size:15px}
+  #livebar,#liveauth{display:flex;gap:12px;align-items:center}
+  #liveauth:empty,#livebar:empty{display:none}
+  .lv{display:inline-flex;align-items:center;gap:9px;background:var(--panel);border:1px solid var(--line);color:var(--mute);border-radius:999px;padding:6px 14px;font:inherit}
+  button.lv{cursor:pointer} button.lv:hover{border-color:var(--y)}
+  .lv.on{border-color:var(--y);color:var(--y)}
+  .lv .dot{width:9px;height:9px;border-radius:50%;background:#55534d}
+  .lv.on .dot{background:var(--red);box-shadow:0 0 0 0 rgba(255,90,78,.6);animation:lvp 1.6s infinite}
+  @keyframes lvp{70%{box-shadow:0 0 0 8px rgba(255,90,78,0)}100%{box-shadow:0 0 0 0 rgba(255,90,78,0)}}
+  .lvc{color:var(--mute)}
+  .nbtn:disabled{opacity:.25;cursor:not-allowed;border-color:var(--line);color:var(--ink)}
+  #toast{position:absolute;left:50%;bottom:76px;z-index:20;transform:translate(-50%,16px);opacity:0;pointer-events:none;background:var(--panel2);border:1px solid var(--y);color:var(--ink);font-size:20px;padding:12px 22px;border-radius:12px;transition:opacity .3s,transform .3s;box-shadow:0 12px 40px rgba(0,0,0,.5)}
+  #toast.on{opacity:1;transform:translate(-50%,0)}
+  /* ---------- data deck ---------- */
+  .keyIdea{opacity:0;transform:translateY(12px);transition:opacity .6s ease .5s,transform .6s cubic-bezier(.2,.7,.2,1) .5s}
+  .keyIdea.on{opacity:1;transform:none}
+  .tight .bul li{font-size:21px} .tight .bul{gap:10px}
+  .grid2{display:grid;grid-template-columns:1fr 1fr;gap:22px}
+  .grid3{display:grid;grid-template-columns:repeat(3,1fr);gap:22px}
+  .grid4{display:grid;grid-template-columns:repeat(4,1fr);gap:18px}
+  .pad{padding:22px 24px}
+  .k{font-family:var(--mono);font-size:14px;letter-spacing:.1em;color:var(--mute);text-transform:uppercase}
+  code,.code{font-family:var(--mono);color:var(--y)}
+  .hint{font-family:var(--mono);font-size:15px;color:var(--mute)}
+
+  /* terminology */
+  .termS{display:flex;flex-direction:column;justify-content:center;height:100%;gap:22px;max-width:1250px}
+  .termS .word{font-size:132px;font-weight:700;letter-spacing:-.035em;line-height:.95;color:var(--ink)}
+  .termS .word span{color:var(--y)}
+  .termS .meta{display:flex;gap:22px;align-items:baseline;font-family:var(--mono);font-size:24px;color:var(--mute)}
+  .termS .meta i{font-family:var(--sans);font-style:italic;color:var(--blue)}
+  .termS .def{font-size:36px;line-height:1.38;color:#e5e2da;border-left:5px solid var(--y);padding-left:28px}
+  .termS .def b{color:var(--y)}
+  .termBg{position:absolute;right:-40px;top:50%;transform:translateY(-50%);font-family:var(--mono);font-size:15px;line-height:1.5;color:rgba(255,194,14,.08);white-space:pre;pointer-events:none;text-align:right}
+
+  /* data tables */
+  table.dt{border-collapse:separate;border-spacing:0;font-family:var(--mono);font-size:19px;width:100%}
+  table.dt th,table.dt td{padding:10px 14px;text-align:center;border-bottom:1px solid var(--line);transition:background .35s,color .35s,opacity .35s}
+  table.dt th{color:var(--mute);font-weight:600;font-size:14px;letter-spacing:.08em;text-transform:uppercase;border-bottom:2px solid var(--line)}
+  table.dt td{color:var(--ink)}
+  table.dt td.l,table.dt th.l{text-align:left}
+  table.dt .hF{background:rgba(106,184,255,.13);color:var(--blue)}
+  table.dt .hL{background:rgba(255,194,14,.15);color:var(--y)}
+  table.dt .bad{background:rgba(255,90,78,.18);color:var(--red);font-weight:600}
+  table.dt .ok{background:rgba(95,214,138,.16);color:var(--green);font-weight:600}
+  table.dt tr.gone td,table.dt .gone{opacity:.18;text-decoration:line-through}
+  table.dt .pop{animation:cellpop .6s ease}
+  @keyframes cellpop{0%{transform:scale(1)}40%{transform:scale(1.18)}100%{transform:scale(1)}}
+  .tbl{padding:12px 18px;overflow:hidden}
+
+  /* title */
+  .bigline{font-size:150px;font-weight:700;letter-spacing:-.04em;line-height:.95}
+  .bigline span{color:var(--y)}
+
+  /* ingredients */
+  .ingStage{position:relative;height:600px;margin-top:14px}
+  .ingStage canvas{position:absolute;inset:0;width:100%;height:100%}
+  .ingCap{font-size:24px;line-height:1.4;color:#d6d3cb;min-height:34px;text-align:center;transition:opacity .4s}
+  .ingCap b{color:var(--y)}
+
+  /* code */
+  pre.src{font-family:var(--mono);font-size:19px;line-height:1.55;color:#d6d3cb;background:#0d0d0f;border:1px solid var(--line);border-radius:14px;padding:18px 22px;white-space:pre;overflow:hidden}
+  pre.src .kw{color:var(--blue)} pre.src .fn{color:var(--green)} pre.src .s{color:var(--amber)} pre.src .c{color:var(--mute)} pre.src .n{color:var(--y)}
+
+  /* sorter */
+  .sortItems{display:flex;flex-wrap:wrap;gap:12px;min-height:120px;align-content:flex-start}
+  .chipx{font-size:20px;padding:10px 16px;border-radius:12px;background:var(--panel2);border:1px solid var(--line);cursor:pointer;user-select:none;display:inline-flex;gap:10px;align-items:center;transition:transform .2s,border-color .2s,opacity .3s}
+  .chipx:hover{border-color:var(--y)}
+  .chipx.sel{border-color:var(--y);color:var(--y);transform:translateY(-3px);box-shadow:0 8px 24px rgba(0,0,0,.4)}
+  .chipx .e{font-size:24px}
+  .bins{display:grid;grid-template-columns:1fr 1fr;gap:18px}
+  .bin{padding:16px 18px;min-height:250px;cursor:pointer;display:flex;flex-direction:column;gap:10px;transition:border-color .2s,background .2s}
+  .bin:hover{border-color:var(--y)}
+  .bin h3{font-size:24px;display:flex;justify-content:space-between;align-items:center}
+  .bin .in{display:flex;flex-wrap:wrap;gap:8px}
+  .bin .in .chipx{font-size:16px;padding:6px 10px;cursor:default}
+  .chipx.right{border-color:rgba(95,214,138,.6);background:rgba(95,214,138,.1)}
+  .chipx.wrong{border-color:rgba(255,90,78,.6);background:rgba(255,90,78,.1)}
+
+  /* type quiz */
+  .tq td .tchip{display:inline-block;min-width:130px;font-size:16px;padding:6px 12px;border-radius:8px;cursor:pointer;border:1px dashed var(--mute);color:var(--mute);user-select:none}
+  .tq td .tchip.set{border-style:solid;color:var(--ink);border-color:var(--line);background:var(--panel2)}
+  .tq td .tchip.right{border-color:var(--green);color:var(--green);background:rgba(95,214,138,.12)}
+  .tq td .tchip.wrong{border-color:var(--red);color:var(--red);background:rgba(255,90,78,.12)}
+  .critter{display:flex;gap:24px;align-items:center}
+  .critter svg{width:180px;height:180px;flex:none}
+
+  /* tabs */
+  .tabs{display:flex;gap:8px;flex-wrap:wrap}
+  .tabs button{background:transparent;border:1px solid var(--line);color:var(--mute);font:500 16px var(--sans);padding:8px 14px;border-radius:999px;cursor:pointer;display:inline-flex;gap:8px;align-items:center}
+  .tabs button:hover{border-color:var(--y);color:var(--ink)}
+  .tabs button.on{background:var(--y);border-color:var(--y);color:var(--bg)}
+  .tabs button.done::after{content:"✓";color:var(--green);font-weight:700}
+  .tabs button.on.done::after{color:var(--bg)}
+
+  /* cleaning */
+  .probs{display:grid;grid-template-columns:repeat(4,1fr);gap:16px;margin-top:34px}
+  .prob{padding:18px 20px;display:flex;flex-direction:column;gap:8px}
+  .prob h3{font-size:22px}
+  .prob .ex{font-size:16px;color:#c9c6be;line-height:1.4}
+  .prob .fix{font-size:16px;color:var(--green);line-height:1.4}
+  .prob .fix::before{content:"fix → ";font-family:var(--mono);color:var(--mute)}
+  .prob .ic{font-family:var(--mono);font-size:26px;color:var(--y)}
+  .labHead{display:flex;justify-content:space-between;align-items:center;gap:20px}
+  .labNote{min-height:96px;font-size:21px;line-height:1.45;color:#d6d3cb}
+  .labNote b{color:var(--y)}
+  .acts{display:flex;gap:10px;flex-wrap:wrap}
+  .acts .btn{font-size:17px;padding:9px 16px}
+
+  /* number line */
+  .nl{position:relative;height:300px}
+  .nl svg{position:absolute;inset:0;width:100%;height:100%}
+  .stats3{display:grid;grid-template-columns:repeat(3,1fr);gap:14px}
+  .stat{padding:14px 18px;display:flex;flex-direction:column;gap:2px}
+  .stat .k{font-size:13px}
+  .stat b{font-family:var(--mono);font-size:34px}
+  .stat.mean b{color:var(--y)} .stat.med b{color:var(--blue)} .stat.mode b{color:var(--green)}
+  .stat .d{font-size:15px;color:var(--mute);line-height:1.35}
+  .presets{display:flex;gap:8px;flex-wrap:wrap}
+  .presets .btn{font-family:var(--mono);font-size:15px;padding:7px 12px}
+
+  /* scaling + encoding */
+  .scaleBox{padding:22px 26px;display:flex;flex-direction:column;gap:16px}
+  .scaleRow{display:grid;grid-template-columns:120px 1fr 100px;gap:16px;align-items:center;font-family:var(--mono);font-size:18px}
+  .scaleTrack{position:relative;height:12px;border-radius:6px;background:#2a2a30}
+  .scaleTrack i{position:absolute;top:-7px;width:26px;height:26px;margin-left:-13px;border-radius:50%;background:var(--y);box-shadow:0 0 16px rgba(255,194,14,.5);transition:left .2s}
+  .scaleTrack.b i{background:var(--blue);box-shadow:0 0 16px rgba(106,184,255,.5)}
+  .enc{display:grid;grid-template-columns:1fr 1fr;gap:20px}
+  .sw8{display:inline-block;width:16px;height:16px;border-radius:4px;vertical-align:-2px;margin-right:8px}
+
+  /* feature engineering */
+  .fe{display:grid;grid-template-columns:repeat(4,1fr);gap:14px}
+  .fes{padding:16px 18px;display:flex;flex-direction:column;gap:6px;cursor:pointer;transition:border-color .3s,background .3s,opacity .3s;opacity:.55}
+  .fes .n{font-family:var(--mono);font-size:14px;color:var(--y);letter-spacing:.08em}
+  .fes h3{font-size:22px}
+  .fes p{font-size:16px;color:#c9c6be;line-height:1.4}
+  .fes.on{opacity:1;border-color:var(--y);background:rgba(255,194,14,.06)}
+  .fes.done{opacity:1}
+  .fes.done .n::after{content:"  ✓";color:var(--green)}
+
+  /* charts */
+  .viz{position:relative;height:440px}
+  .viz>*{position:absolute;inset:0;transition:opacity .5s}
+  .viz .off{opacity:0;pointer-events:none}
+  .cgrid{display:grid;grid-template-columns:repeat(6,1fr);gap:14px}
+  .cg{padding:12px;display:flex;flex-direction:column;align-items:center;gap:6px;cursor:pointer;transition:border-color .2s,transform .2s}
+  .cg:hover{border-color:var(--y)}
+  .cg.on{border-color:var(--y);background:rgba(255,194,14,.07);transform:translateY(-3px)}
+  .cg svg{width:100%;height:110px}
+  .cg span{font-size:16px;font-weight:600}
+  .cinfo{padding:18px 24px;display:grid;grid-template-columns:260px 1fr 1fr;gap:26px;align-items:center;min-height:120px}
+  .cinfo h3{font-size:30px;color:var(--y)}
+  .cinfo p{font-size:20px}
+
+  /* venn */
+  .venn svg{width:100%;height:100%}
+  .venn .rg{cursor:pointer}
+  .venn .rg ellipse{transition:fill-opacity .25s,stroke-width .25s}
+  .venn .rg:hover ellipse{fill-opacity:.32}
+  .vinfo{padding:22px 26px;min-height:200px;display:flex;flex-direction:column;gap:10px}
+  .vinfo h3{font-size:34px}
+  .vinfo p{font-size:22px}
+  .roles .card{padding:22px 22px;display:flex;flex-direction:column;gap:12px}
+  .roles h3{font-size:28px}
+  .roles .who2{font-family:var(--mono);font-size:14px;letter-spacing:.08em}
+  .roles p{font-size:18px;line-height:1.45}
+  .roles .ks{font-size:16px;color:#c9c6be;border-top:1px solid var(--line);padding-top:10px;line-height:1.45}
+  .roles .ks b{font-family:var(--mono);font-size:13px;letter-spacing:.08em;color:var(--mute);display:block;margin-bottom:4px}
+
+  /* annotation */
+  .senti{display:grid;grid-template-columns:repeat(3,1fr);gap:16px}
+  .senti .card{padding:20px;display:flex;flex-direction:column;gap:12px;align-items:center;text-align:center}
+  .senti .face{font-size:54px;line-height:1}
+  .senti h3{font-size:22px;font-family:var(--mono);letter-spacing:.08em}
+  .senti p{font-size:18px;font-style:italic}
+  .rv{display:grid;grid-template-columns:44px 1fr 330px;gap:14px;align-items:center;padding:8px 14px;border-bottom:1px solid var(--line)}
+  .rv .id{font-family:var(--mono);font-size:16px;color:var(--mute)}
+  .rv .tx{font-size:20px}
+  .rv .lb{display:flex;gap:6px;justify-content:flex-end}
+  .rv .lb button{font:600 14px var(--mono);padding:6px 10px;border-radius:8px;border:1px solid var(--line);background:transparent;color:var(--mute);cursor:pointer;letter-spacing:.04em}
+  .rv .lb button:hover{border-color:var(--ink);color:var(--ink)}
+  .rv .lb button.on.p{background:rgba(95,214,138,.18);border-color:var(--green);color:var(--green)}
+  .rv .lb button.on.n{background:rgba(255,90,78,.16);border-color:var(--red);color:var(--red)}
+  .rv .lb button.on.u{background:rgba(106,184,255,.16);border-color:var(--blue);color:var(--blue)}
+  .rv.miss{box-shadow:inset 4px 0 0 var(--red)}
+  .rv.hit{box-shadow:inset 4px 0 0 var(--green)}
+
+  /* bias */
+  .mk{display:grid;grid-template-columns:repeat(3,1fr);gap:18px}
+  .mk figure{position:relative;border-radius:16px;overflow:hidden;border:1px solid var(--line);height:360px;cursor:pointer}
+  .mk img{width:100%;height:100%;object-fit:cover;display:block;transition:filter .4s}
+  .mk figcaption{position:absolute;left:12px;bottom:12px;font-family:var(--mono);font-size:15px;padding:5px 10px;border-radius:8px;background:rgba(13,13,15,.85);color:var(--mute)}
+  .mk figure.rev.ai{border-color:var(--y);box-shadow:0 0 0 3px rgba(255,194,14,.3)}
+  .mk figure.rev.ai figcaption{color:var(--y)}
+  .prompt{font-family:var(--mono);font-size:22px;padding:16px 22px;border-radius:14px;background:#0d0d0f;border:1px solid var(--line);color:var(--ink)}
+  .prompt::before{content:"› ";color:var(--y)}
+  .plist{display:flex;flex-direction:column;gap:12px}
+  .plist .prompt{font-size:19px;padding:12px 18px}
+
+  /* links */
+  .links{display:grid;grid-template-columns:1fr 1fr;gap:18px;margin-top:40px}
+  .lk{padding:22px 26px;display:flex;flex-direction:column;gap:8px;text-decoration:none;color:var(--ink);transition:border-color .2s,transform .2s}
+  .lk:hover{border-color:var(--y);transform:translateY(-3px)}
+  .lk h3{font-size:28px}
+  .lk p{font-size:18px;color:var(--mute)}
+  .lk span{font-family:var(--mono);font-size:16px;color:var(--y)}
+
+  /* classification */
+  .ftog{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+  .ftog .switch{padding:14px;gap:10px}
+  .switch{cursor:pointer;display:flex;flex-direction:column;align-items:center;user-select:none}
+  .switch .lbl{font-family:var(--mono);font-size:16px;color:var(--mute)}
+  .switch .tog{width:80px;height:44px;border-radius:30px;background:#2a2a30;position:relative;transition:background .3s}
+  .switch .tog::after{content:"";position:absolute;left:5px;top:5px;width:34px;height:34px;border-radius:50%;background:#77746d;transition:transform .35s cubic-bezier(.3,1.4,.5,1),background .3s}
+  .switch.on .tog{background:rgba(255,194,14,.3)} .switch.on .tog::after{transform:translateX(36px);background:var(--y)}
+  .classes{display:grid;grid-template-columns:repeat(3,1fr);gap:14px}
+  .cls{padding:18px;text-align:center;display:flex;flex-direction:column;gap:6px;transition:all .3s;opacity:.4}
+  .cls .num{font-family:var(--mono);font-size:44px;font-weight:600;color:var(--mute)}
+  .cls .nm{font-size:22px;font-weight:700;font-family:var(--mono);letter-spacing:.06em}
+  .cls.on{opacity:1;border-color:var(--y);background:rgba(255,194,14,.08);box-shadow:0 0 30px rgba(255,194,14,.15)}
+  .cls.on .num{color:var(--y)}
+
+  /* split */
+  .split3{display:grid;grid-template-columns:repeat(3,1fr);gap:18px}
+  .sp3{padding:22px;display:flex;flex-direction:column;gap:10px}
+  .sp3 h3{font-size:28px}
+  .sp3 .pct{font-family:var(--mono);font-size:44px;font-weight:600}
+  .sp3 p{font-size:18px;line-height:1.45}
+  .sp3 .an{font-size:16px;color:var(--mute);font-style:italic;border-top:1px solid var(--line);padding-top:10px}
+  .bar3{display:flex;height:34px;border-radius:10px;overflow:hidden;font-family:var(--mono);font-size:15px;font-weight:600}
+  .bar3 div{display:grid;place-items:center;color:var(--bg)}
+  .seedrow{display:grid;grid-template-columns:repeat(10,1fr);gap:8px}
+  .seedrow div{height:64px;border-radius:10px;display:grid;place-items:center;font-family:var(--mono);font-size:18px;font-weight:600;transition:background .4s,color .4s}
+  .seedrow .tr{background:rgba(95,214,138,.18);color:var(--green);border:1px solid rgba(95,214,138,.5)}
+  .seedrow .te{background:rgba(106,184,255,.18);color:var(--blue);border:1px solid rgba(106,184,255,.5)}
+  .runlog{font-family:var(--mono);font-size:16px;color:var(--mute);display:flex;flex-direction:column;gap:6px;min-height:120px}
+  .runlog b{color:var(--ink)}
+
+  /* eda */
+  .eda{display:grid;grid-template-columns:repeat(5,1fr);gap:14px;margin-top:30px}
+  .eda .card{padding:18px;display:flex;flex-direction:column;gap:10px}
+  .eda .n{font-family:var(--mono);font-size:30px;color:var(--y);font-weight:600}
+  .eda h3{font-size:21px;line-height:1.2}
+  .eda ul{list-style:none;display:flex;flex-direction:column;gap:8px}
+  .eda li{font-size:16px;color:#c9c6be;line-height:1.4}
+
+  /* formulas */
+  .fx{font-family:var(--mono);font-size:24px;color:var(--ink);display:inline-flex;align-items:center;gap:10px;flex-wrap:wrap}
+  .frac{display:inline-flex;flex-direction:column;align-items:center;vertical-align:middle;line-height:1.25}
+  .frac>span:first-child{border-bottom:2px solid currentColor;padding:0 6px 2px}
+  .frac>span:last-child{padding:2px 6px 0}
+  .fbox{padding:18px 22px;display:flex;flex-direction:column;gap:10px}
+  .fbox h3{font-size:24px}
+  .fbox p{font-size:18px}
+  .sum{font-size:1.5em;line-height:1}
+  .stattable td,.stattable th{font-family:var(--sans);font-size:20px;text-align:left;padding:14px 18px}
+  .stattable td:first-child{font-weight:700;color:var(--y);white-space:nowrap}
+  .stattable tr{cursor:default}
+  .stattable tr:hover td{background:rgba(255,255,255,.03)}
+
+  /* kinds of datasets */
+  .dk{padding:16px 16px 20px;display:flex;flex-direction:column;gap:8px}
+  .dk canvas{width:100%;height:300px;display:block;border-radius:12px;background:#0d0d0f;margin-bottom:8px}
+  .dk h3{font-size:28px}
+  .dk p{font-size:18px;line-height:1.4}
+
+  /* structured vs unstructured */
+  .svu{display:grid;grid-template-columns:1fr 1fr;gap:26px;margin-top:28px}
+  .svuC{padding:18px 20px 22px;display:flex;flex-direction:column;gap:10px}
+  .svuC canvas{width:100%;height:290px;display:block;border-radius:12px;background:#0d0d0f;margin-bottom:6px}
+  .svuC .k{font-size:22px;font-weight:600}
+  .svuC p{font-size:22px;line-height:1.4}
+  table.svuT{margin-top:22px;font-family:var(--sans)}
+  table.svuT td{font-size:19px;padding:9px 14px;color:#d6d3cb;width:42%}
+  table.svuT td.k{width:16%;font-size:13px}
+
+  /* features on objects */
+  .fo .cap{top:14px;bottom:auto}
+  .fo svg .hs{cursor:pointer}
+  .fo svg .hl{fill:rgba(255,194,14,0);stroke:rgba(255,194,14,0);stroke-width:4;transition:fill .25s,stroke .25s}
+  .fo svg .hs:hover .hl,.fo svg .hs.on .hl{fill:rgba(255,194,14,.22);stroke:#ffc20e}
+  .fo svg .hs.seen .hl{stroke:rgba(255,194,14,.35);stroke-dasharray:6 6}
+  .fo svg .hs.on .hl{stroke-dasharray:none}
+  .foInfo{padding:22px 24px;min-height:170px;display:flex;flex-direction:column;gap:8px}
+  .foInfo .fn{font-size:40px;font-weight:700;line-height:1.1;color:var(--y)}
+  table.dt tr.found td{color:var(--y);background:rgba(255,194,14,.12);font-weight:600}
+  .foInfo .fv{font-family:var(--mono);font-size:30px;color:var(--y)}
+  table.dt tr.found td{animation:cellpop .5s ease}
+  table.dt td.q{color:var(--mute)}
+
+  /* knn */
+  .knnRes{font-size:21px;line-height:1.45;min-height:64px}
+  .knnRes b{color:var(--y)}
+</style>
+</head>
+<body>
+<div id="stage">
+  <img id="logo" src="{{LOGO}}" alt="Neumont University">
+  <div id="brand"><b>AAI101</b> &nbsp;·&nbsp; Data</div>
+
+  <!-- title -->
+  <section class="slide" data-id="title">
+    <canvas class="bg" id="bgData"></canvas>
+    <div class="vignette"></div>
+    <div class="content center">
+      <div class="eyebrow rise" style="--i:0">AAI101 · Introduction to Artificial Intelligence</div>
+      <h1 class="rise" style="--i:1">Data</h1>
+      <p class="lede rise" style="--i:2">The core ingredient that powers AI. Models learn patterns from numbers, text, images and sound, so the <b class="y">quality</b> and <b class="y">variety</b> of the data shape what they can do.</p>
+    </div>
+  </section>
+
+  <!-- oil -->
+  <section class="slide" data-id="oil">
+    <canvas class="bg" id="bgOil"></canvas>
+    <div class="vignette"></div>
+    <div class="content center">
+      <div class="bigline rise" style="--i:0">Data is the<br>new <span>oil</span>.</div>
+      <p class="lede rise" style="--i:1;margin-top:40px">Crude oil is worth little until it’s refined. Raw data is the same: it has to be <b>collected</b>, <b>cleaned</b> and <b>shaped</b> before it can power anything.</p>
+      <p class="rise muted mono" style="--i:2;margin-top:16px;font-size:18px">phrase popularized by mathematician Clive Humby, 2006</p>
+    </div>
+  </section>
+
+  <!-- ingredients -->
+  <section class="slide" data-id="ingredients" style="padding-top:90px">
+    <h2 class="rise" style="--i:0"><span class="n">WHAT IT TAKES</span>The ingredients of AI</h2>
+    <div class="ingStage rise" style="--i:1"><canvas id="ingCv"></canvas></div>
+    <p class="ingCap" id="ingCap"></p>
+  </section>
+
+  <!-- rules vs ml -->
+  <section class="slide" data-id="rulesml">
+    <div class="two" style="grid-template-columns:1fr 1fr;gap:50px">
+      <div class="stack" style="gap:18px">
+        <h2 class="rise" style="--i:0"><span class="n">TWO WAYS TO BUILD AI</span>Rules vs. learning</h2>
+        <div class="tabs rise" style="--i:1" id="rmTabs"><button class="on" data-k="rules">Rule-based AI</button><button data-k="ml">Machine learning</button></div>
+        <div id="rmRules" class="stack" style="gap:14px">
+          <p>A person writes every rule by hand.</p>
+<pre class="src"><span class="kw">if</span> (temperature &gt; <span class="n">100.5</span>)
+    <span class="kw">if</span> (runnyNose == <span class="kw">true</span>)
+        <span class="kw">if</span> (muscleAche == <span class="kw">false</span>)
+            <span class="kw">return</span> hasCold;
+        <span class="kw">else</span>
+            <span class="kw">return</span> hasFlu;</pre>
+        </div>
+        <div id="rmML" class="stack" style="gap:16px;display:none">
+          <p>Nobody writes the rule. The model is shown <b>labeled examples</b> and finds the boundary itself.</p>
+          <ul class="bul"><li>Each dot is a past patient: <b style="color:var(--blue)">cold</b> or <b class="y">flu</b></li><li>Press <b>Train</b> and watch the model adjust its line until it separates them</li><li>More (and better) data → a better line</li></ul>
+          <div style="display:flex;gap:12px;align-items:center"><button class="btn on" id="rmTrain">Train ▶</button><button class="btn" id="rmReset">Reset</button><span class="hint" id="rmEpoch">epoch 0</span></div>
+        </div>
+      </div>
+      <div class="stack rise" style="--i:2;gap:14px">
+        <div class="stage-box" style="height:580px"><canvas id="rmCv"></canvas></div>
+        <p class="mono" id="rmCap" style="font-size:18px;color:var(--mute);text-align:center;min-height:26px">a human drew this boundary: temperature &gt; 100.5</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- dataset term -->
+  <section class="slide" data-id="t-dataset">
+    <pre class="termBg" id="tbg1"></pre>
+    <div class="termS">
+      <div class="eyebrow rise" style="--i:0">Terminology</div>
+      <div class="word rise" style="--i:1">data<span>set</span></div>
+      <div class="meta rise" style="--i:2"><span>/ˈdādəˌset/</span><i>noun</i></div>
+      <div class="def rise" style="--i:3">A structured <b>collection of data</b> organized and stored together for analysis or processing.</div>
+    </div>
+  </section>
+
+  <!-- kinds of datasets -->
+  <section class="slide" data-id="dskinds">
+    <div class="labHead rise" style="--i:0"><h2><span class="n">DATASETS COME IN MANY FORMS</span>Tables, text, images, audio</h2>
+      <div class="tabs" id="dkTabs"><button class="on" data-k="raw">As we see it</button><button data-k="num">As the computer sees it</button></div></div>
+    <div class="grid4 rise" style="--i:1;margin-top:34px">
+      <div class="card dk"><canvas id="dkTable"></canvas><h3>Tables</h3><p><b>One example</b> = one row</p><p class="muted">house prices, the Iris flowers, sales records</p></div>
+      <div class="card dk"><canvas id="dkText"></canvas><h3>Text</h3><p><b>One example</b> = one document</p><p class="muted">product reviews, emails, Wikipedia, books</p></div>
+      <div class="card dk"><canvas id="dkImage"></canvas><h3>Images</h3><p><b>One example</b> = one picture</p><p class="muted">handwritten digits (MNIST), X-rays, photos</p></div>
+      <div class="card dk"><canvas id="dkAudio"></canvas><h3>Audio</h3><p><b>One example</b> = one clip</p><p class="muted">voice commands, music, bird songs</p></div>
+    </div>
+    <div class="callout keyIdea" id="dkIdea" style="margin-top:28px">To a computer, <b>every dataset is numbers</b>: a table’s values, word IDs, pixel brightness, sound wave samples.</div>
+  </section>
+
+  <!-- structured vs unstructured -->
+  <section class="slide" data-id="svu">
+    <h2 class="rise" style="--i:0"><span class="n">TWO SHAPES OF DATA</span>Structured vs. unstructured</h2>
+    <div class="svu rise" style="--i:1">
+      <div class="card svuC"><canvas id="svuS"></canvas><div class="k" style="color:var(--blue)">Structured</div>
+        <p>Organized into <b>rows and columns</b> with a fixed format. Each column is a feature, each row is one example.</p></div>
+      <div class="card svuC"><canvas id="svuU"></canvas><div class="k" style="color:var(--amber)">Unstructured</div>
+        <p><b>No fixed format</b>: it doesn’t fit neatly into rows and columns. Text, images, audio, video.</p></div>
+    </div>
+    <table class="dt svuT keyIdea" id="svuT">
+      <tr><td class="l k">Looks like</td><td class="l">spreadsheets, database tables, CSV files</td><td class="l">photos, emails, voice memos, videos, social posts</td></tr>
+      <tr><td class="l k">Easy to…</td><td class="l">search, sort, filter, average</td><td class="l">store, but hard to search or count</td></tr>
+      <tr><td class="l k">AI uses</td><td class="l">classic machine learning (regression, decision trees)</td><td class="l">deep learning to find patterns first</td></tr>
+    </table>
+  </section>
+
+  <!-- structured -->
+  <section class="slide" data-id="structured">
+    <div class="stack" style="gap:22px">
+      <h2 class="rise" style="--i:0"><span class="n">TERMINOLOGY</span>Structured data</h2>
+      <p class="rise" style="--i:1;max-width:1300px">Well-organized data in clearly defined <b>rows and columns</b>. Each <b style="color:var(--blue)">column is a feature</b> (a variable) and each <b class="y">row is an instance</b> (one example). Easy to clean, analyze and feed into models.</p>
+      <div class="card tbl rise" style="--i:2"><table class="dt" id="stTbl"></table></div>
+      <p class="hint rise" style="--i:3" id="stHint">hover a column or a row</p>
+    </div>
+  </section>
+
+  <!-- data types -->
+  <section class="slide" data-id="dtypes">
+    <div class="two" style="grid-template-columns:.8fr 1.2fr;gap:50px">
+      <div class="stack" style="gap:20px">
+        <h2 class="rise" style="--i:0"><span class="n">EVERY COLUMN HAS A</span>Data type</h2>
+        <div class="grid2 rise" style="--i:1">
+          <div class="card pad"><div class="k">Text</div><p class="mono" style="font-size:19px">"Ember", "nice!"</p><p class="muted" style="font-size:15px;margin-top:4px">free-form, could be anything</p></div>
+          <div class="card pad"><div class="k">Number</div><p class="mono" style="font-size:19px">12, 48.5</p></div>
+          <div class="card pad"><div class="k">Boolean (Yes/No)</div><p class="mono" style="font-size:19px">true / false</p></div>
+          <div class="card pad"><div class="k">Date / Time</div><p class="mono" style="font-size:19px">2026-10-15</p></div>
+          <div class="card pad" style="grid-column:1 / span 2"><div class="k">Category</div><p class="mono" style="font-size:19px">"Fire", "Water", "Grass"</p><p class="muted" style="font-size:15px;margin-top:4px">one value from a fixed set. Models can’t use these directly; we’ll turn them into numbers later.</p></div>
+        </div>
+        <p class="rise" style="--i:2">The type decides what you can do with it: you can <b>average</b> a column of numbers, but not a column of names.</p>
+      </div>
+      <div class="stack rise" style="--i:2;gap:16px">
+        <div class="critter"><svg viewBox="0 0 180 180" id="critSvg"></svg><div><div class="k">Creature card</div><div style="font-size:40px;font-weight:700">Ember</div><p class="hint">click each <b class="y">?</b> to set its data type</p></div></div>
+        <div class="card tbl"><table class="dt tq" id="tqTbl"></table></div>
+        <div style="display:flex;gap:12px;align-items:center"><button class="btn on" id="tqCheck">Check</button><button class="btn" id="tqShow">Show answers</button><span class="status" id="tqMsg" style="font-size:21px"></span></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- unstructured + sorter -->
+  <section class="slide" data-id="unstructured">
+    <div class="two" style="grid-template-columns:.9fr 1.1fr;gap:56px">
+      <div class="stack" style="gap:20px">
+        <h2 class="rise" style="--i:0"><span class="n">TERMINOLOGY</span>Unstructured data</h2>
+        <p class="rise" style="--i:1">Data that doesn’t fit neatly into rows and columns: <b>text, images, audio, video</b>. Deep learning models are built to pull patterns out of it.</p>
+        <div class="callout rise" style="--i:2">Most of the world’s data is unstructured: photos, messages, recordings.</div>
+        <p class="hint rise" style="--i:3">Click an item, then click the bin it belongs in.</p>
+      </div>
+      <div class="stack rise" style="--i:2;gap:18px">
+        <div class="sortItems" id="srtItems"></div>
+        <div class="bins">
+          <div class="bin card" data-b="S"><h3>Structured <span class="hint" id="srtS">0</span></h3><div class="in"></div></div>
+          <div class="bin card" data-b="U"><h3>Unstructured <span class="hint" id="srtU">0</span></h3><div class="in"></div></div>
+        </div>
+        <div style="display:flex;gap:14px;align-items:center"><span class="status" id="srtMsg" style="font-size:22px"></span><span class="sp" style="flex:1"></span><button class="btn" id="srtReset">Reset</button></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- feature term -->
+  <section class="slide" data-id="t-feature">
+    <div class="termS">
+      <div class="eyebrow rise" style="--i:0">Terminology</div>
+      <div class="word rise" style="--i:1">fea·<span>ture</span></div>
+      <div class="meta rise" style="--i:2"><span>/ˈfēCHər/</span><i>noun</i></div>
+      <div class="def rise" style="--i:3">An individual <b>measurable property</b> or characteristic of the data that is used as <b>input</b> for a model.</div>
+      <p class="rise muted" style="--i:4;font-size:26px">In a table, each <b style="color:var(--blue)">column</b> is a feature, like the ones we just gave data types.</p>
+    </div>
+  </section>
+
+  <!-- features on real objects -->
+  <section class="slide" data-id="fobj">
+    <div class="two" style="grid-template-columns:1.2fr .8fr;gap:44px">
+      <div class="stack" style="gap:16px">
+        <div class="labHead rise" style="--i:0"><h2><span class="n">SPOT THE FEATURES</span>Everything has features</h2></div>
+        <div class="tabs rise" style="--i:1" id="foTabs"><button class="on" data-k="0">🚗 Car</button><button data-k="1">🏠 House</button><button data-k="2">🐕 Animal</button></div>
+        <div class="stage-box fo rise" style="--i:2;height:520px"><svg id="foSvg" viewBox="0 0 700 460"></svg><div class="cap" id="foCap">hover over the parts</div></div>
+      </div>
+      <div class="stack rise" style="--i:3;gap:16px">
+        <div class="card foInfo" id="foInfo"></div>
+        <div class="card tbl"><table class="dt" id="foTbl"></table></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- label term -->
+  <section class="slide" data-id="t-label">
+    <div class="termS">
+      <div class="eyebrow rise" style="--i:0">Terminology</div>
+      <div class="word rise" style="--i:1">la·<span>bel</span></div>
+      <div class="meta rise" style="--i:2"><span>/ˈlābəl/</span><i>noun</i></div>
+      <div class="def rise" style="--i:3">The <b>correct output</b> or category assigned to a piece of data. In supervised learning, labels are the answers the model learns from, so it can predict them for new data.</div>
+    </div>
+  </section>
+
+  <!-- features & labels table -->
+  <section class="slide" data-id="featlab">
+    <div class="stack" style="gap:20px">
+      <div class="labHead rise" style="--i:0"><h2><span class="n">PUTTING IT TOGETHER</span>Features and labels</h2>
+        <div class="tabs" id="flTabs"><button data-k="f">Features</button><button data-k="l">Labels</button><button data-k="q">New animal?</button></div></div>
+      <div class="card tbl rise" style="--i:1"><table class="dt" id="flTbl"></table></div>
+      <div class="callout rise" style="--i:2" id="flNote">Every row is one animal. Press → to highlight the parts.</div>
+    </div>
+  </section>
+
+  <!-- annotation -->
+  <section class="slide" data-id="annotation">
+    <div class="two" style="grid-template-columns:1fr 1fr;gap:56px">
+      <div class="stack" style="gap:22px">
+        <h2 class="rise" style="--i:0"><span class="n">WHERE LABELS COME FROM</span>Data annotation</h2>
+        <p class="rise" style="--i:1"><b class="y">Data annotation</b>: labeling or categorizing data (images, text, audio) so AI models can learn to recognize patterns and make predictions.</p>
+        <p class="rise" style="--i:2"><b class="y">Data annotator</b>: the person who does it. Behind most AI models are thousands of people adding labels by hand.</p>
+        <div class="callout rise" style="--i:3">Example task: <b>sentiment analysis</b>. Is this text positive, neutral, or negative?</div>
+      </div>
+      <div class="senti rise" style="--i:2">
+        <div class="card"><div class="face">🙂</div><h3 style="color:var(--green)">POSITIVE</h3><p>“Great service for an affordable price. We will definitely be booking again.”</p></div>
+        <div class="card"><div class="face">😐</div><h3 style="color:var(--blue)">NEUTRAL</h3><p>“Just booked two nights at this hotel.”</p></div>
+        <div class="card"><div class="face">🙁</div><h3 style="color:var(--red)">NEGATIVE</h3><p>“Horrible service. The room was dirty and unpleasant. Not worth the money.”</p></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- annotate activity -->
+  <section class="slide" data-id="annotate">
+    <div class="stack" style="gap:14px">
+      <div class="labHead rise" style="--i:0"><h2><span class="n">YOUR TURN</span>Be the annotator</h2>
+        <div style="display:flex;gap:12px;align-items:center"><span class="hint" id="anCount">0 / 10 labeled</span><button class="btn on" id="anCheck">Compare to key</button><button class="btn" id="anReset">Reset</button></div></div>
+      <div class="card rise" style="--i:1;padding:6px 8px" id="anList"></div>
+      <div class="callout rise" style="--i:2" id="anNote">Label every review. Do your answers match your neighbor’s? Annotators disagree, and that disagreement ends up in the data.</div>
+    </div>
+  </section>
+
+  <!-- supervised term -->
+  <section class="slide" data-id="t-supervised">
+    <div class="termS">
+      <div class="eyebrow rise" style="--i:0">Terminology</div>
+      <div class="word rise" style="--i:1">supervised <span>learning</span></div>
+      <div class="meta rise" style="--i:2"><i>noun</i></div>
+      <div class="def rise" style="--i:3">Machine learning trained on <b>labeled data</b>: every training example pairs the input with the correct output. The model learns to map inputs to outputs, then predicts outputs for <b>new, unseen</b> data.</div>
+    </div>
+  </section>
+
+  <!-- supervised in action -->
+  <section class="slide" data-id="supervised">
+    <div class="two" style="grid-template-columns:1fr 1fr;gap:50px">
+      <div class="stack" style="gap:20px">
+        <h2 class="rise" style="--i:0"><span class="n">SUPERVISED LEARNING</span>Learning from answers</h2>
+        <div class="card tbl rise" style="--i:1"><table class="dt" id="svTbl"></table></div>
+        <p class="rise" style="--i:2"><b style="color:var(--blue)">Features</b> go in, the <b class="y">label</b> is the answer. The model learns how the features relate to the price.</p>
+        <div class="card pad rise" style="--i:3;display:flex;flex-direction:column;gap:12px">
+          <div class="k">Try a new house</div>
+          <div style="display:grid;grid-template-columns:110px 1fr 110px;gap:14px;align-items:center"><span class="mono">Sq Feet</span><input type="range" id="svX" min="1300" max="2100" step="10" value="1650"><b class="mono" id="svXv">1650</b></div>
+          <div style="font-size:26px">Predicted price: <b class="y mono" id="svY">$0k</b></div>
+        </div>
+      </div>
+      <div class="stage-box rise" style="--i:2"><canvas id="svCv"></canvas><div class="cap" id="svCap">price ≈ slope × sq ft + intercept</div></div>
+    </div>
+  </section>
+
+  <!-- regression -->
+  <section class="slide" data-id="regression">
+    <div class="two" style="grid-template-columns:.85fr 1.15fr;gap:50px">
+      <div class="stack" style="gap:20px">
+        <h2 class="rise" style="--i:0"><span class="n">SUPERVISED TASK 1</span>Regression</h2>
+        <p class="rise" style="--i:1">Models the relationship between an <b>outcome</b> and one or more <b>predictors</b>, to predict a <b class="y">continuous value</b>: a price, a temperature, sales revenue.</p>
+        <div class="grid2 rise" style="--i:2"><div class="card pad"><div class="k" style="color:var(--blue)">Features</div><p style="font-size:20px">sq ft, bedrooms, pool</p></div><div class="card pad"><div class="k" style="color:var(--y)">Label</div><p style="font-size:20px">price ($)</p></div></div>
+        <p class="hint rise" style="--i:3">click to add a house · click a dot to remove it</p>
+      </div>
+      <div class="stage-box rise" style="--i:2"><canvas id="rgCv" style="cursor:crosshair"></canvas><div class="cap" id="rgCap"></div></div>
+    </div>
+  </section>
+
+  <!-- classification -->
+  <section class="slide" data-id="classification">
+    <div class="two" style="grid-template-columns:1fr 1fr;gap:56px">
+      <div class="stack" style="gap:20px">
+        <h2 class="rise" style="--i:0"><span class="n">SUPERVISED TASK 2</span>Classification</h2>
+        <p class="rise" style="--i:1">Predicts a <b class="y">category</b> by assigning each data point to one of a set of predefined classes.</p>
+        <div class="grid2 rise" style="--i:2"><div class="card pad"><div class="k" style="color:var(--blue)">Features</div><p style="font-size:20px">fins, feathers, fur, lays eggs</p></div><div class="card pad"><div class="k" style="color:var(--y)">Label</div><p style="font-size:20px">fish / bird / mammal</p></div></div>
+        <p class="rise muted" style="--i:3;font-size:21px">The model actually outputs a number: each class gets one. Turning categories into numbers is called <b>encoding</b>, and we’ll see more of it later.</p>
+      </div>
+      <div class="stack rise" style="--i:2;gap:18px">
+        <div class="k">Describe an animal</div>
+        <div class="ftog" id="clTog"></div>
+        <div class="classes" id="clOut">
+          <div class="card cls" data-c="0"><span class="num">0</span><span class="nm">FISH</span></div>
+          <div class="card cls" data-c="1"><span class="num">1</span><span class="nm">BIRD</span></div>
+          <div class="card cls" data-c="2"><span class="num">2</span><span class="nm">MAMMAL</span></div>
+        </div>
+        <div class="callout" id="clWhy" style="min-height:70px"></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- unsupervised term -->
+  <section class="slide" data-id="t-unsupervised">
+    <div class="termS">
+      <div class="eyebrow rise" style="--i:0">Terminology</div>
+      <div class="word rise" style="--i:1">unsupervised <span>learning</span></div>
+      <div class="meta rise" style="--i:2"><i>noun</i></div>
+      <div class="def rise" style="--i:3">Machine learning trained on <b>unlabeled data</b>: inputs with no answers. The model discovers <b>patterns, structures or groupings</b> on its own.</div>
+    </div>
+  </section>
+
+  <!-- unsupervised -->
+  <section class="slide" data-id="unsupervised">
+    <div class="two" style="grid-template-columns:.8fr 1.2fr;gap:44px">
+      <div class="stack tight" style="gap:18px">
+        <h2 class="rise" style="--i:0"><span class="n">NO LABELS</span>Finding structure</h2>
+        <p class="rise" style="--i:1">These dots have no colors: no labels at all. The algorithm has to find the groups itself.</p>
+        <ul class="bul rise" style="--i:2">
+          <li><b>Customer segmentation</b>: group shoppers by habits for targeted marketing</li>
+          <li><b>Anomaly detection</b>: spot unusual network traffic or card transactions</li>
+          <li><b>Recommendations</b>: find similar movies, songs or products</li>
+        </ul>
+        <div class="rise" style="--i:3;display:flex;gap:12px;align-items:center"><button class="btn on" id="usRun">Find 3 clusters ▶</button><button class="btn" id="usNew">New data</button></div>
+      </div>
+      <div class="stage-box rise" style="--i:2"><canvas id="usCv"></canvas><div class="cap" id="usCap">k-means: unlabeled points</div></div>
+    </div>
+  </section>
+
+  <!-- eda -->
+  <section class="slide" data-id="eda">
+    <h2 class="rise" style="--i:0"><span class="n">BEFORE YOU MODEL</span>Exploratory data analysis</h2>
+    <p class="rise" style="--i:1;margin-top:18px;max-width:1300px"><b>EDA</b>: summarize a dataset’s main characteristics, often with charts, to uncover patterns, spot anomalies and check assumptions.</p>
+    <div class="eda rise" style="--i:2">
+      <div class="card"><span class="n">01</span><h3>Understand the data</h3><ul><li>Size, structure, data types</li><li>Trends between features</li></ul></div>
+      <div class="card"><span class="n">02</span><h3>Handle bad data</h3><ul><li>Find missing, duplicate, wrong values</li><li>Choose: impute or remove</li></ul></div>
+      <div class="card"><span class="n">03</span><h3>Check distributions</h3><ul><li>How values are spread</li><li>Outliers and anomalies</li></ul></div>
+      <div class="card"><span class="n">04</span><h3>Feature relationships</h3><ul><li>Correlations between variables</li><li>Guides selection and engineering</li></ul></div>
+      <div class="card"><span class="n">05</span><h3>Guide next steps</h3><ul><li>Cleaning, feature engineering, model choice</li></ul></div>
+    </div>
+  </section>
+
+  <!-- why charts -->
+  <section class="slide" data-id="vizwhy">
+    <div class="two" style="grid-template-columns:.8fr 1.2fr;gap:50px">
+      <div class="stack" style="gap:20px">
+        <h2 class="rise" style="--i:0"><span class="n">DATA VISUALIZATION</span>Why charts?</h2>
+        <p class="rise" style="--i:1">Charts turn numbers into visual patterns. Trends, comparisons and sudden changes jump out that are hard to see in a raw table.</p>
+        <div class="callout rise" style="--i:2">Quick: in which month did sales drop the most? Look at the table first, then switch to the chart.</div>
+        <div class="tabs rise" style="--i:3" id="vzTabs"><button class="on" data-k="t">Table</button><button data-k="c">Chart</button></div>
+      </div>
+      <div class="card rise viz" style="--i:2;padding:20px">
+        <div id="vzTable" style="padding:20px"><table class="dt" id="vzTbl" style="font-size:20px"></table></div>
+        <svg id="vzChart" class="off" viewBox="0 0 860 400"></svg>
+      </div>
+    </div>
+  </section>
+
+  <!-- chart types -->
+  <section class="slide" data-id="charts">
+    <div class="stack" style="gap:18px">
+      <h2 class="rise" style="--i:0"><span class="n">PICK THE RIGHT ONE</span>Chart types</h2>
+      <div class="cgrid rise" style="--i:1" id="cgGrid"></div>
+      <div class="card cinfo rise" style="--i:2" id="cgInfo"></div>
+    </div>
+  </section>
+
+  <!-- mean median mode -->
+  <section class="slide" data-id="center">
+    <div class="stack" style="gap:18px">
+      <div class="labHead rise" style="--i:0"><h2><span class="n">FINDING THE CENTER</span>Mean, median, mode</h2>
+        <div class="presets" id="ctPre"></div></div>
+      <div class="card rise nl" style="--i:1;height:340px"><svg id="ctSvg" viewBox="0 0 1380 340"></svg></div>
+      <div class="stats3 rise" style="--i:2">
+        <div class="card stat mean"><span class="k">Mean</span><b id="ctMean">–</b><span class="d">Add them up, divide by how many. Outliers pull it around.</span></div>
+        <div class="card stat med"><span class="k">Median</span><b id="ctMed">–</b><span class="d">The middle value once sorted (average the two middles if even). Resists outliers.</span></div>
+        <div class="card stat mode"><span class="k">Mode</span><b id="ctMode">–</b><span class="d">The most frequent value. Works for categories too. Can have two (bimodal).</span></div>
+      </div>
+      <p class="hint rise" style="--i:3">click the line to add a value · click a dot to remove it · “average” usually means the mean, but always ask which one</p>
+    </div>
+  </section>
+
+  <!-- spread -->
+  <section class="slide" data-id="spread">
+    <div class="stack" style="gap:16px">
+      <div class="labHead rise" style="--i:0"><h2><span class="n">HOW SPREAD OUT?</span>Range, variance, std. dev.</h2>
+        <div class="presets" id="sdPre"></div></div>
+      <div class="card rise nl" style="--i:1;height:270px"><svg id="spSvg" viewBox="0 0 1380 270"></svg></div>
+      <div class="grid3 rise" style="--i:2;gap:16px">
+        <div class="card fbox"><h3>Range <b class="mono y" id="rgV" style="float:right"></b></h3><div class="fx" style="font-size:20px">max − min</div><p class="muted">Quick sense of spread. Sensitive to outliers.</p></div>
+        <div class="card fbox"><h3>Variance <b class="mono y" id="vaV" style="float:right"></b></h3><div class="fx" style="font-size:20px">σ² = <span class="frac"><span>Σ(xᵢ − μ)²</span><span>n</span></span></div><p class="muted">Average <b>squared</b> distance from the mean.</p></div>
+        <div class="card fbox"><h3>Std. deviation <b class="mono y" id="sdV" style="float:right"></b></h3><div class="fx" style="font-size:20px">σ = √σ²</div><p class="muted">Back in the original units: the typical distance from the mean.</p></div>
+      </div>
+      <p class="hint rise" style="--i:3">drag the dots · the dashed lines are each value’s distance from the mean (μ)</p>
+    </div>
+  </section>
+
+  <!-- stats summary -->
+  <section class="slide" data-id="statsum">
+    <h2 class="rise" style="--i:0"><span class="n">CHEAT SHEET</span>Descriptive statistics</h2>
+    <div class="card tbl rise" style="--i:1;margin-top:30px">
+      <table class="dt stattable">
+        <tr><th>Term</th><th>Definition</th><th>When to use</th></tr>
+        <tr><td>Mean</td><td>Arithmetic average of values</td><td>Data is symmetric and free of outliers</td></tr>
+        <tr><td>Median</td><td>Middle value of sorted data</td><td>Data has outliers or is skewed</td></tr>
+        <tr><td>Mode</td><td>Most frequently occurring value(s)</td><td>Finding the most common category or value</td></tr>
+        <tr><td>Average</td><td>General term, usually the mean</td><td>Depends on context: ask which one</td></tr>
+        <tr><td>Range</td><td>Max minus min</td><td>A quick look at spread</td></tr>
+        <tr><td>Variance</td><td>Average squared deviation from the mean</td><td>Measuring spread (more theoretical)</td></tr>
+        <tr><td>Std. deviation</td><td>Square root of variance</td><td>Quantifying spread in the data’s own units</td></tr>
+      </table>
+    </div>
+  </section>
+
+  <!-- data cleaning term -->
+  <section class="slide" data-id="t-cleaning">
+    <div class="termS">
+      <div class="eyebrow rise" style="--i:0">Terminology</div>
+      <div class="word rise" style="--i:1">data <span>cleaning</span></div>
+      <div class="meta rise" style="--i:2"><span>a.k.a. data wrangling</span><i>noun</i></div>
+      <div class="def rise" style="--i:3">The process of <b>detecting and correcting</b> (or removing) errors and inconsistencies in data to improve its quality.</div>
+    </div>
+  </section>
+
+  <!-- cleaning problems -->
+  <section class="slide" data-id="problems">
+    <h2 class="rise" style="--i:0"><span class="n">DATA CLEANING</span>What goes wrong in real data</h2>
+    <div class="probs" id="probGrid"></div>
+  </section>
+
+  <!-- imputation term -->
+  <section class="slide" data-id="t-imputation">
+    <div class="termS">
+      <div class="eyebrow rise" style="--i:0">Terminology</div>
+      <div class="word rise" style="--i:1">im·pu·<span>ta·tion</span></div>
+      <div class="meta rise" style="--i:2"><span>/ˌimpyəˈtāSH(ə)n/</span><i>noun</i></div>
+      <div class="def rise" style="--i:3">Replacing <b>missing or incomplete</b> values with substitutes, from statistics (mean, median, mode), predictive models, or logical inference.</div>
+    </div>
+  </section>
+
+  <!-- cleaning lab -->
+  <section class="slide" data-id="cleanlab">
+    <div class="stack" style="gap:18px">
+      <div class="labHead rise" style="--i:0"><h2><span class="n">CLEANING LAB</span><span id="labTitle">Missing data</span></h2></div>
+      <div class="tabs rise" style="--i:1" id="labTabs"></div>
+      <div class="card tbl rise" style="--i:2"><table class="dt" id="labTbl"></table></div>
+      <div class="two rise" style="--i:3;grid-template-columns:1fr auto;gap:30px;height:auto;align-items:start">
+        <div class="labNote" id="labNote"></div>
+        <div class="acts" id="labActs"></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- transform -->
+  <section class="slide" data-id="transform">
+    <div class="stack" style="gap:22px">
+      <h2 class="rise" style="--i:0"><span class="n">TRANSFORMING VALUES</span>Making data model-ready</h2>
+      <p class="rise" style="--i:1">Converting or scaling values into a format suitable for machine learning.</p>
+      <div class="grid2 rise" style="--i:2;gap:26px">
+        <div class="card scaleBox">
+          <h3 style="font-size:28px">Scaling</h3>
+          <p style="font-size:20px">Squeeze heights of 150–190 cm into the range 0–1.</p>
+          <div class="scaleRow"><span>height</span><input type="range" id="scH" min="150" max="190" value="172"><b id="scHv">172 cm</b></div>
+          <div class="scaleRow"><span class="muted">150</span><div class="scaleTrack" id="scT1"><i></i></div><span class="muted">190</span></div>
+          <div class="scaleRow"><span class="muted">0.0</span><div class="scaleTrack b" id="scT2"><i></i></div><span class="muted">1.0</span></div>
+          <div class="fx" style="font-size:22px">(<span id="scA">172</span> − 150) / (190 − 150) = <b class="y" id="scR">0.55</b></div>
+        </div>
+        <div class="card scaleBox">
+          <div style="display:flex;justify-content:space-between;align-items:center"><h3 style="font-size:28px">Encoding</h3><div class="tabs" id="encTabs"><button class="on" data-k="label">Label</button><button data-k="onehot">One-hot</button></div></div>
+          <p style="font-size:20px" id="encP">Models need numbers, so categories like Red, Blue, Green become numbers.</p>
+          <table class="dt" id="encTbl"></table>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- norm vs std -->
+  <section class="slide" data-id="normstd">
+    <div class="two" style="grid-template-columns:.85fr 1.15fr;gap:50px">
+      <div class="stack" style="gap:20px">
+        <h2 class="rise" style="--i:0"><span class="n">SCALING FEATURES</span>Normalization vs. standardization</h2>
+        <div class="card pad rise" style="--i:1"><h3 style="font-size:26px;color:var(--y)">Normalization</h3><p style="font-size:20px">Scales data to a fixed range, usually <b>0 to 1</b>. Keeps the shape of the distribution, changes the scale.</p></div>
+        <div class="card pad rise" style="--i:2"><h3 style="font-size:26px;color:var(--blue)">Standardization</h3><p style="font-size:20px">Shifts and rescales data to <b>mean 0</b> and <b>standard deviation 1</b>. Not bounded to a range.</p></div>
+        <div class="tabs rise" style="--i:3" id="nsTabs"><button class="on" data-k="raw">Raw</button><button data-k="mm">Min-max</button><button data-k="z">Z-score</button></div>
+      </div>
+      <div class="stage-box rise" style="--i:2"><canvas id="nsCv"></canvas><div class="cap" id="nsCap">raw values</div></div>
+    </div>
+  </section>
+
+  <!-- how to normalize -->
+  <section class="slide" data-id="howto">
+    <div class="two" style="grid-template-columns:1fr 1fr;gap:50px">
+      <div class="stack" style="gap:18px">
+        <h2 class="rise" style="--i:0"><span class="n">THE FORMULAS</span>How to normalize</h2>
+        <div class="card fbox rise" style="--i:1"><h3>1 · Min-max scaling</h3><div class="fx">x′ = <span class="frac"><span>x − min</span><span>max − min</span></span></div><p class="muted">Fixed range, 0 to 1.</p></div>
+        <div class="card fbox rise" style="--i:2"><h3>2 · Standardization (z-score)</h3><div class="fx">z = <span class="frac"><span>x − μ</span><span>σ</span></span></div><p class="muted">μ is the mean, σ the standard deviation.</p></div>
+        <div class="card fbox rise" style="--i:3"><h3>3 · Log scaling</h3><div class="fx">x′ = log(x)</div><p class="muted">For features with a huge range of values (incomes, populations).</p></div>
+      </div>
+      <div class="stack rise" style="--i:2;gap:18px">
+        <div class="eyebrow">Worked example</div>
+        <div class="card pad" style="display:flex;flex-direction:column;gap:14px">
+          <div class="mono" style="font-size:22px">data = [10, 20, 30, 40] &nbsp; <span class="muted">min = 10, max = 40</span></div>
+          <div id="mmRows" style="display:flex;flex-direction:column;gap:10px"></div>
+          <div class="mono" style="font-size:24px" id="mmRes"></div>
+        </div>
+        <div style="display:flex;gap:12px"><button class="btn on" id="mmNext">Next value ▶</button><button class="btn" id="mmReset">Reset</button></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- when to normalize -->
+  <section class="slide" data-id="whennorm">
+    <div class="two" style="grid-template-columns:.9fr 1.1fr;gap:44px">
+      <div class="stack tight" style="gap:16px">
+        <h2 class="rise" style="--i:0"><span class="n">WHEN TO SCALE</span>Does it matter?</h2>
+        <p class="rise" style="--i:1;font-size:22px">Algorithms that use <b>distances</b> or <b>gradients</b> need it: otherwise big-numbered features drown out small ones.</p>
+        <div class="grid2 rise" style="--i:2;gap:14px">
+          <div class="card pad"><div class="k" style="color:var(--y)">Scale first</div><ul class="bul" style="margin-top:10px"><li>K-nearest neighbors</li><li>K-means clustering</li><li>SVMs</li><li>Logistic regression</li><li>Neural networks</li><li>PCA</li></ul></div>
+          <div class="card pad"><div class="k" style="color:var(--green)">Raw is fine</div><ul class="bul" style="margin-top:10px"><li>Decision trees</li><li>Random forest</li><li>Gradient boosting (XGBoost, LightGBM)</li><li>Rule-based systems</li></ul><p class="muted" style="font-size:16px;margin-top:10px">Trees split on thresholds, not distances.</p></div>
+        </div>
+      </div>
+      <div class="stack rise" style="--i:2;gap:12px">
+        <div class="stage-box" style="height:560px"><canvas id="knCv"></canvas><div class="cap" id="knCap"></div></div>
+        <div style="display:flex;gap:12px;align-items:center"><div class="tabs" id="knTabs"><button class="on" data-k="raw">Raw miles &amp; age</button><button data-k="sc">Scaled 0–1</button></div><span class="knnRes" id="knRes" style="font-size:18px"></span></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- feature engineering -->
+  <section class="slide" data-id="feateng">
+    <div class="stack" style="gap:18px">
+      <h2 class="rise" style="--i:0"><span class="n">FEATURE ENGINEERING</span>Preparing data so models can learn</h2>
+      <p class="rise" style="--i:1;max-width:1300px">Cleaning data, creating useful features, selecting relevant ones and transforming values into formats models understand.</p>
+      <div class="fe rise" style="--i:2" id="feSteps">
+        <div class="fes card" data-s="0"><span class="n">01</span><h3>Data cleaning</h3><p>Fix incorrect, missing or inconsistent data. <i>Fill in a missing price.</i></p></div>
+        <div class="fes card" data-s="1"><span class="n">02</span><h3>Feature creation</h3><p>Create new information from existing data. <i>Age from year built.</i></p></div>
+        <div class="fes card" data-s="2"><span class="n">03</span><h3>Feature selection</h3><p>Keep what helps predict. <i>Sq ft, not the owner’s name.</i></p></div>
+        <div class="fes card" data-s="3"><span class="n">04</span><h3>Transformation</h3><p>Change the representation. <i>Yes/No → 1/0, scale numbers.</i></p></div>
+      </div>
+      <div class="card tbl rise" style="--i:3"><table class="dt" id="feTbl"></table></div>
+      <div class="rise" style="--i:4;display:flex;gap:12px;align-items:center"><button class="btn on" id="feNext">Apply step 1 ▶</button><button class="btn" id="feReset">Reset</button><span class="hint" id="feMsg">raw data, straight from the listing site</span></div>
+    </div>
+  </section>
+
+  <!-- train/test split -->
+  <section class="slide" data-id="split">
+    <div class="two" style="grid-template-columns:.85fr 1.15fr;gap:50px">
+      <div class="stack" style="gap:20px">
+        <h2 class="rise" style="--i:0"><span class="n">TRAINING VS. TESTING</span>Split your data</h2>
+        <p class="rise" style="--i:1">Train the model on most of the data, then test it on rows it has <b>never seen</b>. Otherwise you only learn how well it memorized.</p>
+        <div class="card pad rise" style="--i:2;display:flex;flex-direction:column;gap:12px">
+          <div class="k">test_size</div>
+          <input type="range" id="spT" min="10" max="50" step="5" value="20">
+          <div class="mono" style="font-size:20px"><b style="color:var(--green)" id="spTr">80</b> training rows · <b style="color:var(--blue)" id="spTe">20</b> testing rows</div>
+        </div>
+        <p class="hint rise" style="--i:3">common splits: 80/20 or 70/30</p>
+      </div>
+      <div class="stage-box rise" style="--i:2"><canvas id="spCv"></canvas></div>
+    </div>
+  </section>
+
+  <!-- train val test -->
+  <section class="slide" data-id="tvt">
+    <h2 class="rise" style="--i:0"><span class="n">THREE SETS</span>Training, validation, testing</h2>
+    <div class="bar3 rise" style="--i:1;margin:34px 0 26px"><div style="width:70%;background:var(--green)">TRAINING 70%</div><div style="width:15%;background:var(--y)">VALIDATION 15%</div><div style="width:15%;background:var(--blue)">TESTING 15%</div></div>
+    <div class="split3 rise" style="--i:2">
+      <div class="card sp3"><h3 style="color:var(--green)">Training</h3><p>The examples the model learns from. It sees these over and over.</p><div class="an">like the homework problems</div></div>
+      <div class="card sp3"><h3 style="color:var(--y)">Validation</h3><p>Used <b>during</b> training to tune the model’s settings (hyperparameters, e.g. learning rate) and pick the best version.</p><div class="an">like the practice quiz</div></div>
+      <div class="card sp3"><h3 style="color:var(--blue)">Testing</h3><p>A separate set the model has <b>never seen</b>, used once at the end to measure final accuracy and how well it generalizes.</p><div class="an">like the final exam</div></div>
+    </div>
+  </section>
+
+  <!-- random state -->
+  <section class="slide" data-id="seed">
+    <div class="stack" style="gap:22px">
+      <h2 class="rise" style="--i:0"><span class="n">IN CODE</span>Why random_state=42?</h2>
+<pre class="src rise" style="--i:1;font-size:21px">X_train, X_test, y_train, y_test = <span class="fn">train_test_split</span>(X, y, test_size=<span class="n">0.3</span>, random_state=<span class="n" id="sdCode">42</span>)</pre>
+      <p class="rise" style="--i:2">The split is random. Fixing the <b>seed</b> makes it the <b class="y">same random</b> every run, so results can be reproduced. 42 has no mathematical meaning: it’s a nod to <i class="t">The Hitchhiker’s Guide to the Galaxy</i>, the “Answer to the Ultimate Question of Life, the Universe, and Everything.”</p>
+      <div class="card pad rise" style="--i:3;display:flex;flex-direction:column;gap:14px">
+        <div style="display:flex;gap:12px;align-items:center;flex-wrap:wrap"><span class="k">random_state</span><div class="tabs" id="sdTabs"><button class="on" data-k="42">42</button><button data-k="7">7</button><button data-k="none">None</button></div><span style="flex:1"></span><button class="btn on" id="sdRun">Run split ⟳</button><span class="hint"><b style="color:var(--green)">■</b> train <b style="color:var(--blue)">■</b> test</span></div>
+        <div class="seedrow" id="sdRow"></div>
+        <div class="runlog" id="sdLog"></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- llm -->
+  <section class="slide" data-id="llm">
+    <div class="two wide-r">
+      <div class="stack" style="gap:22px">
+        <h2 class="rise" style="--i:0"><span class="n">LARGE LANGUAGE MODELS</span>Trained on what we wrote</h2>
+        <p class="rise" style="--i:1">LLMs learn from the data they’re given: massive amounts of text from the <b>internet</b> and <b>digital books</b>.</p>
+        <ul class="bul rise" style="--i:2"><li>Everything the model “knows” came from that text</li><li>Topics that are rare in the data, it knows less about</li><li>Patterns and opinions in the data, including unfair ones, come along too</li></ul>
+      </div>
+      <div class="stage-box rise" style="--i:2"><canvas id="llmCv"></canvas><div class="cap" id="llmCap">tokens read: 0</div></div>
+    </div>
+  </section>
+
+  <!-- bias market -->
+  <section class="slide" data-id="market">
+    <div class="stack" style="gap:20px">
+      <h2 class="rise" style="--i:0"><span class="n">WHAT DID THE DATA TEACH IT?</span>Ask an AI for a picture</h2>
+      <div class="prompt rise" style="--i:1">Create an image of a smiling lady working in the produce section of a market.</div>
+      <div class="mk rise" style="--i:2" id="mkGrid">
+        <figure data-ai="0"><img src="{{IMG:market-1.jpg}}" alt="A smiling woman with glasses in a supermarket produce section"><figcaption>A</figcaption></figure>
+        <figure data-ai="0"><img src="{{IMG:market-2.jpg}}" alt="A smiling woman in a pink head wrap at an outdoor fruit market"><figcaption>B</figcaption></figure>
+        <figure data-ai="1"><img src="{{IMG:market-ai.png}}" alt="An AI-generated image of a smiling woman in an apron at a produce stand"><figcaption>C</figcaption></figure>
+      </div>
+      <div class="callout keyIdea" id="mkIdea">Image <b>C</b> is the AI’s. Given no other details, it produced a Western-style market and a white woman: the kind of image most common in its training data.</div>
+      <p class="hint" id="mkHint">Which one did the AI make? Click a photo to reveal.</p>
+    </div>
+  </section>
+
+  <!-- bias term -->
+  <section class="slide" data-id="t-bias">
+    <div class="termS">
+      <div class="eyebrow rise" style="--i:0">Terminology</div>
+      <div class="word rise" style="--i:1">bi·<span>as</span></div>
+      <div class="meta rise" style="--i:2"><span>/ˈbīəs/</span><i>noun</i></div>
+      <div class="def rise" style="--i:3">In AI: <b>unfair influence</b> in an algorithm’s results, often from imbalanced data or design, leading to skewed or unequal outcomes.</div>
+    </div>
+  </section>
+
+  <!-- bias sim -->
+  <section class="slide" data-id="biassim">
+    <div class="two" style="grid-template-columns:.85fr 1.15fr;gap:50px">
+      <div class="stack" style="gap:20px">
+        <h2 class="rise" style="--i:0"><span class="n">BIAS IN, BIAS OUT</span>Skewed data, skewed results</h2>
+        <p class="rise" style="--i:1">A generator that always picks the <b>most likely</b> look doesn’t just copy an imbalance. It <b class="y">exaggerates</b> it.</p>
+        <div class="card pad rise" style="--i:2;display:flex;flex-direction:column;gap:14px">
+          <div class="k">Training data: share of group <b class="y">A</b></div>
+          <input type="range" id="bsMix" min="50" max="95" value="70">
+          <div class="mono" style="font-size:20px">training: <b class="y" id="bsTrain">70%</b> A &nbsp;·&nbsp; generated: <b class="y" id="bsGen">–</b> A</div>
+          <div style="display:flex;gap:12px"><button class="btn on" id="bsGo">Generate 40 images</button></div>
+        </div>
+        <p class="hint rise" style="--i:3">a simplified illustration, not a real model</p>
+      </div>
+      <div class="stage-box rise" style="--i:2"><canvas id="bsCv"></canvas></div>
+    </div>
+  </section>
+
+  <!-- bias activity -->
+  <section class="slide" data-id="biasact">
+    <div class="two" style="grid-template-columns:1fr 1fr;gap:56px">
+      <div class="stack" style="gap:20px">
+        <h2 class="rise" style="--i:0"><span class="n">ACTIVITY</span>Generate and compare</h2>
+        <p class="rise" style="--i:1">Use an image generator. Run each prompt a few times:</p>
+        <div class="plist rise" style="--i:2">
+          <div class="prompt">Generate an image of a successful software engineer.</div>
+          <div class="prompt">Generate an image of a college professor.</div>
+          <div class="prompt">Generate an image of a criminal.</div>
+          <div class="prompt">Generate an image of a CEO of a technology company.</div>
+        </div>
+      </div>
+      <div class="stack" style="gap:16px">
+        <div class="eyebrow rise" style="--i:2">Then discuss</div>
+        <ol class="num rise" style="--i:3">
+          <li>What characteristics do the people in your images share?</li>
+          <li>Do you notice patterns in gender, age, race, clothing or appearance?</li>
+          <li>What assumptions did the AI make that weren’t in your prompt?</li>
+          <li>Did the same prompt give similar results across generations?</li>
+          <li>Are there stereotypes in the images?</li>
+        </ol>
+      </div>
+    </div>
+  </section>
+
+  <!-- venn -->
+  <section class="slide" data-id="fields">
+    <div class="two" style="grid-template-columns:1.25fr .75fr;gap:40px">
+      <div class="stage-box venn rise" style="--i:1;background:transparent;border:none"><svg id="vnSvg" viewBox="0 0 900 620"></svg></div>
+      <div class="stack" style="gap:20px">
+        <h2 class="rise" style="--i:0"><span class="n">WHERE DATA FITS</span>The big picture</h2>
+        <div class="card vinfo rise" style="--i:2" id="vnInfo"></div>
+        <p class="hint rise" style="--i:3">click a region</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- roles -->
+  <section class="slide" data-id="roles">
+    <h2 class="rise" style="--i:0"><span class="n">CAREERS</span>Fields and the people in them</h2>
+    <div class="grid4 roles rise" style="--i:1;margin-top:40px">
+      <div class="card"><span class="who2 t-blue tag">FIELD</span><h3 style="color:var(--blue)">Data science</h3><p>Uses statistics, programming and domain knowledge to extract insights from data and build predictive models.</p><div class="ks"><b>KEY ACTIVITIES</b>Collecting and analyzing data, building models, communicating results.</div></div>
+      <div class="card"><span class="who2 t-green tag">PERSON</span><h3 style="color:var(--green)">Data scientist</h3><p>Applies data science to analyze data, build predictive models and help organizations make data-driven decisions.</p><div class="ks"><b>KEY SKILLS</b>Statistics, machine learning, programming, visualization, communication.</div></div>
+      <div class="card"><span class="who2 t-y tag">FIELD</span><h3 style="color:var(--amber)">Data analytics</h3><p>Examining data to find patterns, answer questions and gain insights that inform decisions.</p><div class="ks"><b>KEY ACTIVITIES</b>Cleaning and exploring data, finding trends, building visualizations and reports.</div></div>
+      <div class="card"><span class="who2 t-red tag">PERSON</span><h3 style="color:#c79bff">Data analyst</h3><p>Collects, cleans, analyzes and visualizes data to help organizations understand trends.</p><div class="ks"><b>KEY SKILLS</b>Data cleaning, SQL, Excel, data visualization, reporting.</div></div>
+    </div>
+    <div class="callout rise" style="--i:2;margin-top:34px;max-width:1200px">Data science is one of the fastest-growing technology fields, with roles in nearly every industry.</div>
+  </section>
+
+  <!-- datasets -->
+  <section class="slide" data-id="datasets">
+    <h2 class="rise" style="--i:0"><span class="n">FIND YOUR OWN</span>Free datasets</h2>
+    <div class="links rise" style="--i:1">
+      <a class="card lk" href="https://www.kaggle.com/datasets" target="_blank" rel="noopener"><h3>Kaggle</h3><p>Huge community library, plus notebooks and competitions</p><span>kaggle.com/datasets</span></a>
+      <a class="card lk" href="https://datasetsearch.research.google.com/" target="_blank" rel="noopener"><h3>Google Dataset Search</h3><p>A search engine for datasets across the web</p><span>datasetsearch.research.google.com</span></a>
+      <a class="card lk" href="https://data.gov/" target="_blank" rel="noopener"><h3>Data.gov</h3><p>Open data from the U.S. government</p><span>data.gov</span></a>
+      <a class="card lk" href="https://archive.ics.uci.edu/" target="_blank" rel="noopener"><h3>UCI ML Repository</h3><p>Classic machine-learning datasets used in courses and papers</p><span>archive.ics.uci.edu</span></a>
+      <a class="card lk" href="https://www.earthdata.nasa.gov/" target="_blank" rel="noopener"><h3>NASA Earthdata</h3><p>Satellite and earth-science data</p><span>earthdata.nasa.gov</span></a>
+      <a class="card lk" href="https://datanuggets.org/" target="_blank" rel="noopener"><h3>Data Nuggets</h3><p>Small, real research datasets made for students</p><span>datanuggets.org</span></a>
+    </div>
+  </section>
+
+  <!-- recap -->
+  <section class="slide" data-id="recap">
+    <canvas class="bg" id="bgRecap"></canvas>
+    <div class="vignette"></div>
+    <div class="content center" style="gap:30px">
+      <div class="eyebrow rise" style="--i:0">Recap</div>
+      <h2 class="rise" style="--i:1;font-size:84px">Good AI starts with <span class="y">good data</span>.</h2>
+      <div class="rise" style="--i:2;display:flex;flex-wrap:wrap;gap:12px;justify-content:center;max-width:1200px" id="rcChips"></div>
+    </div>
+  </section>
+
+  <div id="chrome"><span class="sp"></span><button class="nbtn" id="prev" aria-label="Previous">←</button><span id="count"></span><button class="nbtn" id="next" aria-label="Next">→</button><button class="nbtn" id="fs" aria-label="Fullscreen" title="Fullscreen (F)">⤢</button></div>
+  <div id="progress"></div>
+  <div id="livewrap"><span id="liveauth"></span><div id="livebar"></div></div>
+  <div id="toast" role="status"></div>
+</div>
+<script>
+{{APP}}
+</script>
+</body>
+</html>

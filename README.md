@@ -28,7 +28,7 @@ The site is then at `https://<user>.github.io/<repo>/`.
 ## Teaching with it
 
 - **Students** open the site normally. No sign-in.
-- **You** open a deck with `?present` at the end of the URL, e.g. `…/ai-history-1/?present`, and click
+- **You** open a deck with `?present` at the end of the URL, e.g. `…/ai-history/?present`, and click
   **Instructor sign-in**.
 - Click **Class can roam** to switch to **Class follows you**. Students jump to your slide whenever you
   move, can scroll back to review, but can't go past you. Click again to free them.
