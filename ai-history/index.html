@@ -424,8 +424,8 @@
   #stage:has(.slide.winterOnly.active) #chrome .nbtn{background:rgba(18,18,20,.9)}
   #stage:has(.slide.winterOnly.active) #chrome #count,#stage:has(.slide.winterOnly.active) #chrome .ver{background:rgba(18,18,20,.9);padding:4px 8px;border-radius:6px;opacity:1!important}
 
-  /* ===== from part 2 ===== */
-  /* shared bits for part 2 */
+  /* ===== deep learning era slides ===== */
+  /* shared bits for the deep learning era slides */
   .two.wide-l{grid-template-columns:1.15fr .85fr}
   .two.top{align-items:start}
   .ctl{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
@@ -1111,16 +1111,7 @@ EEEEEE  LLLLLL  IIII  ZZZZZZZ  AA   AA</pre><div class="log" id="elog"></div><fo
     </div>
   </section>
 
-  <!-- ================= PART 2 ================= -->
-  <section class="slide" data-id="title2">
-    <canvas class="bg" id="bgNet2"></canvas>
-    <div class="vignette"></div>
-    <div class="content center">
-      <div class="eyebrow rise" style="--i:0">AAI101 · AI History · Part 2</div>
-      <h1 class="rise" style="--i:1">From learning machines<br>to <span>ChatGPT</span></h1>
-      <p class="lede rise" style="--i:2">How neural networks came back: home robots, ImageNet, deep learning, transformers and large language models.</p>
-    </div>
-  </section>
+  <!-- ================= the deep learning era ================= -->
 
   <section class="slide tl tl2" data-id="tl2-1" data-upto="2"></section>
 
@@ -1604,7 +1595,7 @@ EEEEEE  LLLLLL  IIII  ZZZZZZZ  AA   AA</pre><div class="log" id="elog"></div><fo
     </div>
   </section>
 
-  <div id="chrome"><span class="sp"></span><button class="nbtn" id="prev" aria-label="Previous">←</button><span class="ver" style="font-size:12px;opacity:.6;margin-right:8px">updated Nov 16, 10:14 AM</span><span id="count"></span><button class="nbtn" id="next" aria-label="Next">→</button><button class="nbtn" id="fs" aria-label="Fullscreen" title="Fullscreen (F)">⤢</button></div>
+  <div id="chrome"><span class="sp"></span><button class="nbtn" id="prev" aria-label="Previous">←</button><span class="ver" style="font-size:12px;opacity:.6;margin-right:8px">updated Nov 16, 10:27 AM</span><span id="count"></span><button class="nbtn" id="next" aria-label="Next">→</button><button class="nbtn" id="fs" aria-label="Fullscreen" title="Fullscreen (F)">⤢</button></div>
   <div id="progress"></div>
   <div id="livewrap"><span id="liveauth"></span><div id="livebar"></div></div>
   <div id="toast" role="status"></div>
@@ -1643,7 +1634,7 @@ function ctxOf(c){ const x=c.getContext("2d"); x.setTransform(c._k||1,0,0,c._k||
 function ptr(e,c){ const r=c.getBoundingClientRect(), s=r.width/c.offsetWidth; return {x:(e.clientX-r.left)/s, y:(e.clientY-r.top)/s}; }
 const A={};
 
-/* ================= PART 1 ================= */
+/* ================= 1950s to Deep Blue ================= */
 {
 /* ---------- 1 title: drifting network ---------- */
 (() => {
@@ -2592,29 +2583,8 @@ document.querySelectorAll(".slide.tl:not(.tl2)").forEach(sl=>{
 
 }
 
-/* ================= PART 2 ================= */
+/* ================= the deep learning era ================= */
 {
-/* ---------- title: drifting network ---------- */
-(() => {
-  const cv=$("bgNet2"); let N=[], P=[];
-  A.title2={
-    enter(){ N=Array.from({length:80},()=>({x:rnd(0,1600),y:rnd(0,900),vx:rnd(-.25,.25),vy:rnd(-.25,.25),g:0})); P=[]; },
-    tick(dt){
-      const x=ctxOf(cv), f=dt/16.7; x.fillStyle="#121214"; x.fillRect(0,0,1600,900);
-      for(const n of N){ n.x+=n.vx*f; n.y+=n.vy*f; if(n.x<0||n.x>1600) n.vx*=-1; if(n.y<0||n.y>900) n.vy*=-1; n.g*=.95; }
-      x.lineWidth=1;
-      for(let i=0;i<N.length;i++) for(let j=i+1;j<N.length;j++){
-        const a=N[i], b=N[j], d=Math.hypot(a.x-b.x,a.y-b.y);
-        if(d<190){ x.strokeStyle=`rgba(255,194,14,${(1-d/190)*.22})`; x.beginPath(); x.moveTo(a.x,a.y); x.lineTo(b.x,b.y); x.stroke();
-          if(Math.random()<.0008*f) P.push({a,b,t:0}); }
-      }
-      P=P.filter(p=>{ p.t+=dt/700; if(p.t>=1){ p.b.g=1; return false; } const px=p.a.x+(p.b.x-p.a.x)*p.t, py=p.a.y+(p.b.y-p.a.y)*p.t;
-        x.fillStyle=Y; x.beginPath(); x.arc(px,py,3,0,7); x.fill(); return true; });
-      for(const n of N){ x.fillStyle=n.g>.05?`rgba(255,194,14,${.4+n.g*.6})`:"rgba(243,241,234,.35)"; x.beginPath(); x.arc(n.x,n.y,2.5+n.g*4,0,7); x.fill(); }
-    }
-  };
-})();
-
 /* ---------- timeline ---------- */
 const EVENTS=[
   ["1986","Rumelhart, Hinton & Williams publish backpropagation, a breakthrough for training neural networks."],
@@ -2628,7 +2598,7 @@ const EVENTS=[
 document.querySelectorAll(".slide.tl2").forEach(sl=>{
   const k=+sl.dataset.upto, n=EVENTS.length, xp=i=>(i+.5)/n*100;
   const hd=document.createElement("div");
-  hd.innerHTML=`<h2 class="rise" style="--i:0"><span class="n">TIMELINE</span>${k<=2?"Where we left off":"The road to AI"}</h2>`;
+  hd.innerHTML=`<h2 class="rise" style="--i:0"><span class="n">TIMELINE</span>The road to AI</h2>`;
   sl.appendChild(hd);
   const wrap=document.createElement("div"); wrap.className="tlwrap";
   wrap.innerHTML=`<div class="tlaxis"></div><div class="tlfill"></div><div class="tlarrow"></div>`;
@@ -2786,13 +2756,13 @@ document.querySelectorAll(".slide.tl2").forEach(sl=>{
     ["Minimax","ai",152,530,"Minimax (like our tic-tac-toe player) just searches the game tree. No data, no learning."],
     ["Roomba (2002)","ai",290,165,"Roomba’s bump-and-turn behaviors were programmed by engineers."],
     ["Perceptron","ml",258,402,"The perceptron learns its weights from labeled examples: machine learning, but only one layer."],
-    ["Decision tree","ai",626,184,"The decision tree we built in Part 1 used rules we wrote ourselves, so it’s rule-based AI, like an expert system."],
+    ["Decision tree","ai",626,184,"The decision tree we built earlier used rules we wrote ourselves, so it’s rule-based AI, like an expert system."],
     ["Linear regression","ml",322,286,"It learns the best straight line through example data, then uses that line to predict a number, like a house’s price from its size."],
     ["Learned decision trees","ml",560,300,"Algorithms like ID3 and CART build the tree automatically from example data. Same kind of tree, but learned: that’s machine learning."],
     ["?","dl",440,430,null],["?","dl",510,480,null],["?","dl",450,540,null],
   ];
   const MSG=["Where does everything we’ve seen so far fit? Click to fill each circle.",
-    "<b>AI</b>: everything from Part 1 lives here. People wrote the rules or the search.",
+    "<b>AI</b>: everything from the early days lives here. People wrote the rules or the search.",
     "<b>Machine learning</b>: the program learns from examples instead. Click any chip for details.",
     "<b>Deep learning</b> is empty so far. Filling it in is the rest of today’s story."];
   const els={};

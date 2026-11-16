@@ -5,9 +5,9 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>AAI101 · AI History</title>
 <script>
-  // Part 2 is now part of the single AI History deck; keep old links (and slide numbers) working
+  // the old Part 2 deck now lives inside the single AI History deck (its title slide was dropped); keep old links and slide numbers working
   var m = /^#s(\d+)$/.exec(location.hash), n = m ? +m[1] : 1;
-  location.replace("../ai-history/" + location.search + "#s" + (n + 31));
+  location.replace("../ai-history/" + location.search + "#s" + (Math.max(n, 2) + 30));
 </script>
 <style>body{background:#121214;color:#f3f1ea;font:18px system-ui,sans-serif;display:grid;place-items:center;height:100vh;margin:0}a{color:#ffc20e}</style>
 </head>
