@@ -1054,7 +1054,7 @@
     </div>
   </section>
 
-  <div id="chrome"><span class="sp"></span><button class="nbtn" id="prev" aria-label="Previous">←</button><span class="ver" style="font-size:12px;opacity:.6;margin-right:8px">updated Nov 16, 1:11 PM</span><span id="count"></span><button class="nbtn" id="next" aria-label="Next">→</button><button class="nbtn" id="fs" aria-label="Fullscreen" title="Fullscreen (F)">⤢</button></div>
+  <div id="chrome"><span class="sp"></span><button class="nbtn" id="prev" aria-label="Previous">←</button><span class="ver" style="font-size:12px;opacity:.6;margin-right:8px">updated Nov 16, 1:14 PM</span><span id="count"></span><button class="nbtn" id="next" aria-label="Next">→</button><button class="nbtn" id="fs" aria-label="Fullscreen" title="Fullscreen (F)">⤢</button></div>
   <div id="progress"></div>
   <div id="livewrap"><span id="liveauth"></span><div id="livebar"></div></div>
   <div id="toast" role="status"></div>
@@ -1899,9 +1899,9 @@ $("probGrid").innerHTML=[
   A.split={ enter(){ D=Array.from({length:100},(_,i)=>({x:0,y:0,init:true})); upd(); },
     tick(){ const W=cv.offsetWidth, H=cv.offsetHeight, x=ctxOf(cv); x.clearRect(0,0,W,H);
       const t=+$("spT").value, test=new Set(ORDER.slice(0,t));
-      const bx=[[30,70,W*.6-45,H-110],[W*.6+15,70,W*.4-45,H-110]];
+      const bw=(W-90)/2, bx=[[30,70,bw,H-110],[60+bw,70,bw,H-110]];
       [["TRAINING",GREEN],["TESTING",BLUE]].forEach(([n,c],i)=>{ const [a,b,w,h]=bx[i]; x.strokeStyle=c; x.globalAlpha=.5; x.lineWidth=2; x.setLineDash([8,6]); x.strokeRect(a,b,w,h); x.setLineDash([]); x.globalAlpha=1; label(x,n,a,b-16,c,16); });
-      label(x,`${100-t} rows → the model learns from these`,30,H-16,GREEN,15); label(x,`${t} rows, hidden until the end`,W*.6+15,H-16,BLUE,15);
+      label(x,`${100-t} rows → the model learns from these`,30,H-16,GREEN,15); label(x,`${t} rows, hidden until the end`,bx[1][0],H-16,BLUE,15);
       let ti=0, ri=0;
       D.forEach((d,i)=>{ const isT=test.has(i); let tx,ty;
         if(isT){ const cols=Math.max(1,Math.floor((bx[1][2]-20)/30)); tx=bx[1][0]+24+(ti%cols)*30; ty=bx[1][1]+26+(ti/cols|0)*30; ti++; }
