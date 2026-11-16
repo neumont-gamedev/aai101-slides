@@ -728,10 +728,12 @@ $("probGrid").innerHTML=[
 /* ---------- bias: ask for a picture ---------- */
 (() => {
   let rev=false;
-  const show=()=>{ rev=true; document.querySelectorAll("#mkGrid figure").forEach(f=>{ f.classList.add("rev"); if(f.dataset.ai==="1"){ f.classList.add("ai"); f.querySelector("figcaption").textContent="C · AI-generated"; } }); $("mkIdea").classList.add("on"); $("mkHint").style.visibility="hidden"; };
-  document.querySelectorAll("#mkGrid figure").forEach(f=>f.onclick=show);
-  A.market={ enter(){ rev=false; $("mkIdea").classList.remove("on"); $("mkHint").style.visibility=""; document.querySelectorAll("#mkGrid figure").forEach((f,i)=>{ f.classList.remove("rev","ai"); f.querySelector("figcaption").textContent="ABC"[i]; }); },
-    step(){ if(!rev){ show(); return true; } return false; } };
+  const figs=()=>document.querySelectorAll("#mkGrid figure");
+  const show=()=>{ rev=true; figs().forEach((f,i)=>{ f.classList.add("rev"); f.classList.remove("no"); f.querySelector("figcaption").textContent=f.dataset.ai==="1"?"C · AI-generated":"ABC"[i]+" · real photo"; if(f.dataset.ai==="1") f.classList.add("ai"); }); $("mkIdea").classList.add("on"); $("mkHint").style.visibility="hidden"; };
+  // only the AI image reveals the answer; a wrong pick is marked as a real photo so students keep looking
+  const wrong=(f,i)=>{ f.classList.add("no"); f.querySelector("figcaption").textContent="ABC"[i]+" · real photo"; $("mkHint").textContent="Not that one. That’s a real photo. Try another!"; };
+  figs().forEach((f,i)=>f.onclick=()=>{ if(rev) return; f.dataset.ai==="1"?show():wrong(f,i); });
+  A.market={ enter(){ rev=false; $("mkIdea").classList.remove("on"); $("mkHint").style.visibility=""; $("mkHint").textContent="Which one did the AI make? Click a photo to reveal."; figs().forEach((f,i)=>{ f.classList.remove("rev","ai","no"); f.querySelector("figcaption").textContent="ABC"[i]; }); } };
 })();
 
 /* ---------- bias in, bias out ---------- */

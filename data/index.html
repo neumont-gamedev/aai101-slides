@@ -263,6 +263,8 @@
   .mk figcaption{position:absolute;left:12px;bottom:12px;font-family:var(--mono);font-size:15px;padding:5px 10px;border-radius:8px;background:rgba(13,13,15,.85);color:var(--mute)}
   .mk figure.rev.ai{border-color:var(--y);box-shadow:0 0 0 3px rgba(255,194,14,.3)}
   .mk figure.rev.ai figcaption{color:var(--y)}
+  .mk figure.no{cursor:default}
+  .mk figure.no img{filter:grayscale(1) brightness(.45)}
   .prompt{font-family:var(--mono);font-size:22px;padding:16px 22px;border-radius:14px;background:#0d0d0f;border:1px solid var(--line);color:var(--ink)}
   .prompt::before{content:"› ";color:var(--y)}
   .plist{display:flex;flex-direction:column;gap:12px}
@@ -970,7 +972,7 @@
     </div>
   </section>
 
-  <div id="chrome"><span class="sp"></span><button class="nbtn" id="prev" aria-label="Previous">←</button><span class="ver" style="font-size:12px;opacity:.6;margin-right:8px">updated Nov 16, 1:18 PM</span><span id="count"></span><button class="nbtn" id="next" aria-label="Next">→</button><button class="nbtn" id="fs" aria-label="Fullscreen" title="Fullscreen (F)">⤢</button></div>
+  <div id="chrome"><span class="sp"></span><button class="nbtn" id="prev" aria-label="Previous">←</button><span class="ver" style="font-size:12px;opacity:.6;margin-right:8px">updated Nov 16, 1:22 PM</span><span id="count"></span><button class="nbtn" id="next" aria-label="Next">→</button><button class="nbtn" id="fs" aria-label="Fullscreen" title="Fullscreen (F)">⤢</button></div>
   <div id="progress"></div>
   <div id="livewrap"><span id="liveauth"></span><div id="livebar"></div></div>
   <div id="toast" role="status"></div>
@@ -1706,10 +1708,12 @@ $("probGrid").innerHTML=[
 /* ---------- bias: ask for a picture ---------- */
 (() => {
   let rev=false;
-  const show=()=>{ rev=true; document.querySelectorAll("#mkGrid figure").forEach(f=>{ f.classList.add("rev"); if(f.dataset.ai==="1"){ f.classList.add("ai"); f.querySelector("figcaption").textContent="C · AI-generated"; } }); $("mkIdea").classList.add("on"); $("mkHint").style.visibility="hidden"; };
-  document.querySelectorAll("#mkGrid figure").forEach(f=>f.onclick=show);
-  A.market={ enter(){ rev=false; $("mkIdea").classList.remove("on"); $("mkHint").style.visibility=""; document.querySelectorAll("#mkGrid figure").forEach((f,i)=>{ f.classList.remove("rev","ai"); f.querySelector("figcaption").textContent="ABC"[i]; }); },
-    step(){ if(!rev){ show(); return true; } return false; } };
+  const figs=()=>document.querySelectorAll("#mkGrid figure");
+  const show=()=>{ rev=true; figs().forEach((f,i)=>{ f.classList.add("rev"); f.classList.remove("no"); f.querySelector("figcaption").textContent=f.dataset.ai==="1"?"C · AI-generated":"ABC"[i]+" · real photo"; if(f.dataset.ai==="1") f.classList.add("ai"); }); $("mkIdea").classList.add("on"); $("mkHint").style.visibility="hidden"; };
+  // only the AI image reveals the answer; a wrong pick is marked as a real photo so students keep looking
+  const wrong=(f,i)=>{ f.classList.add("no"); f.querySelector("figcaption").textContent="ABC"[i]+" · real photo"; $("mkHint").textContent="Not that one. That’s a real photo. Try another!"; };
+  figs().forEach((f,i)=>f.onclick=()=>{ if(rev) return; f.dataset.ai==="1"?show():wrong(f,i); });
+  A.market={ enter(){ rev=false; $("mkIdea").classList.remove("on"); $("mkHint").style.visibility=""; $("mkHint").textContent="Which one did the AI make? Click a photo to reveal."; figs().forEach((f,i)=>{ f.classList.remove("rev","ai","no"); f.querySelector("figcaption").textContent="ABC"[i]; }); } };
 })();
 
 /* ---------- bias in, bias out ---------- */
