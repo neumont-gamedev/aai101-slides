@@ -518,6 +518,98 @@ document.querySelectorAll(".slide.tl:not(.tl2)").forEach(sl=>{
   A.turing={ enter(){ run(); } };
 })();
 
+/* ---------- backprop intro: one wrong answer, traced back, weights nudged ---------- */
+(() => {
+  const cv=$("bpiCv"), VW=800, VH=660;
+  const X=[1,.8], T=1, LR=5, GOOD=.1, sig=z=>1/(1+Math.exp(-z));
+  const IN=[{x:110,y:190,l:"cloudy",v:"1.0"},{x:110,y:400,l:"rain forecast",v:"0.8"}], HID=[{x:400,y:170},{x:400,y:420}], OUT={x:650,y:295};
+  const W1_0=[[.2,-.4],[-.3,.1]], W2_0=[-1.2,.3];   // W1[i][j]: input i -> hidden j, W2[j]: hidden j -> output
+  let W1, W2, oW1, oW2, grad1, grad2, fw, hist, round, phase, pt, auto, running;
+  const PHASES=["idle","fwd","err","back","upd"], DUR={fwd:1300,err:900,back:1300,upd:900};
+  const forward=()=>{ const h=[0,1].map(j=>sig(X[0]*W1[0][j]+X[1]*W1[1][j])); const o=sig(h[0]*W2[0]+h[1]*W2[1]); return {h,o}; };
+  function grads(){ const {h,o}=fw, dO=(o-T)*o*(1-o);
+    grad2=[0,1].map(j=>dO*h[j]); const dH=[0,1].map(j=>dO*W2[j]*h[j]*(1-h[j]));
+    grad1=[0,1].map(i=>[0,1].map(j=>dH[j]*X[i])); }
+  function apply(){ oW1=W1.map(r=>r.slice()); oW2=W2.slice();
+    W1=W1.map((r,i)=>r.map((w,j)=>w-LR*grad1[i][j])); W2=W2.map((w,j)=>w-LR*grad2[j]); }
+  function reset(){ W1=W1_0.map(r=>r.slice()); W2=W2_0.slice(); oW1=null; oW2=null; fw=forward(); hist=[fw.o]; round=1; phase="idle"; pt=0; auto=false; running=false; grads(); ui(); }
+  function setPhase(p){ phase=p; pt=0;
+    if(p==="fwd") fw=forward();
+    if(p==="err"&&hist.length<round) hist.push(fw.o);
+    if(p==="back") grads();
+    if(p==="upd") apply();
+    ui(); }
+  function next(){ const i=PHASES.indexOf(phase);
+    if(phase==="upd"||phase==="idle"&&round>1){ round++; setPhase("fwd"); return; }
+    setPhase(PHASES[Math.min(i+1,PHASES.length-1)]); }
+  const err=()=>Math.abs(T-fw.o);
+  function ui(){
+    const li=[...document.querySelectorAll("#bpiSteps li")], k={fwd:0,err:1,back:2,upd:3}[phase];
+    li.forEach((e,i)=>e.classList.toggle("on",i===k));
+    const cap={idle:"Should I bring an umbrella? The right answer is YES (1.0).",
+      fwd:"Forward: the inputs flow through the weights and make a guess.",
+      err:`Error: guessed ${fw.o.toFixed(2)}, should be 1.00 → off by ${err().toFixed(2)}`,
+      back:"Backward: the error flows back. Each weight gets its share of the blame.",
+      upd:"Update: every weight is nudged in the direction that shrinks the error."}[phase];
+    const done=!running&&round>1&&err()<GOOD&&phase==="upd";
+    $("bpiCap").textContent=done?`Close enough! After ${round} rounds the guess is ${fw.o.toFixed(2)}: bring the umbrella.`:(round>1&&phase!=="idle"?`round ${round} · `:"")+cap;
+    $("bpiTrain").textContent=running?"Pause ❚❚":"Train ▶▶";
+  }
+  $("bpiStep").onclick=()=>{ running=false; auto=false; next(); };
+  $("bpiTrain").onclick=()=>{ running=!running; auto=running; if(running&&phase==="idle") next(); ui(); };
+  $("bpiReset").onclick=reset;
+  reset();
+  function edge(x,a,b,w,label,blame,at=.42){
+    const t=Math.min(1,Math.abs(w)/1.6);
+    x.strokeStyle=w>=0?`rgba(255,194,14,${.3+t*.6})`:`rgba(106,184,255,${.3+t*.6})`; x.lineWidth=2+t*9;
+    x.beginPath(); x.moveTo(a.x,a.y); x.lineTo(b.x,b.y); x.stroke();
+    const mx=a.x+(b.x-a.x)*at, my=a.y+(b.y-a.y)*at;
+    x.fillStyle="rgba(13,13,15,.92)"; x.fillRect(mx-36,my-14,72,26);
+    x.fillStyle=w>=0?Y:BLUE; x.font=`600 16px ${MONO}`; x.textAlign="center"; x.fillText(label,mx,my+5);
+    if(blame!=null){ const up=blame<0; x.fillStyle=RED; x.font=`600 15px ${MONO}`; x.fillText(`${up?"▲":"▼"} ${Math.abs(blame).toFixed(3)}`,mx,my+32); }
+    x.textAlign="left";
+  }
+  function node(x,n,r,fill,stroke,txt,sub){ dotN(x,n.x,n.y,r,fill,stroke); x.fillStyle=INK; x.font=`700 20px ${MONO}`; x.textAlign="center"; x.fillText(txt,n.x,n.y+7); if(sub){ x.fillStyle=MUTE; x.font=`15px ${SANS}`; x.fillText(sub,n.x,n.y+r+24); } x.textAlign="left"; }
+  function dotN(x,px,py,r,fill,stroke){ x.beginPath(); x.arc(px,py,r,0,7); x.fillStyle=fill; x.fill(); x.strokeStyle=stroke; x.lineWidth=3; x.stroke(); }
+  function pulse(x,a,b,t,col){ if(t<=0||t>=1) return; const px=a.x+(b.x-a.x)*t, py=a.y+(b.y-a.y)*t; x.fillStyle=col; x.shadowColor=col; x.shadowBlur=14; x.beginPath(); x.arc(px,py,7,0,7); x.fill(); x.shadowBlur=0; }
+  A.bpintro={
+    enter(){ reset(); },
+    step(){ if(running) return false;
+      if(round===1&&phase!=="upd"){ next(); return true; }
+      if(err()>=GOOD){ running=true; auto=true; next(); ui(); return true; }
+      return false; },
+    tick(dt){
+      pt+=dt*(auto?4:1);
+      if(running&&phase!=="idle"&&pt>DUR[phase]){ if(phase==="upd"&&(forward().o>=1-GOOD||round>=30)){ fw=forward(); hist.push(fw.o); running=false; auto=false; ui(); } else next(); }
+      const W=cv.offsetWidth, H=cv.offsetHeight, x=ctxOf(cv), k=Math.min(W/VW,H/VH);
+      x.clearRect(0,0,W,H); x.save(); x.translate((W-VW*k)/2,(H-VH*k)/2); x.scale(k,k);
+      const p=clamp(pt/(DUR[phase]||1),0,1), e=ease(p);
+      const dw=(o,n)=>o==null?n:(phase==="upd"?o+(n-o)*e:n);
+      const w1=(i,j)=>dw(oW1&&oW1[i][j],W1[i][j]), w2=j=>dw(oW2&&oW2[j],W2[j]);
+      const showBlame=phase==="back"||(phase==="upd");
+      for(let i=0;i<2;i++) for(let j=0;j<2;j++) edge(x,IN[i],HID[j],w1(i,j),w1(i,j).toFixed(2),showBlame&&p>.5-(phase==="upd"?1:0)?grad1[i][j]:null,i===j?.42:.24);
+      for(let j=0;j<2;j++) edge(x,HID[j],OUT,w2(j),w2(j).toFixed(2),showBlame&&(phase==="upd"||p>.2)?grad2[j]:null);
+      if(phase==="fwd"){ for(let i=0;i<2;i++) for(let j=0;j<2;j++) pulse(x,IN[i],HID[j],p*2,Y); for(let j=0;j<2;j++) pulse(x,HID[j],OUT,p*2-1,Y); }
+      if(phase==="back"){ for(let j=0;j<2;j++) pulse(x,OUT,HID[j],p*2,RED); for(let i=0;i<2;i++) for(let j=0;j<2;j++) pulse(x,HID[j],IN[i],p*2-1,RED); }
+      IN.forEach(n=>node(x,n,38,"#1c1c20",INK,n.v,n.l));
+      const shown=phase==="idle"&&round===1?null:fw;
+      HID.forEach((n,j)=>node(x,n,34,"#1c1c20","#55534d",shown&&(phase!=="fwd"||p>.5)?shown.h[j].toFixed(2):"?",null));
+      const wrong=phase==="err"||phase==="back";
+      const guess=shown&&(phase!=="fwd"||p>.95)?shown.o.toFixed(2):"?";
+      node(x,OUT,46,"#1c1c20",wrong?RED:(phase==="upd"?GREEN:Y),guess,"guess");
+      x.font=`600 17px ${MONO}`; x.fillStyle=MUTE; x.textAlign="center"; x.fillText("should be 1.00",OUT.x,OUT.y-62); x.textAlign="left";
+      if(wrong){ const a=phase==="err"?p:1; x.globalAlpha=a; x.fillStyle=RED; x.font=`700 22px ${SANS}`; x.textAlign="center"; x.fillText(`✗ off by ${err().toFixed(2)}`,OUT.x,OUT.y+96); x.textAlign="left"; x.globalAlpha=1; }
+      // error over rounds
+      const gx=40, gy=520, gw=VW-80, gh=100, n=Math.max(12,hist.length);
+      x.strokeStyle=LINE; x.lineWidth=2; x.beginPath(); x.moveTo(gx,gy); x.lineTo(gx,gy+gh); x.lineTo(gx+gw,gy+gh); x.stroke();
+      x.fillStyle=MUTE; x.font=`14px ${MONO}`; x.fillText("error",gx+8,gy+12); x.textAlign="right"; x.fillText("rounds →",gx+gw,gy+gh+20); x.textAlign="left";
+      x.strokeStyle=RED; x.lineWidth=3; x.beginPath(); hist.forEach((o,i)=>{ const px=gx+i/(n-1)*gw, py=gy+gh-(1-o)/.7*gh; i?x.lineTo(px,py):x.moveTo(px,py); }); x.stroke();
+      hist.forEach((o,i)=>dotN(x,gx+i/(n-1)*gw,gy+gh-(1-o)/.7*gh,4,RED,RED));
+      x.restore();
+    }
+  };
+})();
+
 /* ---------- dartmouth ---------- */
 (() => {
   const el=$("dq"), Q="Every aspect of learning or any other feature of intelligence can in principle be so precisely described that a machine can be made to simulate it.”";

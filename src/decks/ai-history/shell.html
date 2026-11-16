@@ -423,6 +423,11 @@
   #stage:has(.slide.winterOnly.active) #chrome .nbtn{background:rgba(18,18,20,.9)}
   #stage:has(.slide.winterOnly.active) #chrome #count,#stage:has(.slide.winterOnly.active) #chrome .ver{background:rgba(18,18,20,.9);padding:4px 8px;border-radius:6px;opacity:1!important}
 
+  /* backprop intro */
+  .bpiSteps li{opacity:.4;transition:opacity .35s}
+  .bpiSteps li.on{opacity:1}
+  .bpiSteps li.on::before{box-shadow:0 0 0 4px rgba(255,194,14,.25)}
+
   /* ===== deep learning era slides ===== */
   /* shared bits for the deep learning era slides */
   .two.wide-l{grid-template-columns:1.15fr .85fr}
@@ -1028,6 +1033,24 @@ EEEEEE  LLLLLL  IIII  ZZZZZZZ  AA   AA</pre><div class="log" id="elog"></div><fo
 
   <!-- TIMELINE 1986 -->
   <section class="slide tl" data-id="tl-7" data-upto="6"></section>
+
+  <!-- backpropagation: learning from a mistake -->
+  <section class="slide" data-id="bpintro">
+    <div class="two" style="grid-template-columns:.72fr 1.28fr;gap:44px">
+      <div class="stack" style="gap:18px">
+        <h2 class="rise" style="--i:0"><span class="n">1986 · BACKPROPAGATION</span>Learning from <span class="y">mistakes</span></h2>
+        <p class="rise" style="--i:1">When the network gets the wrong answer, it works <b>backwards</b> to find which numbers (weights) caused the mistake, and nudges each one.</p>
+        <ol class="num bpiSteps rise" style="--i:2" id="bpiSteps">
+          <li><b>Forward:</b> the inputs flow through the weights to make a guess.</li>
+          <li><b>Error:</b> compare the guess with the right answer.</li>
+          <li><b>Backward:</b> send the error back to see how much each weight is to blame.</li>
+          <li><b>Update:</b> nudge every weight to make the error smaller. Repeat.</li>
+        </ol>
+        <div class="ctl rise" style="--i:3;display:flex;gap:12px;flex-wrap:wrap"><button class="btn" id="bpiStep">Next step ▶</button><button class="btn on" id="bpiTrain">Train ▶▶</button><button class="btn" id="bpiReset">Reset</button></div>
+      </div>
+      <div class="stage-box rise" style="--i:2;height:660px"><canvas id="bpiCv"></canvas><div class="cap" id="bpiCap">Should I bring an umbrella?</div></div>
+    </div>
+  </section>
 
   <!-- TIMELINE 1997 -->
   <section class="slide tl" data-id="tl-8" data-upto="7"></section>
