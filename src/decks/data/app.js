@@ -892,65 +892,6 @@ $("probGrid").innerHTML=[
     back(){ if(pi<=0) return false; pi--; V=PRE[pi][1].slice(); render(); return true; } };
 })();
 
-/* ---------- normalization vs standardization ---------- */
-(() => {
-  const cv=$("nsCv"); const r=srand(21); const D=Array.from({length:400},()=>clamp(1700+gauss(r)*260,950,2500));
-  const mn=Math.min(...D), mx=Math.max(...D), mu=D.reduce((a,b)=>a+b,0)/D.length, sd=Math.sqrt(D.reduce((a,b)=>a+(b-mu)**2,0)/D.length);
-  const BINS=26, bins=new Array(BINS).fill(0); D.forEach(v=>bins[Math.min(BINS-1,Math.floor((v-mn)/(mx-mn)*BINS))]++);
-  let mode="raw", fade=1;
-  const MODES={raw:{f:v=>v,d:0,cap:`raw sq ft · mean ${Math.round(mu)}, sd ${Math.round(sd)}`},mm:{f:v=>(v-mn)/(mx-mn),d:2,cap:"min-max: 0 to 1 · same shape, new scale"},z:{f:v=>(v-mu)/sd,d:1,cap:"z-score: mean 0, sd 1 · same shape, centered"}};
-  const set=tabs($("nsTabs"),k=>{ mode=k; fade=0; });
-  const ORD=["raw","mm","z"];
-  A.normstd={ enter(){ mode="raw"; set("raw"); fade=1; },
-    step(){ const i=ORD.indexOf(mode); if(i>=2) return false; mode=ORD[i+1]; set(mode); fade=0; return true; },
-    back(){ const i=ORD.indexOf(mode); if(i<=0) return false; mode=ORD[i-1]; set(mode); fade=0; return true; },
-    tick(dt){ fade=Math.min(1,fade+dt/500); const W=cv.offsetWidth, H=cv.offsetHeight, x=ctxOf(cv), L=60, R=W-40, T=50, B=H-110; x.clearRect(0,0,W,H);
-      const bm=Math.max(...bins), bw=(R-L)/BINS;
-      bins.forEach((c,i)=>{ const h=c/bm*(B-T); x.fillStyle=mode==="raw"?"rgba(243,241,234,.55)":mode==="mm"?"rgba(255,194,14,.75)":"rgba(106,184,255,.75)"; x.fillRect(L+i*bw+1,B-h,bw-2,h); });
-      axes(x,L,T,R,B);
-      const M=MODES[mode]; x.globalAlpha=ease(fade);
-      for(let k=0;k<=6;k++){ const v=mn+(mx-mn)*k/6, pxx=L+(R-L)*k/6; x.strokeStyle="#55534d"; x.beginPath(); x.moveTo(pxx,B); x.lineTo(pxx,B+8); x.stroke(); label(x,M.f(v).toFixed(M.d),pxx,B+30,mode==="raw"?INK:mode==="mm"?Y:BLUE,16,"center"); }
-      const mpx=L+(mu-mn)/(mx-mn)*(R-L); x.strokeStyle=RED; x.lineWidth=2; x.setLineDash([6,5]); x.beginPath(); x.moveTo(mpx,T); x.lineTo(mpx,B); x.stroke(); x.setLineDash([]);
-      label(x,"mean = "+M.f(mu).toFixed(mode==="raw"?0:2),mpx+8,T+16,RED,15);
-      x.globalAlpha=1; label(x,mode==="raw"?"house size (sq ft)":mode==="mm"?"scaled value":"z-score (standard deviations from mean)",(L+R)/2,B+64,MUTE,15,"center");
-      $("nsCap").textContent=M.cap;
-    } };
-})();
-
-/* ---------- min-max worked example ---------- */
-(() => {
-  const D=[10,20,30,40]; let n=0;
-  function render(){
-    $("mmRows").innerHTML=D.slice(0,n).map(v=>`<div class="fx pop" style="font-size:22px"><b class="y" style="min-width:40px">${v}</b>→ <span class="frac"><span>${v} − 10</span><span>40 − 10</span></span> = <span class="frac"><span>${v-10}</span><span>30</span></span> = <b class="y">${fmt((v-10)/30)}</b></div>`).join("");
-    $("mmRes").innerHTML=n>=4?`result: [<b class="y">0, 0.33, 0.67, 1</b>]`:"";
-    $("mmNext").textContent=n<4?`Next value ▶`:"Done ✓";
-  }
-  $("mmNext").onclick=()=>{ if(n<4){ n++; render(); } }; $("mmReset").onclick=()=>{ n=0; render(); };
-  A.howto={ enter(){ n=0; render(); }, step(){ if(n<4){ n++; render(); return true; } return false; }, back(){ if(n>0){ n--; render(); return true; } return false; } };
-})();
-
-/* ---------- when to normalize: knn ---------- */
-(() => {
-  const cv=$("knCv"); let mode="raw";
-  const Q={n:"You",m:200,a:30};
-  const P=[{n:"Ari",m:205,a:62},{n:"Bea",m:250,a:31},{n:"Cal",m:150,a:45},{n:"Dee",m:120,a:33},{n:"Eli",m:330,a:28},{n:"Flo",m:420,a:50},{n:"Gus",m:60,a:25},{n:"Hal",m:480,a:60},{n:"Ivy",m:300,a:55},{n:"Jo",m:90,a:40}];
-  const dist=(p,sc)=>sc?Math.hypot((p.m-Q.m)/500,(p.a-Q.a)/45):Math.hypot(p.m-Q.m,p.a-Q.a);
-  const set=tabs($("knTabs"),k=>{ mode=k; });
-  A.whennorm={ enter(){ mode="raw"; set("raw"); }, step(){ if(mode==="raw"){ mode="sc"; set("sc"); return true; } return false; },
-    tick(){ const W=cv.offsetWidth, H=cv.offsetHeight, x=ctxOf(cv), L=80, T=40, R=W-30, B=H-70; x.clearRect(0,0,W,H); axes(x,L,T,R,B);
-      const sc=mode==="sc", px=m=>L+m/500*(R-L), py=a=>B-(a-20)/45*(B-T);
-      for(let m=0;m<=500;m+=100) label(x,sc?(m/500).toFixed(1):m,px(m),B+24,MUTE,13,"center");
-      for(let a=20;a<=65;a+=15) label(x,sc?((a-20)/45).toFixed(1):a,L-12,py(a)+5,MUTE,13,"right");
-      label(x,sc?"distance (scaled 0–1) →":"distance (miles) →",R,B+52,MUTE,15,"right"); label(x,sc?"age (scaled 0–1)":"age (years)",L,T-14,MUTE,15);
-      const nn=P.slice().sort((p,q)=>dist(p,sc)-dist(q,sc))[0];
-      x.strokeStyle=Y; x.lineWidth=3; x.setLineDash([8,6]); x.beginPath(); x.moveTo(px(Q.m),py(Q.a)); x.lineTo(px(nn.m),py(nn.a)); x.stroke(); x.setLineDash([]);
-      for(const p of P){ dot(x,px(p.m),py(p.a),9,p===nn?Y:BLUE); label(x,p.n,px(p.m)+13,py(p.a)+5,p===nn?Y:MUTE,14); }
-      dot(x,px(Q.m),py(Q.a),12,null,INK); dot(x,px(Q.m),py(Q.a),5,INK); label(x,"you",px(Q.m)+16,py(Q.a)+5,INK,15);
-      $("knCap").textContent=sc?"each feature counts equally":"1 mile counts the same as 1 year of age";
-      $("knRes").innerHTML=sc?`Nearest: <b>${nn.n}</b>, close in both miles and age.`:`Nearest: <b>${nn.n}</b>, 32 years older! Miles drown out age.`;
-    } };
-})();
-
 /* ---------- navigation ---------- */
 const countEl=$("count"), prog=$("progress");
 /*LIVE_CORE*/

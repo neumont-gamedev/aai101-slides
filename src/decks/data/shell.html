@@ -826,58 +826,6 @@
     </div>
   </section>
 
-  <!-- norm vs std -->
-  <section class="slide" data-id="normstd">
-    <div class="two" style="grid-template-columns:.85fr 1.15fr;gap:50px">
-      <div class="stack" style="gap:20px">
-        <h2 class="rise" style="--i:0"><span class="n">SCALING FEATURES</span>Normalization vs. standardization</h2>
-        <div class="card pad rise" style="--i:1"><h3 style="font-size:26px;color:var(--y)">Normalization</h3><p style="font-size:20px">Scales data to a fixed range, usually <b>0 to 1</b>. Keeps the shape of the distribution, changes the scale.</p></div>
-        <div class="card pad rise" style="--i:2"><h3 style="font-size:26px;color:var(--blue)">Standardization</h3><p style="font-size:20px">Shifts and rescales data to <b>mean 0</b> and <b>standard deviation 1</b>. Not bounded to a range.</p></div>
-        <div class="tabs rise" style="--i:3" id="nsTabs"><button class="on" data-k="raw">Raw</button><button data-k="mm">Min-max</button><button data-k="z">Z-score</button></div>
-      </div>
-      <div class="stage-box rise" style="--i:2"><canvas id="nsCv"></canvas><div class="cap" id="nsCap">raw values</div></div>
-    </div>
-  </section>
-
-  <!-- how to normalize -->
-  <section class="slide" data-id="howto">
-    <div class="two" style="grid-template-columns:1fr 1fr;gap:50px">
-      <div class="stack" style="gap:18px">
-        <h2 class="rise" style="--i:0"><span class="n">THE FORMULAS</span>How to normalize</h2>
-        <div class="card fbox rise" style="--i:1"><h3>1 · Min-max scaling</h3><div class="fx">x′ = <span class="frac"><span>x − min</span><span>max − min</span></span></div><p class="muted">Fixed range, 0 to 1.</p></div>
-        <div class="card fbox rise" style="--i:2"><h3>2 · Standardization (z-score)</h3><div class="fx">z = <span class="frac"><span>x − μ</span><span>σ</span></span></div><p class="muted">μ is the mean, σ the standard deviation.</p></div>
-        <div class="card fbox rise" style="--i:3"><h3>3 · Log scaling</h3><div class="fx">x′ = log(x)</div><p class="muted">For features with a huge range of values (incomes, populations).</p></div>
-      </div>
-      <div class="stack rise" style="--i:2;gap:18px">
-        <div class="eyebrow">Worked example</div>
-        <div class="card pad" style="display:flex;flex-direction:column;gap:14px">
-          <div class="mono" style="font-size:22px">data = [10, 20, 30, 40] &nbsp; <span class="muted">min = 10, max = 40</span></div>
-          <div id="mmRows" style="display:flex;flex-direction:column;gap:10px"></div>
-          <div class="mono" style="font-size:24px" id="mmRes"></div>
-        </div>
-        <div style="display:flex;gap:12px"><button class="btn on" id="mmNext">Next value ▶</button><button class="btn" id="mmReset">Reset</button></div>
-      </div>
-    </div>
-  </section>
-
-  <!-- when to normalize -->
-  <section class="slide" data-id="whennorm">
-    <div class="two" style="grid-template-columns:.9fr 1.1fr;gap:44px">
-      <div class="stack tight" style="gap:16px">
-        <h2 class="rise" style="--i:0"><span class="n">WHEN TO SCALE</span>Does it matter?</h2>
-        <p class="rise" style="--i:1;font-size:22px">Algorithms that use <b>distances</b> or <b>gradients</b> need it: otherwise big-numbered features drown out small ones.</p>
-        <div class="grid2 rise" style="--i:2;gap:14px">
-          <div class="card pad"><div class="k" style="color:var(--y)">Scale first</div><ul class="bul" style="margin-top:10px"><li>K-nearest neighbors</li><li>K-means clustering</li><li>SVMs</li><li>Logistic regression</li><li>Neural networks</li><li>PCA</li></ul></div>
-          <div class="card pad"><div class="k" style="color:var(--green)">Raw is fine</div><ul class="bul" style="margin-top:10px"><li>Decision trees</li><li>Random forest</li><li>Gradient boosting (XGBoost, LightGBM)</li><li>Rule-based systems</li></ul><p class="muted" style="font-size:16px;margin-top:10px">Trees split on thresholds, not distances.</p></div>
-        </div>
-      </div>
-      <div class="stack rise" style="--i:2;gap:12px">
-        <div class="stage-box" style="height:560px"><canvas id="knCv"></canvas><div class="cap" id="knCap"></div></div>
-        <div style="display:flex;gap:12px;align-items:center"><div class="tabs" id="knTabs"><button class="on" data-k="raw">Raw miles &amp; age</button><button data-k="sc">Scaled 0–1</button></div><span class="knnRes" id="knRes" style="font-size:18px"></span></div>
-      </div>
-    </div>
-  </section>
-
   <!-- feature engineering -->
   <section class="slide" data-id="feateng">
     <div class="stack" style="gap:18px">
