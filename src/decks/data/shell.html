@@ -262,8 +262,14 @@
   .mk figcaption{position:absolute;left:12px;bottom:12px;font-family:var(--mono);font-size:15px;padding:5px 10px;border-radius:8px;background:rgba(13,13,15,.85);color:var(--mute)}
   .mk figure.rev.ai{border-color:var(--y);box-shadow:0 0 0 3px rgba(255,194,14,.3)}
   .mk figure.rev.ai figcaption{color:var(--y)}
-  .mk figure.no{cursor:default}
-  .mk figure.no img{filter:grayscale(1) brightness(.45)}
+  .mk figure{cursor:default}
+  .mk figure[data-ai="1"]{cursor:pointer;background:#000}
+  .mk figure[data-ai="1"]:not(.rev) img{opacity:0}
+  .mk figure[data-ai="1"] img{transition:opacity .6s ease}
+  .mk .cover{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;color:var(--mute);font-family:var(--mono);font-size:17px;transition:opacity .4s}
+  .mk .cover b{font-size:64px;color:var(--y);font-family:var(--sans)}
+  .mk figure[data-ai="1"]:hover .cover{color:var(--ink)}
+  .mk figure.rev .cover{opacity:0;pointer-events:none}
   .prompt{font-family:var(--mono);font-size:22px;padding:16px 22px;border-radius:14px;background:#0d0d0f;border:1px solid var(--line);color:var(--ink)}
   .prompt::before{content:"› ";color:var(--y)}
   .plist{display:flex;flex-direction:column;gap:12px}
@@ -874,10 +880,10 @@
       <div class="mk rise" style="--i:2" id="mkGrid">
         <figure data-ai="0"><img src="{{IMG:market-1.jpg}}" alt="A smiling woman with glasses in a supermarket produce section"><figcaption>A</figcaption></figure>
         <figure data-ai="0"><img src="{{IMG:market-2.jpg}}" alt="A smiling woman in a pink head wrap at an outdoor fruit market"><figcaption>B</figcaption></figure>
-        <figure data-ai="1"><img src="{{IMG:market-ai.png}}" alt="An AI-generated image of a smiling woman in an apron at a produce stand"><figcaption>C</figcaption></figure>
+        <figure data-ai="1"><img src="{{IMG:market-ai.png}}" alt="An AI-generated image of a smiling woman in an apron at a produce stand"><div class="cover"><b>?</b>click to reveal</div><figcaption>C</figcaption></figure>
       </div>
-      <div class="callout keyIdea" id="mkIdea">Image <b>C</b> is the AI’s. Given no other details, it produced a Western-style market and a white woman: the kind of image most common in its training data.</div>
-      <p class="hint" id="mkHint">Which one did the AI make? Click a photo to reveal.</p>
+      <div class="callout keyIdea" id="mkIdea">Given no other details, the AI produced a Western-style market and a white woman: the kind of image most common in its training data.</div>
+      <p class="hint" id="mkHint">A and B are real photos. Click box C to see what the AI made.</p>
     </div>
   </section>
 

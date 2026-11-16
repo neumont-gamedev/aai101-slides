@@ -263,8 +263,14 @@
   .mk figcaption{position:absolute;left:12px;bottom:12px;font-family:var(--mono);font-size:15px;padding:5px 10px;border-radius:8px;background:rgba(13,13,15,.85);color:var(--mute)}
   .mk figure.rev.ai{border-color:var(--y);box-shadow:0 0 0 3px rgba(255,194,14,.3)}
   .mk figure.rev.ai figcaption{color:var(--y)}
-  .mk figure.no{cursor:default}
-  .mk figure.no img{filter:grayscale(1) brightness(.45)}
+  .mk figure{cursor:default}
+  .mk figure[data-ai="1"]{cursor:pointer;background:#000}
+  .mk figure[data-ai="1"]:not(.rev) img{opacity:0}
+  .mk figure[data-ai="1"] img{transition:opacity .6s ease}
+  .mk .cover{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;color:var(--mute);font-family:var(--mono);font-size:17px;transition:opacity .4s}
+  .mk .cover b{font-size:64px;color:var(--y);font-family:var(--sans)}
+  .mk figure[data-ai="1"]:hover .cover{color:var(--ink)}
+  .mk figure.rev .cover{opacity:0;pointer-events:none}
   .prompt{font-family:var(--mono);font-size:22px;padding:16px 22px;border-radius:14px;background:#0d0d0f;border:1px solid var(--line);color:var(--ink)}
   .prompt::before{content:"› ";color:var(--y)}
   .plist{display:flex;flex-direction:column;gap:12px}
@@ -875,10 +881,10 @@
       <div class="mk rise" style="--i:2" id="mkGrid">
         <figure data-ai="0"><img src="img/market-1.jpg" alt="A smiling woman with glasses in a supermarket produce section"><figcaption>A</figcaption></figure>
         <figure data-ai="0"><img src="img/market-2.jpg" alt="A smiling woman in a pink head wrap at an outdoor fruit market"><figcaption>B</figcaption></figure>
-        <figure data-ai="1"><img src="img/market-ai.png" alt="An AI-generated image of a smiling woman in an apron at a produce stand"><figcaption>C</figcaption></figure>
+        <figure data-ai="1"><img src="img/market-ai.png" alt="An AI-generated image of a smiling woman in an apron at a produce stand"><div class="cover"><b>?</b>click to reveal</div><figcaption>C</figcaption></figure>
       </div>
-      <div class="callout keyIdea" id="mkIdea">Image <b>C</b> is the AI’s. Given no other details, it produced a Western-style market and a white woman: the kind of image most common in its training data.</div>
-      <p class="hint" id="mkHint">Which one did the AI make? Click a photo to reveal.</p>
+      <div class="callout keyIdea" id="mkIdea">Given no other details, the AI produced a Western-style market and a white woman: the kind of image most common in its training data.</div>
+      <p class="hint" id="mkHint">A and B are real photos. Click box C to see what the AI made.</p>
     </div>
   </section>
 
@@ -972,7 +978,7 @@
     </div>
   </section>
 
-  <div id="chrome"><span class="sp"></span><button class="nbtn" id="prev" aria-label="Previous">←</button><span class="ver" style="font-size:12px;opacity:.6;margin-right:8px">updated Nov 16, 1:22 PM</span><span id="count"></span><button class="nbtn" id="next" aria-label="Next">→</button><button class="nbtn" id="fs" aria-label="Fullscreen" title="Fullscreen (F)">⤢</button></div>
+  <div id="chrome"><span class="sp"></span><button class="nbtn" id="prev" aria-label="Previous">←</button><span class="ver" style="font-size:12px;opacity:.6;margin-right:8px">updated Nov 16, 1:29 PM</span><span id="count"></span><button class="nbtn" id="next" aria-label="Next">→</button><button class="nbtn" id="fs" aria-label="Fullscreen" title="Fullscreen (F)">⤢</button></div>
   <div id="progress"></div>
   <div id="livewrap"><span id="liveauth"></span><div id="livebar"></div></div>
   <div id="toast" role="status"></div>
@@ -1709,11 +1715,10 @@ $("probGrid").innerHTML=[
 (() => {
   let rev=false;
   const figs=()=>document.querySelectorAll("#mkGrid figure");
-  const show=()=>{ rev=true; figs().forEach((f,i)=>{ f.classList.add("rev"); f.classList.remove("no"); f.querySelector("figcaption").textContent=f.dataset.ai==="1"?"C · AI-generated":"ABC"[i]+" · real photo"; if(f.dataset.ai==="1") f.classList.add("ai"); }); $("mkIdea").classList.add("on"); $("mkHint").style.visibility="hidden"; };
-  // only the AI image reveals the answer; a wrong pick is marked as a real photo so students keep looking
-  const wrong=(f,i)=>{ f.classList.add("no"); f.querySelector("figcaption").textContent="ABC"[i]+" · real photo"; $("mkHint").textContent="Not that one. That’s a real photo. Try another!"; };
-  figs().forEach((f,i)=>f.onclick=()=>{ if(rev) return; f.dataset.ai==="1"?show():wrong(f,i); });
-  A.market={ enter(){ rev=false; $("mkIdea").classList.remove("on"); $("mkHint").style.visibility=""; $("mkHint").textContent="Which one did the AI make? Click a photo to reveal."; figs().forEach((f,i)=>{ f.classList.remove("rev","ai","no"); f.querySelector("figcaption").textContent="ABC"[i]; }); } };
+  // photos A and B are real; box C stays black until a student clicks it to reveal the AI's image
+  const show=()=>{ rev=true; figs().forEach((f,i)=>{ f.classList.add("rev"); f.querySelector("figcaption").textContent=f.dataset.ai==="1"?"C · AI-generated":"ABC"[i]+" · real photo"; if(f.dataset.ai==="1") f.classList.add("ai"); }); $("mkIdea").classList.add("on"); $("mkHint").style.visibility="hidden"; };
+  figs().forEach(f=>{ if(f.dataset.ai==="1") f.onclick=()=>{ if(!rev) show(); }; });
+  A.market={ enter(){ rev=false; $("mkIdea").classList.remove("on"); $("mkHint").style.visibility=""; figs().forEach((f,i)=>{ f.classList.remove("rev","ai"); f.querySelector("figcaption").textContent="ABC"[i]; }); } };
 })();
 
 /* ---------- bias in, bias out ---------- */
