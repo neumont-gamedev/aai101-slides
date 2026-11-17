@@ -244,6 +244,15 @@
   .ilLabels button i{width:12px;height:12px;border-radius:3px;display:inline-block}
   .ilLabels button.on{border-color:var(--y);box-shadow:0 0 0 2px rgba(255,194,14,.35)}
   .ilBox svg{cursor:crosshair;touch-action:none;user-select:none}
+  /* data shapes the mind */
+  .mdRows{padding:10px;display:flex;flex-direction:column;gap:8px}
+  .mdRow{display:flex;align-items:center;gap:16px;padding:12px 14px;border-radius:12px;border:1px solid transparent;opacity:.45;transition:opacity .5s,border-color .5s,background .5s}
+  .mdRow.on{opacity:1;border-color:rgba(255,194,14,.6);background:rgba(255,194,14,.06)}
+  .mdRow .ic{font-size:40px;line-height:1}
+  .mdRow div{display:flex;flex-direction:column;gap:2px}
+  .mdRow div>b{font-size:22px}
+  .mdRow span{font-family:var(--mono);font-size:17px;color:var(--mute)}
+  .mdRow span b{color:var(--y)}
   /* annotation */
   .senti{display:grid;grid-template-columns:repeat(3,1fr);gap:16px}
   .senti .card{padding:20px;display:flex;flex-direction:column;gap:12px;align-items:center;text-align:center}
@@ -391,6 +400,26 @@
       <div class="eyebrow rise" style="--i:0">AAI101 · Introduction to Artificial Intelligence</div>
       <h1 class="rise" style="--i:1">Data</h1>
       <p class="lede rise" style="--i:2">The core ingredient that powers machine learning. Models learn patterns from numbers, text, images and sound, so the <b class="y">quality</b> and <b class="y">variety</b> of the data shape what they can do.</p>
+    </div>
+  </section>
+
+  <!-- data shapes the mind: brain analogy -->
+  <section class="slide" data-id="mind">
+    <div class="two" style="grid-template-columns:.86fr 1.14fr;gap:46px">
+      <div class="stack" style="gap:20px">
+        <h2 class="rise" style="--i:0;font-size:50px"><span class="n">AN ANALOGY</span>You were <span class="y">trained</span> too</h2>
+        <p class="rise" style="--i:1">Everything you have seen, heard and read shaped how you think. Nobody gave you a rule for “dog.” You saw a lot of dogs.</p>
+        <div class="card rise mdRows" style="--i:2">
+          <div class="mdRow on" id="mdHuman"><span class="ic">🧠</span><div><b>You</b><span>experiences → <b>brain</b> → what you know</span></div></div>
+          <div class="mdRow" id="mdML"><span class="ic">🤖</span><div><b>Machine learning</b><span>data → <b>model</b> → predictions</span></div></div>
+        </div>
+        <div class="callout keyIdea" id="mdIdea">A model only knows what its data showed it. <b class="y">Change the data and you change the mind.</b></div>
+        <p class="hint rise" style="--i:3" id="mdHint">Press → to swap the brain for a model.</p>
+      </div>
+      <div class="stack rise" style="--i:2;gap:12px">
+        <div class="stage-box" style="height:600px"><canvas id="mdCv"></canvas></div>
+        <p class="mono" id="mdCap" style="font-size:18px;color:var(--mute);text-align:center;min-height:26px"></p>
+      </div>
     </div>
   </section>
 
@@ -1005,7 +1034,7 @@
     </div>
   </section>
 
-  <div id="chrome"><span class="sp"></span><button class="nbtn" id="prev" aria-label="Previous">←</button><span class="ver" style="font-size:12px;opacity:.6;margin-right:8px">updated Nov 17, 12:03 PM</span><span id="count"></span><button class="nbtn" id="next" aria-label="Next">→</button><button class="nbtn" id="fs" aria-label="Fullscreen" title="Fullscreen (F)">⤢</button></div>
+  <div id="chrome"><span class="sp"></span><button class="nbtn" id="prev" aria-label="Previous">←</button><span class="ver" style="font-size:12px;opacity:.6;margin-right:8px">updated Nov 17, 12:07 PM</span><span id="count"></span><button class="nbtn" id="next" aria-label="Next">→</button><button class="nbtn" id="fs" aria-label="Fullscreen" title="Fullscreen (F)">⤢</button></div>
   <div id="progress"></div>
   <div id="livewrap"><span id="liveauth"></span><div id="livebar"></div></div>
   <div id="toast" role="status"></div>
@@ -1761,6 +1790,60 @@ $("probGrid").innerHTML=[
   $("ilClear").onclick=reset;
   labels(); draw();
   A.imglab={ enter(){ lab="car"; labels(); reset(); } };
+})();
+
+/* ---------- data shapes the mind: emojis flow into a brain, which becomes a model ---------- */
+(() => {
+  const cv=$("mdCv");
+  const EM=[["🐶","dog"],["🐱","cat"],["🍎","apple"],["🚗","car"],["🌳","tree"],["🎵","music"],["⚽","ball"],["🍕","pizza"],["🏠","house"],["✈️","plane"],["🐦","bird"],["🌧️","rain"],["📚","books"],["😀","happy"]];
+  const EF=s=>`${s}px "Segoe UI Emoji","Apple Color Emoji","Noto Color Emoji",sans-serif`;
+  const LAYERS=[4,6,6,3];
+  let P=[], OUT=[], FL=[], spawn=0, seen=0, m=0, target=0, NODES=[], DOTS=[], geo=null;
+  function layout(W,H){ const cx=W*.5, cy=H*.5, R=Math.min(W,H)*.25;
+    if(geo&&geo.W===W&&geo.H===H) return geo;
+    const r=srand(11); DOTS=Array.from({length:46},()=>{ const a=r()*Math.PI*2, d=Math.sqrt(r()); return [cx+Math.cos(a)*d*R*.78, cy-R*.08+Math.sin(a)*d*R*.55]; });
+    NODES=LAYERS.map((n,li)=>Array.from({length:n},(_,i)=>[cx-R*.95+li*(R*1.9/(LAYERS.length-1)), cy+(i-(n-1)/2)*(R*.36)]));
+    return geo={W,H,cx,cy,R}; }
+  function caption(){ $("mdCap").textContent=target?"A model: every example nudges its weights.":"Your brain: every experience nudges its connections."; }
+  function set(t){ target=t; $("mdHuman").classList.toggle("on",!t); $("mdML").classList.toggle("on",!!t); $("mdIdea").classList.toggle("on",!!t); $("mdHint").style.visibility=t?"hidden":""; caption(); }
+  function flash(){ if(m<.5){ const a=(Math.random()*DOTS.length)|0; const near=DOTS.map((d,i)=>[Math.hypot(d[0]-DOTS[a][0],d[1]-DOTS[a][1]),i]).sort((p,q)=>p[0]-q[0]).slice(1,4).map(p=>p[1]); FL.push({k:"b",a,near,t:0}); }
+    else FL.push({k:"m",path:LAYERS.map(n=>(Math.random()*n)|0),t:0}); }
+  A.mind={
+    enter(){ P=[]; OUT=[]; FL=[]; seen=0; spawn=0; m=0; set(0); },
+    step(){ if(!target){ set(1); return true; } return false; },
+    back(){ if(target){ set(0); return true; } return false; },
+    tick(dt){ const W=cv.offsetWidth, H=cv.offsetHeight, x=ctxOf(cv), g=layout(W,H), {cx,cy,R}=g;
+      m+=(target-m)*Math.min(1,dt/350);
+      x.clearRect(0,0,W,H);
+      label(x,"DATA IN",24,36,MUTE,15);
+      label(x,m<.5?"BRAIN":"MODEL",cx,36,Y,15,"center");
+      label(x,m<.5?"WHAT IT KNOWS":"PREDICTIONS",W-24,36,MUTE,15,"right");
+      // incoming emojis
+      spawn+=dt; while(spawn>120){ spawn-=120; const e=pick(EM), y0=rnd(H*.14,H*.86); P.push({e,y0,k:0,sp:rnd(.00034,.00048),cy:rnd(-H*.12,H*.12)}); }
+      P=P.filter(p=>{ p.k+=p.sp*dt; if(p.k>=1){ seen++; flash(); const free=[0,1,2,3,4].filter(i=>!OUT.some(o=>o.slot===i)); if(free.length&&Math.random()<.5){ const sl=pick(free); OUT.push({w:p.e[1],slot:sl,y:cy+(sl-2)*R*.3,t:0,conf:Math.round(rnd(84,99))}); } return false; }
+        const t=ease(p.k), sx=-30, ex=lerp(cx-R*.15,cx-R*1.05,m), c1x=W*.22;
+        const px=(1-t)*(1-t)*sx+2*(1-t)*t*c1x+t*t*ex, py=(1-t)*(1-t)*p.y0+2*(1-t)*t*(p.y0+p.cy)+t*t*cy;
+        const sz=48*(1-Math.max(0,t-.6)*1.6); x.globalAlpha=Math.min(1,p.k*6)*(t>.82?(1-t)/.18:1);
+        x.font=EF(Math.max(8,sz)); x.textAlign="center"; x.textBaseline="middle"; x.fillText(p.e[0],px,py); x.globalAlpha=1; return true; });
+      x.textBaseline="alphabetic"; x.textAlign="left";
+      // the brain (fades out) and the network (fades in)
+      if(m<.99){ x.globalAlpha=1-m; x.font=EF(R*2); x.textAlign="center"; x.textBaseline="middle"; x.fillText("🧠",cx,cy); x.textBaseline="alphabetic"; x.textAlign="left";
+        x.fillStyle="rgba(255,194,14,.5)"; DOTS.forEach(d=>{ x.beginPath(); x.arc(d[0],d[1],2.2,0,7); x.fill(); }); x.globalAlpha=1; }
+      if(m>.01){ x.globalAlpha=m; x.strokeStyle="rgba(155,152,143,.22)"; x.lineWidth=1;
+        for(let l=0;l<NODES.length-1;l++) for(const a of NODES[l]) for(const b of NODES[l+1]){ x.beginPath(); x.moveTo(a[0],a[1]); x.lineTo(b[0],b[1]); x.stroke(); }
+        NODES.forEach((L,li)=>L.forEach(n=>dot(x,n[0],n[1],11,"#1c1c20",li===0?BLUE:li===NODES.length-1?PURPLE:Y))); x.globalAlpha=1; }
+      // flashes: new connections lighting up
+      FL=FL.filter(f=>{ f.t+=dt; const a=1-f.t/700; if(a<=0) return false;
+        x.strokeStyle=`rgba(255,194,14,${a})`; x.lineWidth=3; x.shadowColor=Y; x.shadowBlur=12*a;
+        if(f.k==="b"){ if(m<.5){ const A0=DOTS[f.a]; f.near.forEach(i=>{ x.beginPath(); x.moveTo(A0[0],A0[1]); x.lineTo(DOTS[i][0],DOTS[i][1]); x.stroke(); }); dot(x,A0[0],A0[1],5,`rgba(255,194,14,${a})`); } }
+        else if(m>.5){ for(let l=0;l<NODES.length-1;l++){ const p=NODES[l][f.path[l]], q=NODES[l+1][f.path[l+1]]; x.beginPath(); x.moveTo(p[0],p[1]); x.lineTo(q[0],q[1]); x.stroke(); } f.path.forEach((ni,l)=>dot(x,NODES[l][ni][0],NODES[l][ni][1],6,`rgba(255,194,14,${a})`)); }
+        x.shadowBlur=0; return true; });
+      // what comes out
+      OUT=OUT.filter(o=>{ o.t+=dt; const k=o.t/1800; if(k>=1) return false; const ox=cx+R*1.02+k*70, al=k<.15?k/.15:k>.7?(1-k)/.3:1;
+        x.globalAlpha=al; label(x,m<.5?`“${o.w}!”`:`${o.w} · ${o.conf}%`,ox,o.y,m<.5?INK:Y,18); x.globalAlpha=1; return true; });
+      label(x,`examples seen: ${seen.toLocaleString()}`,24,H-22,MUTE,15);
+    }
+  };
 })();
 
 /* ---------- be the annotator ---------- */

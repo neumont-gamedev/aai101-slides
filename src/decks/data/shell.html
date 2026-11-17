@@ -243,6 +243,15 @@
   .ilLabels button i{width:12px;height:12px;border-radius:3px;display:inline-block}
   .ilLabels button.on{border-color:var(--y);box-shadow:0 0 0 2px rgba(255,194,14,.35)}
   .ilBox svg{cursor:crosshair;touch-action:none;user-select:none}
+  /* data shapes the mind */
+  .mdRows{padding:10px;display:flex;flex-direction:column;gap:8px}
+  .mdRow{display:flex;align-items:center;gap:16px;padding:12px 14px;border-radius:12px;border:1px solid transparent;opacity:.45;transition:opacity .5s,border-color .5s,background .5s}
+  .mdRow.on{opacity:1;border-color:rgba(255,194,14,.6);background:rgba(255,194,14,.06)}
+  .mdRow .ic{font-size:40px;line-height:1}
+  .mdRow div{display:flex;flex-direction:column;gap:2px}
+  .mdRow div>b{font-size:22px}
+  .mdRow span{font-family:var(--mono);font-size:17px;color:var(--mute)}
+  .mdRow span b{color:var(--y)}
   /* annotation */
   .senti{display:grid;grid-template-columns:repeat(3,1fr);gap:16px}
   .senti .card{padding:20px;display:flex;flex-direction:column;gap:12px;align-items:center;text-align:center}
@@ -390,6 +399,26 @@
       <div class="eyebrow rise" style="--i:0">AAI101 · Introduction to Artificial Intelligence</div>
       <h1 class="rise" style="--i:1">Data</h1>
       <p class="lede rise" style="--i:2">The core ingredient that powers machine learning. Models learn patterns from numbers, text, images and sound, so the <b class="y">quality</b> and <b class="y">variety</b> of the data shape what they can do.</p>
+    </div>
+  </section>
+
+  <!-- data shapes the mind: brain analogy -->
+  <section class="slide" data-id="mind">
+    <div class="two" style="grid-template-columns:.86fr 1.14fr;gap:46px">
+      <div class="stack" style="gap:20px">
+        <h2 class="rise" style="--i:0;font-size:50px"><span class="n">AN ANALOGY</span>You were <span class="y">trained</span> too</h2>
+        <p class="rise" style="--i:1">Everything you have seen, heard and read shaped how you think. Nobody gave you a rule for “dog.” You saw a lot of dogs.</p>
+        <div class="card rise mdRows" style="--i:2">
+          <div class="mdRow on" id="mdHuman"><span class="ic">🧠</span><div><b>You</b><span>experiences → <b>brain</b> → what you know</span></div></div>
+          <div class="mdRow" id="mdML"><span class="ic">🤖</span><div><b>Machine learning</b><span>data → <b>model</b> → predictions</span></div></div>
+        </div>
+        <div class="callout keyIdea" id="mdIdea">A model only knows what its data showed it. <b class="y">Change the data and you change the mind.</b></div>
+        <p class="hint rise" style="--i:3" id="mdHint">Press → to swap the brain for a model.</p>
+      </div>
+      <div class="stack rise" style="--i:2;gap:12px">
+        <div class="stage-box" style="height:600px"><canvas id="mdCv"></canvas></div>
+        <p class="mono" id="mdCap" style="font-size:18px;color:var(--mute);text-align:center;min-height:26px"></p>
+      </div>
     </div>
   </section>
 

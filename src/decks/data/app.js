@@ -750,6 +750,60 @@ $("probGrid").innerHTML=[
   A.imglab={ enter(){ lab="car"; labels(); reset(); } };
 })();
 
+/* ---------- data shapes the mind: emojis flow into a brain, which becomes a model ---------- */
+(() => {
+  const cv=$("mdCv");
+  const EM=[["🐶","dog"],["🐱","cat"],["🍎","apple"],["🚗","car"],["🌳","tree"],["🎵","music"],["⚽","ball"],["🍕","pizza"],["🏠","house"],["✈️","plane"],["🐦","bird"],["🌧️","rain"],["📚","books"],["😀","happy"]];
+  const EF=s=>`${s}px "Segoe UI Emoji","Apple Color Emoji","Noto Color Emoji",sans-serif`;
+  const LAYERS=[4,6,6,3];
+  let P=[], OUT=[], FL=[], spawn=0, seen=0, m=0, target=0, NODES=[], DOTS=[], geo=null;
+  function layout(W,H){ const cx=W*.5, cy=H*.5, R=Math.min(W,H)*.25;
+    if(geo&&geo.W===W&&geo.H===H) return geo;
+    const r=srand(11); DOTS=Array.from({length:46},()=>{ const a=r()*Math.PI*2, d=Math.sqrt(r()); return [cx+Math.cos(a)*d*R*.78, cy-R*.08+Math.sin(a)*d*R*.55]; });
+    NODES=LAYERS.map((n,li)=>Array.from({length:n},(_,i)=>[cx-R*.95+li*(R*1.9/(LAYERS.length-1)), cy+(i-(n-1)/2)*(R*.36)]));
+    return geo={W,H,cx,cy,R}; }
+  function caption(){ $("mdCap").textContent=target?"A model: every example nudges its weights.":"Your brain: every experience nudges its connections."; }
+  function set(t){ target=t; $("mdHuman").classList.toggle("on",!t); $("mdML").classList.toggle("on",!!t); $("mdIdea").classList.toggle("on",!!t); $("mdHint").style.visibility=t?"hidden":""; caption(); }
+  function flash(){ if(m<.5){ const a=(Math.random()*DOTS.length)|0; const near=DOTS.map((d,i)=>[Math.hypot(d[0]-DOTS[a][0],d[1]-DOTS[a][1]),i]).sort((p,q)=>p[0]-q[0]).slice(1,4).map(p=>p[1]); FL.push({k:"b",a,near,t:0}); }
+    else FL.push({k:"m",path:LAYERS.map(n=>(Math.random()*n)|0),t:0}); }
+  A.mind={
+    enter(){ P=[]; OUT=[]; FL=[]; seen=0; spawn=0; m=0; set(0); },
+    step(){ if(!target){ set(1); return true; } return false; },
+    back(){ if(target){ set(0); return true; } return false; },
+    tick(dt){ const W=cv.offsetWidth, H=cv.offsetHeight, x=ctxOf(cv), g=layout(W,H), {cx,cy,R}=g;
+      m+=(target-m)*Math.min(1,dt/350);
+      x.clearRect(0,0,W,H);
+      label(x,"DATA IN",24,36,MUTE,15);
+      label(x,m<.5?"BRAIN":"MODEL",cx,36,Y,15,"center");
+      label(x,m<.5?"WHAT IT KNOWS":"PREDICTIONS",W-24,36,MUTE,15,"right");
+      // incoming emojis
+      spawn+=dt; while(spawn>120){ spawn-=120; const e=pick(EM), y0=rnd(H*.14,H*.86); P.push({e,y0,k:0,sp:rnd(.00034,.00048),cy:rnd(-H*.12,H*.12)}); }
+      P=P.filter(p=>{ p.k+=p.sp*dt; if(p.k>=1){ seen++; flash(); const free=[0,1,2,3,4].filter(i=>!OUT.some(o=>o.slot===i)); if(free.length&&Math.random()<.5){ const sl=pick(free); OUT.push({w:p.e[1],slot:sl,y:cy+(sl-2)*R*.3,t:0,conf:Math.round(rnd(84,99))}); } return false; }
+        const t=ease(p.k), sx=-30, ex=lerp(cx-R*.15,cx-R*1.05,m), c1x=W*.22;
+        const px=(1-t)*(1-t)*sx+2*(1-t)*t*c1x+t*t*ex, py=(1-t)*(1-t)*p.y0+2*(1-t)*t*(p.y0+p.cy)+t*t*cy;
+        const sz=48*(1-Math.max(0,t-.6)*1.6); x.globalAlpha=Math.min(1,p.k*6)*(t>.82?(1-t)/.18:1);
+        x.font=EF(Math.max(8,sz)); x.textAlign="center"; x.textBaseline="middle"; x.fillText(p.e[0],px,py); x.globalAlpha=1; return true; });
+      x.textBaseline="alphabetic"; x.textAlign="left";
+      // the brain (fades out) and the network (fades in)
+      if(m<.99){ x.globalAlpha=1-m; x.font=EF(R*2); x.textAlign="center"; x.textBaseline="middle"; x.fillText("🧠",cx,cy); x.textBaseline="alphabetic"; x.textAlign="left";
+        x.fillStyle="rgba(255,194,14,.5)"; DOTS.forEach(d=>{ x.beginPath(); x.arc(d[0],d[1],2.2,0,7); x.fill(); }); x.globalAlpha=1; }
+      if(m>.01){ x.globalAlpha=m; x.strokeStyle="rgba(155,152,143,.22)"; x.lineWidth=1;
+        for(let l=0;l<NODES.length-1;l++) for(const a of NODES[l]) for(const b of NODES[l+1]){ x.beginPath(); x.moveTo(a[0],a[1]); x.lineTo(b[0],b[1]); x.stroke(); }
+        NODES.forEach((L,li)=>L.forEach(n=>dot(x,n[0],n[1],11,"#1c1c20",li===0?BLUE:li===NODES.length-1?PURPLE:Y))); x.globalAlpha=1; }
+      // flashes: new connections lighting up
+      FL=FL.filter(f=>{ f.t+=dt; const a=1-f.t/700; if(a<=0) return false;
+        x.strokeStyle=`rgba(255,194,14,${a})`; x.lineWidth=3; x.shadowColor=Y; x.shadowBlur=12*a;
+        if(f.k==="b"){ if(m<.5){ const A0=DOTS[f.a]; f.near.forEach(i=>{ x.beginPath(); x.moveTo(A0[0],A0[1]); x.lineTo(DOTS[i][0],DOTS[i][1]); x.stroke(); }); dot(x,A0[0],A0[1],5,`rgba(255,194,14,${a})`); } }
+        else if(m>.5){ for(let l=0;l<NODES.length-1;l++){ const p=NODES[l][f.path[l]], q=NODES[l+1][f.path[l+1]]; x.beginPath(); x.moveTo(p[0],p[1]); x.lineTo(q[0],q[1]); x.stroke(); } f.path.forEach((ni,l)=>dot(x,NODES[l][ni][0],NODES[l][ni][1],6,`rgba(255,194,14,${a})`)); }
+        x.shadowBlur=0; return true; });
+      // what comes out
+      OUT=OUT.filter(o=>{ o.t+=dt; const k=o.t/1800; if(k>=1) return false; const ox=cx+R*1.02+k*70, al=k<.15?k/.15:k>.7?(1-k)/.3:1;
+        x.globalAlpha=al; label(x,m<.5?`“${o.w}!”`:`${o.w} · ${o.conf}%`,ox,o.y,m<.5?INK:Y,18); x.globalAlpha=1; return true; });
+      label(x,`examples seen: ${seen.toLocaleString()}`,24,H-22,MUTE,15);
+    }
+  };
+})();
+
 /* ---------- be the annotator ---------- */
 (() => {
   const RV=[["This game is absolutely amazing!","p"],["The controls are terrible and frustrating.","n"],["The game was released yesterday.","u"],["I love the graphics and soundtrack!","p"],["The game crashes every time I start it.","n"],["The game supports four players.","u"],["Best game I've played all year!","p"],["The loading times are way too long.","n"],["The game is available on PC and Xbox.","u"],["The story was boring and disappointing.","n"]];
