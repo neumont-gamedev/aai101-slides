@@ -237,6 +237,12 @@
   .roles .ks{font-size:16px;color:#c9c6be;border-top:1px solid var(--line);padding-top:10px;line-height:1.45}
   .roles .ks b{font-family:var(--mono);font-size:13px;letter-spacing:.08em;color:var(--mute);display:block;margin-bottom:4px}
 
+  /* image labeling */
+  .ilLabels{display:flex;flex-wrap:wrap;gap:8px}
+  .ilLabels button{display:inline-flex;align-items:center;gap:8px;background:var(--panel2);border:1px solid var(--line);color:var(--ink);font:500 17px var(--sans);padding:7px 14px;border-radius:999px;cursor:pointer}
+  .ilLabels button i{width:12px;height:12px;border-radius:3px;display:inline-block}
+  .ilLabels button.on{border-color:var(--y);box-shadow:0 0 0 2px rgba(255,194,14,.35)}
+  .ilBox svg{cursor:crosshair;touch-action:none;user-select:none}
   /* annotation */
   .senti{display:grid;grid-template-columns:repeat(3,1fr);gap:16px}
   .senti .card{padding:20px;display:flex;flex-direction:column;gap:12px;align-items:center;text-align:center}
@@ -684,6 +690,27 @@
         <div style="display:flex;gap:12px;align-items:center"><span class="hint" id="anCount">0 / 10 labeled</span><button class="btn on" id="anCheck">Compare to key</button><button class="btn" id="anReset">Reset</button></div></div>
       <div class="card rise" style="--i:1;padding:6px 8px" id="anList"></div>
       <div class="callout rise" style="--i:2" id="anNote">Label every review. Do your answers match your neighbor’s? Annotators disagree, and that disagreement ends up in the data.</div>
+    </div>
+  </section>
+
+  <!-- image labeling activity -->
+  <section class="slide" data-id="imglab">
+    <div class="two" style="grid-template-columns:.62fr 1.38fr;gap:40px;align-items:start">
+      <div class="stack" style="gap:16px">
+        <h2 class="rise" style="--i:0"><span class="n">YOUR TURN · IMAGES</span>Label an image</h2>
+        <p class="rise" style="--i:1;font-size:21px">Object detection models learn from images where people drew a <b class="y">box</b> around every object and named it. Pick a label, then drag on the picture to box each one.</p>
+        <div class="ilLabels rise" style="--i:2" id="ilLabels"></div>
+        <div class="rise" style="--i:3;display:flex;gap:10px;flex-wrap:wrap"><button class="btn on" id="ilCheck">Compare with expert</button><button class="btn" id="ilUndo">Undo</button><button class="btn" id="ilClear">Clear</button></div>
+        <div class="callout rise" style="--i:4;font-size:19px" id="ilNote">6 objects to find. Boxes should fit tightly around each one.</div>
+        <div class="rise" style="--i:5;display:flex;flex-direction:column;gap:10px;align-items:flex-start">
+          <span class="hint">Real annotation tools:</span>
+          <div style="display:flex;gap:10px;flex-wrap:wrap"><a class="linkchip" href="https://www.cvat.ai/" target="_blank" rel="noopener">CVAT</a><a class="linkchip" href="https://labelstud.io/" target="_blank" rel="noopener">Label Studio</a></div>
+        </div>
+      </div>
+      <div class="rise" style="--i:2">
+        <div class="stage-box ilBox" style="height:auto;aspect-ratio:900/560"><svg id="ilSvg" viewBox="0 0 900 560"></svg></div>
+        <div class="hint" id="ilStat" style="margin-top:10px;min-height:24px">0 boxes drawn</div>
+      </div>
     </div>
   </section>
 
