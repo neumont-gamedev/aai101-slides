@@ -701,31 +701,6 @@
     </div>
   </section>
 
-  <!-- why charts -->
-  <section class="slide" data-id="vizwhy">
-    <div class="two" style="grid-template-columns:.8fr 1.2fr;gap:50px">
-      <div class="stack" style="gap:20px">
-        <h2 class="rise" style="--i:0"><span class="n">DATA VISUALIZATION</span>Why charts?</h2>
-        <p class="rise" style="--i:1">Charts turn numbers into visual patterns. Trends, comparisons and sudden changes jump out that are hard to see in a raw table.</p>
-        <div class="callout rise" style="--i:2">Quick: in which month did sales drop the most? Look at the table first, then switch to the chart.</div>
-        <div class="tabs rise" style="--i:3" id="vzTabs"><button class="on" data-k="t">Table</button><button data-k="c">Chart</button></div>
-      </div>
-      <div class="card rise viz" style="--i:2;padding:20px">
-        <div id="vzTable" style="padding:20px"><table class="dt" id="vzTbl" style="font-size:20px"></table></div>
-        <svg id="vzChart" class="off" viewBox="0 0 860 400"></svg>
-      </div>
-    </div>
-  </section>
-
-  <!-- chart types -->
-  <section class="slide" data-id="charts">
-    <div class="stack" style="gap:18px">
-      <h2 class="rise" style="--i:0"><span class="n">PICK THE RIGHT ONE</span>Chart types</h2>
-      <div class="cgrid rise" style="--i:1" id="cgGrid"></div>
-      <div class="card cinfo rise" style="--i:2" id="cgInfo"></div>
-    </div>
-  </section>
-
   <!-- mean median mode -->
   <section class="slide" data-id="center">
     <div class="stack" style="gap:18px">
@@ -967,6 +942,31 @@
     </div>
   </section>
 
+  <!-- why charts -->
+  <section class="slide" data-id="vizwhy">
+    <div class="two" style="grid-template-columns:.8fr 1.2fr;gap:50px">
+      <div class="stack" style="gap:20px">
+        <h2 class="rise" style="--i:0"><span class="n">DATA VISUALIZATION</span>Why charts?</h2>
+        <p class="rise" style="--i:1">Charts turn numbers into visual patterns. Trends, comparisons and sudden changes jump out that are hard to see in a raw table.</p>
+        <div class="callout rise" style="--i:2">Quick: in which month did sales drop the most? Look at the table first, then switch to the chart.</div>
+        <div class="tabs rise" style="--i:3" id="vzTabs"><button class="on" data-k="t">Table</button><button data-k="c">Chart</button></div>
+      </div>
+      <div class="card rise viz" style="--i:2;padding:20px">
+        <div id="vzTable" style="padding:20px"><table class="dt" id="vzTbl" style="font-size:20px"></table></div>
+        <svg id="vzChart" class="off" viewBox="0 0 860 400"></svg>
+      </div>
+    </div>
+  </section>
+
+  <!-- chart types -->
+  <section class="slide" data-id="charts">
+    <div class="stack" style="gap:18px">
+      <h2 class="rise" style="--i:0"><span class="n">PICK THE RIGHT ONE</span>Chart types</h2>
+      <div class="cgrid rise" style="--i:1" id="cgGrid"></div>
+      <div class="card cinfo rise" style="--i:2" id="cgInfo"></div>
+    </div>
+  </section>
+
   <!-- recap -->
   <section class="slide" data-id="recap">
     <canvas class="bg" id="bgRecap"></canvas>
@@ -978,7 +978,7 @@
     </div>
   </section>
 
-  <div id="chrome"><span class="sp"></span><button class="nbtn" id="prev" aria-label="Previous">←</button><span class="ver" style="font-size:12px;opacity:.6;margin-right:8px">updated Nov 17, 11:37 AM</span><span id="count"></span><button class="nbtn" id="next" aria-label="Next">→</button><button class="nbtn" id="fs" aria-label="Fullscreen" title="Fullscreen (F)">⤢</button></div>
+  <div id="chrome"><span class="sp"></span><button class="nbtn" id="prev" aria-label="Previous">←</button><span class="ver" style="font-size:12px;opacity:.6;margin-right:8px">updated Nov 17, 11:42 AM</span><span id="count"></span><button class="nbtn" id="next" aria-label="Next">→</button><button class="nbtn" id="fs" aria-label="Fullscreen" title="Fullscreen (F)">⤢</button></div>
   <div id="progress"></div>
   <div id="livewrap"><span id="liveauth"></span><div id="livebar"></div></div>
   <div id="toast" role="status"></div>
@@ -1056,7 +1056,7 @@ function rain(id){
   };
 }
 A.oil=rain("bgOil"); A.recap=rain("bgRecap");
-$("rcChips").innerHTML=["structured","unstructured","dataset","feature","label","data type","supervised","regression","classification","unsupervised","annotation","EDA","visualization","mean · median · mode","data cleaning","imputation","encoding","feature engineering","train / test split","bias"]
+$("rcChips").innerHTML=["structured","unstructured","dataset","feature","label","data type","supervised","regression","classification","unsupervised","annotation","EDA","mean · median · mode","data cleaning","imputation","encoding","feature engineering","train / test split","bias","visualization"]
   .map(t=>`<span class="tag t-y" style="font-size:20px;padding:8px 16px">${t}</span>`).join("");
 
 /* ---------- dataset term: a faint csv behind the word ---------- */
