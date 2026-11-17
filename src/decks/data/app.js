@@ -400,22 +400,33 @@ $("tbg1").textContent=["id,sq_ft,beds,pool,price","1,1500,3,1,267","2,1600,3,0,2
     step(){ if(s>=2) return false; s++; clear(); if(s===1){ t.querySelectorAll('[data-c="4"]').forEach(x=>x.classList.add("hF")); $("stHint").innerHTML=`column <b style="color:var(--blue)">Age</b> = one <b style="color:var(--blue)">feature</b>`; } else { t.querySelectorAll('tr[data-r="2"] td').forEach(x=>x.classList.add("hL")); $("stHint").innerHTML=`row 3 = one <b class="y">instance</b>: one employee`; } return true; } };
 })();
 
-/* ---------- structured or unstructured? sorter ---------- */
+/* ---------- structured or unstructured? slide each card left or right ---------- */
 (() => {
   const ITEMS=[["📊","Spreadsheet of sales","S"],["🤳","A selfie","U"],["🎙️","Voice memo","U"],["🗃️","Customer database table","S"],["💬","A social media post","U"],["📹","Security camera video","U"],["🌡️","CSV of daily temperatures","S"],["✉️","An email","U"],["🏦","Bank transaction records","S"],["🩻","An X-ray image","U"]];
-  let sel=null, placed={};
-  function render(){
-    $("srtItems").innerHTML=ITEMS.map((it,i)=>placed[i]?"":`<span class="chipx ${sel===i?"sel":""}" data-i="${i}"><span class="e">${it[0]}</span>${it[1]}</span>`).join("")||`<span class="hint">all sorted</span>`;
-    document.querySelectorAll('[data-id="unstructured"] .bin').forEach(b=>{ const k=b.dataset.b; const ids=Object.keys(placed).filter(i=>placed[i]===k);
-      b.querySelector(".in").innerHTML=ids.map(i=>`<span class="chipx ${ITEMS[i][2]===k?"right":"wrong"}"><span class="e">${ITEMS[i][0]}</span>${ITEMS[i][1]}</span>`).join(""); $("srt"+k).textContent=ids.length; });
+  const list=$("swList"); let placed={};
+  list.innerHTML=ITEMS.map((it,i)=>`<div class="swRow" data-i="${i}"><span class="swZ l">◀ structured</span><span class="swZ r">unstructured ▶</span><div class="swCard"><span class="e">${it[0]}</span><span class="t">${it[1]}</span><span class="mk"></span></div></div>`).join("");
+  const rows=[...list.querySelectorAll(".swRow")];
+  const span=r=>(r.offsetWidth-r.querySelector(".swCard").offsetWidth)/2;   // how far a card can slide each way
+  function place(i,dx,anim){ const c=rows[i].querySelector(".swCard"); c.style.transition=anim?"transform .3s cubic-bezier(.2,.7,.2,1),border-color .2s,background .2s":"none"; c.style.transform=`translateX(${dx}px)`; }
+  function render(){ rows.forEach((r,i)=>{ const k=placed[i], c=r.querySelector(".swCard"), ok=k&&ITEMS[i][2]===k;
+      c.classList.toggle("S",k==="S"); c.classList.toggle("U",k==="U"); c.classList.toggle("right",!!ok); c.classList.toggle("wrong",!!k&&!ok);
+      c.querySelector(".mk").textContent=k?(ok?"✓":"✗"):"";
+      place(i,k==="S"?-span(r):k==="U"?span(r):0,true); });
     const n=Object.keys(placed).length, ok=Object.keys(placed).filter(i=>ITEMS[i][2]===placed[i]).length;
-    $("srtMsg").innerHTML=n===ITEMS.length?`<span class="${ok===n?"y":""}">${ok} / ${n} correct${ok===n?" ✓":""}</span>`:n?`<span class="muted">${ok} / ${n} correct so far</span>`:"";
-  }
-  $("srtItems").onclick=e=>{ const c=e.target.closest(".chipx"); if(!c) return; sel=+c.dataset.i; render(); };
-  document.querySelectorAll('[data-id="unstructured"] .bin').forEach(b=>b.onclick=()=>{ if(sel===null) return; placed[sel]=b.dataset.b; sel=null; render(); });
-  $("srtReset").onclick=()=>{ placed={}; sel=null; render(); };
-  render();
-  A.unstructured={ enter(){} };
+    $("swMsg").innerHTML=n===ITEMS.length?`<span class="${ok===n?"y":""}">${ok} / ${n} correct${ok===n?" ✓":""}</span>`:n?`<span class="muted">${n} sorted · ${ok} correct</span>`:`<span class="muted">0 / ${ITEMS.length} sorted</span>`; }
+  rows.forEach((r,i)=>{ const c=r.querySelector(".swCard"); let d=null;
+    c.addEventListener("pointerdown",e=>{ const k=c.getBoundingClientRect().width/c.offsetWidth; const m=/translateX\((-?[\d.]+)px\)/.exec(c.style.transform);
+      d={x0:e.clientX,dx0:m?+m[1]:0,k,moved:false}; try{ c.setPointerCapture(e.pointerId); }catch(err){} c.classList.add("drag"); });
+    c.addEventListener("pointermove",e=>{ if(!d) return; const dx=clamp(d.dx0+(e.clientX-d.x0)/d.k,-span(r),span(r)); if(Math.abs(e.clientX-d.x0)>4) d.moved=true; place(i,dx,false);
+      r.classList.toggle("toS",dx<-span(r)*.35); r.classList.toggle("toU",dx>span(r)*.35); });
+    const end=e=>{ if(!d) return; const m=/translateX\((-?[\d.]+)px\)/.exec(c.style.transform), dx=m?+m[1]:0, s=span(r); c.classList.remove("drag"); r.classList.remove("toS","toU");
+      if(d.moved){ if(dx<-s*.35) placed[i]="S"; else if(dx>s*.35) placed[i]="U"; else delete placed[i]; } d=null; render(); };
+    c.addEventListener("pointerup",end); c.addEventListener("pointercancel",end);
+    // clicking the empty side of a row also sorts the card that way
+    r.addEventListener("click",e=>{ if(e.target.closest(".swCard")) return; const b=r.getBoundingClientRect(); placed[i]=e.clientX<b.left+b.width/2?"S":"U"; render(); });
+  });
+  $("swReset").onclick=()=>{ placed={}; render(); };
+  A.unstructured={ enter(){ requestAnimationFrame(render); } };
 })();
 
 /* ---------- features & labels ---------- */
@@ -1010,7 +1021,7 @@ addEventListener("keydown",e=>{
   else if(k==="Home") go(0); else if(k==="End") go(slides.length-1);
   else if(k==="f"||k==="F") toggleFS();
 });
-let sx=null; stage.addEventListener("touchstart",e=>{ if(e.target.closest("input,button,.switch,.chipx,.bin,.tchip,svg,canvas,table")) return; sx=e.touches[0].clientX; },{passive:true});
+let sx=null; stage.addEventListener("touchstart",e=>{ if(e.target.closest("input,button,.switch,.chipx,.bin,.tchip,.swRow,svg,canvas,table")) return; sx=e.touches[0].clientX; },{passive:true});
 stage.addEventListener("touchend",e=>{ if(sx===null) return; const dx=e.changedTouches[0].clientX-sx; if(Math.abs(dx)>60) (dx<0?advance:retreat)(); sx=null; });
 addEventListener("resize",fitStage);
 fitStage(); fromHash(); claudeAdapter();

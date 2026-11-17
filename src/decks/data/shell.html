@@ -252,6 +252,21 @@
   .mdRow div>b{font-size:22px}
   .mdRow span{font-family:var(--mono);font-size:17px;color:var(--mute)}
   .mdRow span b{color:var(--y)}
+  /* structured / unstructured swipe sorter */
+  .swHead{display:flex;justify-content:space-between;font-family:var(--mono);font-size:16px;letter-spacing:.08em;padding:0 6px}
+  .swList{display:flex;flex-direction:column;gap:7px}
+  .swRow{position:relative;height:52px;border-radius:12px;background:#17171a;border:1px dashed var(--line);cursor:pointer;transition:background .2s}
+  .swRow.toS{background:rgba(106,184,255,.1)} .swRow.toU{background:rgba(255,138,31,.1)}
+  .swZ{position:absolute;top:50%;transform:translateY(-50%);font-family:var(--mono);font-size:13px;color:#5d5a55;pointer-events:none}
+  .swZ.l{left:14px} .swZ.r{right:14px}
+  .swCard{position:absolute;top:3px;bottom:3px;left:23%;width:54%;display:flex;align-items:center;gap:10px;padding:0 14px;border-radius:10px;background:var(--panel2);border:2px solid var(--line);font-size:19px;cursor:grab;touch-action:none;user-select:none;z-index:1}
+  .swCard.drag{cursor:grabbing;border-color:var(--y);box-shadow:0 8px 24px rgba(0,0,0,.45)}
+  .swCard .e{font-size:22px}
+  .swCard .t{flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .swCard .mk{font-weight:700;font-size:20px}
+  .swCard.S{background:rgba(106,184,255,.12)} .swCard.U{background:rgba(255,138,31,.12)}
+  .swCard.right{border-color:var(--green)} .swCard.right .mk{color:var(--green)}
+  .swCard.wrong{border-color:var(--red)} .swCard.wrong .mk{color:var(--red)}
   /* annotation */
   .senti{display:grid;grid-template-columns:repeat(3,1fr);gap:16px}
   .senti .card{padding:20px;display:flex;flex-direction:column;gap:12px;align-items:center;text-align:center}
@@ -542,20 +557,17 @@
 
   <!-- unstructured + sorter -->
   <section class="slide" data-id="unstructured">
-    <div class="two" style="grid-template-columns:.9fr 1.1fr;gap:56px">
+    <div class="two" style="grid-template-columns:.8fr 1.2fr;gap:50px">
       <div class="stack" style="gap:20px">
         <h2 class="rise" style="--i:0"><span class="n">TERMINOLOGY</span>Unstructured data</h2>
         <p class="rise" style="--i:1">Data that doesn’t fit neatly into rows and columns: <b>text, images, audio, video</b>. Deep learning models are built to pull patterns out of it.</p>
         <div class="callout rise" style="--i:2">Most of the world’s data is unstructured: photos, messages, recordings.</div>
-        <p class="hint rise" style="--i:3">Click an item, then click the bin it belongs in.</p>
+        <p class="hint rise" style="--i:3">Slide each item <b style="color:var(--blue)">left</b> if it’s structured, <b style="color:var(--amber)">right</b> if it’s unstructured.</p>
       </div>
-      <div class="stack rise" style="--i:2;gap:18px">
-        <div class="sortItems" id="srtItems"></div>
-        <div class="bins">
-          <div class="bin card" data-b="S"><h3>Structured <span class="hint" id="srtS">0</span></h3><div class="in"></div></div>
-          <div class="bin card" data-b="U"><h3>Unstructured <span class="hint" id="srtU">0</span></h3><div class="in"></div></div>
-        </div>
-        <div style="display:flex;gap:14px;align-items:center"><span class="status" id="srtMsg" style="font-size:22px"></span><span class="sp" style="flex:1"></span><button class="btn" id="srtReset">Reset</button></div>
+      <div class="stack rise" style="--i:2;gap:10px">
+        <div class="swHead"><span style="color:var(--blue)">◀ STRUCTURED</span><span style="color:var(--amber)">UNSTRUCTURED ▶</span></div>
+        <div class="swList" id="swList"></div>
+        <div style="display:flex;gap:14px;align-items:center;margin-top:4px"><span class="status" id="swMsg" style="font-size:22px"></span><span class="sp" style="flex:1"></span><button class="btn" id="swReset">Reset</button></div>
       </div>
     </div>
   </section>
