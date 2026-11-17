@@ -70,7 +70,7 @@ function rain(id){
   };
 }
 A.oil=rain("bgOil"); A.recap=rain("bgRecap");
-$("rcChips").innerHTML=["structured","unstructured","dataset","feature","label","data type","annotation","supervised","regression","classification","unsupervised","EDA","visualization","mean · median · mode","data cleaning","imputation","encoding","feature engineering","train / test split","bias"]
+$("rcChips").innerHTML=["structured","unstructured","dataset","feature","label","data type","supervised","regression","classification","unsupervised","annotation","EDA","visualization","mean · median · mode","data cleaning","imputation","encoding","feature engineering","train / test split","bias"]
   .map(t=>`<span class="tag t-y" style="font-size:20px;padding:8px 16px">${t}</span>`).join("");
 
 /* ---------- dataset term: a faint csv behind the word ---------- */
