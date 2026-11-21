@@ -332,6 +332,24 @@
     </div>
   </section>
 
+  <!-- warm-up: cannon game, learning from misses -->
+  <section class="slide" data-id="cannon">
+    <div class="two" style="grid-template-columns:.78fr 1.22fr;gap:44px">
+      <div class="stack" style="gap:18px">
+        <h2 class="rise" style="--i:0"><span class="n">WARM-UP</span>Hit the <span class="y">target</span></h2>
+        <p class="rise" style="--i:1">Set the angle and power, then fire. Missed? Look at <b>how far off</b> you were, adjust, and try again.</p>
+        <div class="card pad rise ctls" style="--i:2">
+          <div class="ctl"><span>angle</span><input type="range" id="cnA" min="10" max="80" step="1" value="45"><b id="cnAv">45°</b></div>
+          <div class="ctl"><span>power</span><input type="range" id="cnP" min="0" max="100" step="1" value="50"><b id="cnPv">50</b></div>
+          <div class="row"><button class="btn on" id="cnFire">Fire!</button><button class="btn" id="cnAI">Let the AI learn</button><button class="btn" id="cnNew">New target</button></div>
+        </div>
+        <div class="card pad rise" style="--i:3;font-size:22px;line-height:1.45;min-height:96px" id="cnMsg">No shots yet. Take your best guess.</div>
+        <div class="callout keyIdea" id="cnIdea">That’s machine learning: <b>guess → measure the error → adjust → repeat</b>. A model does this thousands of times, nudging its numbers a little after every miss.</div>
+      </div>
+      <div class="stage-box rise" style="--i:2;height:680px"><canvas id="cnCv"></canvas></div>
+    </div>
+  </section>
+
   <!-- ai > ml > dl -->
   <section class="slide" data-id="nest" style="cursor:pointer">
     <div class="two" style="grid-template-columns:1fr .95fr;gap:50px">

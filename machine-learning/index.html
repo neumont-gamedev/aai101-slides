@@ -333,6 +333,24 @@
     </div>
   </section>
 
+  <!-- warm-up: cannon game, learning from misses -->
+  <section class="slide" data-id="cannon">
+    <div class="two" style="grid-template-columns:.78fr 1.22fr;gap:44px">
+      <div class="stack" style="gap:18px">
+        <h2 class="rise" style="--i:0"><span class="n">WARM-UP</span>Hit the <span class="y">target</span></h2>
+        <p class="rise" style="--i:1">Set the angle and power, then fire. Missed? Look at <b>how far off</b> you were, adjust, and try again.</p>
+        <div class="card pad rise ctls" style="--i:2">
+          <div class="ctl"><span>angle</span><input type="range" id="cnA" min="10" max="80" step="1" value="45"><b id="cnAv">45°</b></div>
+          <div class="ctl"><span>power</span><input type="range" id="cnP" min="0" max="100" step="1" value="50"><b id="cnPv">50</b></div>
+          <div class="row"><button class="btn on" id="cnFire">Fire!</button><button class="btn" id="cnAI">Let the AI learn</button><button class="btn" id="cnNew">New target</button></div>
+        </div>
+        <div class="card pad rise" style="--i:3;font-size:22px;line-height:1.45;min-height:96px" id="cnMsg">No shots yet. Take your best guess.</div>
+        <div class="callout keyIdea" id="cnIdea">That’s machine learning: <b>guess → measure the error → adjust → repeat</b>. A model does this thousands of times, nudging its numbers a little after every miss.</div>
+      </div>
+      <div class="stage-box rise" style="--i:2;height:680px"><canvas id="cnCv"></canvas></div>
+    </div>
+  </section>
+
   <!-- ai > ml > dl -->
   <section class="slide" data-id="nest" style="cursor:pointer">
     <div class="two" style="grid-template-columns:1fr .95fr;gap:50px">
@@ -988,7 +1006,7 @@ X_train, X_test, y_train, y_test = <span class="fn">train_test_split</span>(X, y
     </div>
   </section>
 
-  <div id="chrome"><span class="sp"></span><button class="nbtn" id="prev" aria-label="Previous">←</button><span class="ver" style="font-size:12px;opacity:.6;margin-right:8px">updated Nov 21, 12:21 PM</span><span id="count"></span><button class="nbtn" id="next" aria-label="Next">→</button><button class="nbtn" id="fs" aria-label="Fullscreen" title="Fullscreen (F)">⤢</button></div>
+  <div id="chrome"><span class="sp"></span><button class="nbtn" id="prev" aria-label="Previous">←</button><span class="ver" style="font-size:12px;opacity:.6;margin-right:8px">updated Nov 21, 12:35 PM</span><span id="count"></span><button class="nbtn" id="next" aria-label="Next">→</button><button class="nbtn" id="fs" aria-label="Fullscreen" title="Fullscreen (F)">⤢</button></div>
   <div id="progress"></div>
   <div id="livewrap"><span id="liveauth"></span><div id="livebar"></div></div>
   <div id="toast" role="status"></div>
@@ -1086,6 +1104,83 @@ function clusterBg(id){
 A.title=clusterBg("bgML"); A.recap=clusterBg("bgRecap");
 $("rcChips").innerHTML=["model","supervised","regression","linear regression","y = mx + b","multiple regression","classification","logistic regression","sigmoid","k-NN","decision tree","unsupervised","k-means","training","inference","train · validation · test","error","loss","MAE · MSE · RMSE","generalization","underfitting","overfitting","bias","variance"]
   .map(t=>`<span class="tag t-y" style="font-size:20px;padding:8px 16px">${t}</span>`).join("");
+
+/* ---------- warm-up cannon: learn from each miss ---------- */
+(() => {
+  const cv=$("cnCv"), G=9.8, V=p=>10+p*.25, HIT=3, LIFT=16;
+  let ang=45, pow=50, tx=78, shots=[], ball=null, boom=[], ai=false, hit=false, aiTimer=null;
+  const geo=()=>{ const W=cv.offsetWidth, H=cv.offsetHeight, gy=H-60, x0=64, ppm=(W-x0-30)/125;
+    return {W,H,gy,x0,ppm,X:m=>x0+m*ppm,Yp:m=>gy-LIFT-m*ppm}; };
+  function sync(){ $("cnA").value=ang; $("cnP").value=Math.round(pow); $("cnAv").textContent=ang+"°"; $("cnPv").textContent=Math.round(pow);
+    $("cnFire").disabled=!!ball||ai; $("cnAI").disabled=!!ball||ai; $("cnAI").classList.toggle("on",ai); }
+  function msg(h){ $("cnMsg").innerHTML=h; }
+  function fire(byAI){ if(ball) return; const v=V(pow), a=ang*Math.PI/180;
+    ball={t:0,vx:v*Math.cos(a),vy:v*Math.sin(a),path:[],ai:byAI,a:ang,p:Math.round(pow)}; sync(); }
+  function land(x){
+    const b=ball, err=x-tx, h=Math.abs(err)<=HIT, n=shots.length+1;
+    shots.push({x,err,ai:b.ai,path:b.path,hit:h}); ball=null;
+    const who=b.ai?'<span style="color:var(--blue)">AI</span> shot':"Shot";
+    if(h){ hit=true; ai=false;
+      const r=geo(); boom=Array.from({length:40},()=>({x:r.X(x),y:r.Yp(0),vx:rnd(-4,4),vy:rnd(-7,-2),l:1}));
+      msg(`<b style="color:var(--green)">HIT!</b> ${who} ${n} landed ${Math.abs(err).toFixed(1)} m from the center. It took <b class="y">${n} ${n===1?"try":"tries"}</b>.`);
+      $("cnIdea").classList.add("on"); }
+    else {
+      msg(`${who} ${n} (angle ${b.a}°, power ${b.p}): <b style="color:${err<0?"var(--amber)":"var(--red)"}">${Math.abs(err).toFixed(1)} m ${err<0?"short":"long"}</b><br><span class="muted" style="font-size:18px">error = ${err>0?"+":"−"}${Math.abs(err).toFixed(1)} m → ${err<0?"more":"less"} power or a different angle?</span>`);
+      if(ai){ const aiN=shots.filter(s=>s.ai).length;
+        if(aiN>=15||(pow>=100&&err<0)){ ai=false; if(pow>=100&&err<0) msg($("cnMsg").innerHTML+'<br><span style="font-size:18px;color:var(--red)">Even full power can’t reach. Try a different angle.</span>'); }
+        else { pow=clamp(pow-err*.45,0,100); aiTimer=setTimeout(()=>{ aiTimer=null; fire(true); },500); } } }
+    sync(); }
+  $("cnA").oninput=e=>{ ang=+e.target.value; sync(); };
+  $("cnP").oninput=e=>{ pow=+e.target.value; sync(); };
+  $("cnFire").onclick=()=>fire(false);
+  $("cnAI").onclick=()=>{ if(ball) return; ai=true; hit=false; msg('<span style="color:var(--blue)">The AI keeps your angle and changes only the power, using each miss to decide how much.</span>'); sync(); fire(true); };
+  function reset(dist){ clearTimeout(aiTimer); aiTimer=null; shots=[]; ball=null; boom=[]; ai=false; hit=false; tx=dist;
+    msg("No shots yet. Take your best guess."); $("cnIdea").classList.remove("on"); sync(); }
+  $("cnNew").onclick=()=>reset(Math.round(rnd(45,110)));
+  A.cannon={
+    enter(){ ang=45; pow=50; reset(78); },
+    step(){ if($("cnIdea").classList.contains("on")) return false; $("cnIdea").classList.add("on"); return true; },
+    back(){ if(!$("cnIdea").classList.contains("on")) return false; $("cnIdea").classList.remove("on"); return true; },
+    tick(dt){
+      const r=geo(), x=ctxOf(cv); x.clearRect(0,0,r.W,r.H);
+      // flight (runs 2.2× real time)
+      if(ball){ ball.t+=dt/1000*2.2; const T=(ball.vy+Math.sqrt(ball.vy**2+2*G*LIFT/r.ppm))/G;
+        if(ball.t>=T){ ball.path.push([ball.vx*T,-LIFT/r.ppm]); land(ball.vx*T); }
+        else ball.path.push([ball.vx*ball.t,ball.vy*ball.t-G*ball.t*ball.t/2]); }
+      // ground + distance ticks
+      x.fillStyle="#17171b"; x.fillRect(0,r.gy,r.W,r.H-r.gy); x.strokeStyle="#55534d"; x.lineWidth=2; x.beginPath(); x.moveTo(0,r.gy); x.lineTo(r.W,r.gy); x.stroke();
+      for(let m=0;m<=120;m+=10){ x.strokeStyle="#55534d"; x.beginPath(); x.moveTo(r.X(m),r.gy); x.lineTo(r.X(m),r.gy+8); x.stroke(); label(x,m+" m",r.X(m),r.gy+28,MUTE,13,"center"); }
+      // target pad + flag
+      const tl=r.X(tx-HIT), tw=2*HIT*r.ppm;
+      for(let i=0;i<6;i++){ x.fillStyle=i%2?"#f3f1ea":RED; x.fillRect(tl+i*tw/6,r.gy-6,tw/6,6); }
+      x.strokeStyle=INK; x.lineWidth=2.5; x.beginPath(); x.moveTo(r.X(tx),r.gy-6); x.lineTo(r.X(tx),r.gy-70); x.stroke();
+      x.fillStyle=hit?GREEN:RED; x.beginPath(); x.moveTo(r.X(tx),r.gy-70); x.lineTo(r.X(tx)+30,r.gy-60); x.lineTo(r.X(tx),r.gy-50); x.closePath(); x.fill();
+      // earlier shots: faint arcs, landing marks and error labels
+      const path=(p,col,w,dash)=>{ x.save(); x.strokeStyle=col; x.lineWidth=w; x.setLineDash(dash||[]); x.beginPath(); p.forEach(([a,b],i)=>i?x.lineTo(r.X(a),r.Yp(b)):x.moveTo(r.X(a),r.Yp(b))); x.stroke(); x.restore(); };
+      shots.forEach((s,i)=>{ const last=i===shots.length-1, col=s.hit?GREEN:s.ai?BLUE:Y;
+        path(s.path,col,last?2.5:1.5,last?[]:[4,6]); x.globalAlpha=last?1:.35;
+        dot(x,r.X(s.x),r.gy-4,5,col);
+        if(last&&!s.hit){ dashed(x,r.X(s.x),r.gy-14,r.X(tx),r.gy-14,RED,2,[5,4]);
+          label(x,`${Math.abs(s.err).toFixed(1)} m ${s.err<0?"short":"long"}`,(r.X(s.x)+r.X(tx))/2,r.gy-24,RED,15,"center"); }
+        x.globalAlpha=1; });
+      // ball in flight
+      if(ball){ path(ball.path,ball.ai?BLUE:Y,2.5); const p=ball.path[ball.path.length-1]; if(p) dot(x,r.X(p[0]),r.Yp(p[1]),8,INK); }
+      // cannon
+      x.save(); x.translate(r.x0,r.gy-LIFT); x.rotate(-ang*Math.PI/180); x.fillStyle="#4a4a52"; x.strokeStyle=INK; x.lineWidth=2;
+      x.beginPath(); x.roundRect(-8,-10,58,20,6); x.fill(); x.stroke(); x.restore();
+      dot(x,r.x0,r.gy-12,14,"#24242a",INK); dot(x,r.x0,r.gy-12,4,INK);
+      // hit burst
+      boom=boom.filter(p=>{ p.x+=p.vx*dt/16; p.y+=p.vy*dt/16; p.vy+=.25*dt/16; p.l-=dt/1200; if(p.l<=0) return false; x.globalAlpha=p.l; dot(x,p.x,p.y,4,pick([Y,GREEN,INK])); x.globalAlpha=1; return true; });
+      if(hit) label(x,"HIT!",r.X(tx),r.gy-90,GREEN,30,"center","Space Grotesk");
+      // miss distance per shot: the learning curve
+      const bx=r.W-300, by=20, bw=280, bh=130; x.fillStyle="rgba(28,28,32,.92)"; x.strokeStyle=LINE; x.lineWidth=1; x.beginPath(); x.roundRect(bx,by,bw,bh,10); x.fill(); x.stroke();
+      label(x,"miss distance per shot",bx+12,by+22,MUTE,13);
+      if(!shots.length) label(x,"fire to start",bx+bw/2,by+80,"#55534d",14,"center");
+      const S=shots.slice(-14), mx=Math.max(20,...S.map(s=>Math.abs(s.err))), sw=(bw-24)/14;
+      S.forEach((s,i)=>{ const h=Math.max(3,Math.abs(s.err)/mx*(bh-46)); x.fillStyle=s.hit?GREEN:s.ai?BLUE:Y; x.fillRect(bx+12+i*sw+2,by+bh-12-h,sw-4,h); });
+    }
+  };
+})();
 
 /* ---------- ai > ml > dl ---------- */
 (() => {
