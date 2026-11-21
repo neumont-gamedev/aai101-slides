@@ -1,0 +1,999 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>AAI101 · Machine Learning</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;700&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#121214; --panel:#1c1c20; --panel2:#24242a; --line:#2e2e35;
+    --ink:#f3f1ea; --mute:#9b988f; --y:#ffc20e; --amber:#ff8a1f; --red:#ff5a4e; --green:#5fd68a; --blue:#6ab8ff;
+    --sans:"Space Grotesk",system-ui,-apple-system,"Segoe UI",sans-serif;
+    --mono:"JetBrains Mono",ui-monospace,Consolas,monospace;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  html,body{height:100%;background:#000;overflow:hidden;color:var(--ink);font-family:var(--sans)}
+  #stage{position:absolute;left:50%;top:50%;width:1600px;height:900px;background:var(--bg);overflow:hidden}
+
+  .slide{position:absolute;inset:0;padding:100px 110px 90px;opacity:0;visibility:hidden;transform:scale(1.015);
+    transition:opacity .6s ease,transform .8s cubic-bezier(.2,.7,.2,1),visibility 0s .6s}
+  .slide.active{opacity:1;visibility:visible;transform:none;transition:opacity .6s ease,transform .8s cubic-bezier(.2,.7,.2,1),visibility 0s}
+  .rise{opacity:0;transform:translateY(26px);transition:opacity .7s ease,transform .8s cubic-bezier(.2,.7,.2,1)}
+  .slide.active .rise{opacity:1;transform:none;transition-delay:calc(var(--i,0) * 110ms + 150ms)}
+
+  .bg{position:absolute;inset:0;width:100%;height:100%;display:block}
+  .vignette{position:absolute;inset:0;background:radial-gradient(ellipse at center,rgba(18,18,20,.5) 0%,rgba(18,18,20,.88) 60%,var(--bg) 100%);pointer-events:none}
+  .content{position:relative;z-index:1;height:100%}
+  .center{display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center}
+
+  .eyebrow{font-family:var(--mono);font-size:20px;letter-spacing:.18em;text-transform:uppercase;color:var(--y)}
+  h1{font-size:118px;line-height:.98;font-weight:700;letter-spacing:-.03em;margin:22px 0 34px}
+  h1 span,h2 span.y{color:var(--y)}
+  h2{font-size:56px;font-weight:700;letter-spacing:-.02em;line-height:1.06}
+  h2 .n{font-family:var(--mono);font-size:21px;color:var(--y);font-weight:600;display:block;letter-spacing:.12em;margin-bottom:12px}
+  .lede{font-size:31px;line-height:1.4;color:#d6d3cb;max-width:1100px}
+  p{font-size:25px;line-height:1.45;color:#d6d3cb}
+  b,strong{color:var(--ink)}
+  i.t{font-style:italic;color:var(--ink)}
+  .y{color:var(--y)} .mono{font-family:var(--mono)} .muted{color:var(--mute)}
+  .card{background:var(--panel);border:1px solid var(--line);border-radius:18px}
+
+  .bul{list-style:none;display:flex;flex-direction:column;gap:14px;margin-top:6px}
+  .bul li{font-size:24px;line-height:1.4;color:#d6d3cb;position:relative;padding-left:26px}
+  .bul li::before{content:"";position:absolute;left:0;top:.5em;width:11px;height:11px;background:var(--y);border-radius:3px}
+  .num{list-style:none;counter-reset:n;display:flex;flex-direction:column;gap:14px}
+  .num li{counter-increment:n;font-size:24px;line-height:1.4;color:#d6d3cb;position:relative;padding-left:44px}
+  .num li::before{content:counter(n);position:absolute;left:0;top:.18em;font-family:var(--mono);font-size:16px;line-height:1.4;color:var(--bg);background:var(--y);border-radius:6px;padding:0 9px}
+
+  .two{display:grid;grid-template-columns:1fr 1fr;gap:64px;height:100%;align-items:center}
+  .two.wide-r{grid-template-columns:.85fr 1.15fr}
+  .stack{display:flex;flex-direction:column;gap:26px}
+  .stage-box{position:relative;height:620px;border-radius:20px;overflow:hidden;border:1px solid var(--line);background:#0d0d0f}
+  .stage-box canvas,.stage-box svg{position:absolute;inset:0;width:100%;height:100%}
+  .cap.tr{left:auto;right:18px;top:12px;bottom:auto}
+  .cap{position:absolute;left:18px;bottom:14px;font-family:var(--mono);font-size:15px;color:var(--mute);background:rgba(13,13,15,.8);padding:6px 10px;border-radius:8px;z-index:2}
+  .callout{border-left:4px solid var(--y);padding:14px 20px;background:rgba(255,194,14,.07);border-radius:0 12px 12px 0;font-size:22px;line-height:1.45;color:#e5e2da}
+  .linkchip{display:inline-flex;align-items:center;gap:10px;font-family:var(--mono);font-size:17px;color:var(--ink);border:1px solid var(--line);background:var(--panel);border-radius:999px;padding:8px 16px;text-decoration:none;width:max-content}
+  .linkchip:hover{border-color:var(--y);color:var(--y)}
+  .linkchip::before{content:"↗";color:var(--y)}
+  .btn{background:var(--panel2);border:1px solid var(--line);color:var(--ink);font:500 19px var(--sans);padding:10px 20px;border-radius:10px;cursor:pointer}
+  .btn:hover{border-color:var(--y);color:var(--y)}
+  .btn.on{background:var(--y);color:var(--bg);border-color:var(--y)}
+  .tag{display:inline-block;font-family:var(--mono);font-size:15px;padding:4px 10px;border-radius:6px;font-weight:600;letter-spacing:.04em}
+  .t-red{background:rgba(255,90,78,.15);color:var(--red)} .t-green{background:rgba(95,214,138,.15);color:var(--green)} .t-blue{background:rgba(106,184,255,.15);color:var(--blue)} .t-y{background:rgba(255,194,14,.15);color:var(--y)}
+
+  /* chrome */
+  #chrome{position:absolute;left:0;right:0;bottom:0;height:56px;display:flex;align-items:center;gap:18px;padding:0 32px;z-index:10;font-family:var(--mono);font-size:16px;color:var(--mute);pointer-events:none}
+  #chrome button{pointer-events:auto}
+  #chrome .sp{flex:1}
+  #brand{position:absolute;left:32px;top:28px;z-index:10;font-family:var(--mono);font-size:15px;letter-spacing:.14em;color:var(--mute);text-transform:uppercase}
+  #brand b{color:var(--y);font-weight:600}
+  #logo{position:absolute;right:32px;top:22px;height:44px;z-index:10;pointer-events:none;filter:drop-shadow(0 2px 8px rgba(0,0,0,.5))}
+  #progress{position:absolute;left:0;bottom:0;height:4px;background:var(--y);transition:width .5s cubic-bezier(.2,.7,.2,1);z-index:11}
+  .nbtn{background:transparent;border:1px solid var(--line);color:var(--ink);font:inherit;width:40px;height:34px;border-radius:8px;cursor:pointer}
+  .nbtn:hover{border-color:var(--y);color:var(--y)}
+
+  /* live class sync */
+  #livewrap{position:absolute;left:32px;bottom:11px;z-index:12;display:flex;gap:12px;align-items:center;font-family:var(--mono);font-size:15px}
+  #livebar,#liveauth{display:flex;gap:12px;align-items:center}
+  #liveauth:empty,#livebar:empty{display:none}
+  .lv{display:inline-flex;align-items:center;gap:9px;background:var(--panel);border:1px solid var(--line);color:var(--mute);border-radius:999px;padding:6px 14px;font:inherit}
+  button.lv{cursor:pointer} button.lv:hover{border-color:var(--y)}
+  .lv.on{border-color:var(--y);color:var(--y)}
+  .lv .dot{width:9px;height:9px;border-radius:50%;background:#55534d}
+  .lv.on .dot{background:var(--red);box-shadow:0 0 0 0 rgba(255,90,78,.6);animation:lvp 1.6s infinite}
+  @keyframes lvp{70%{box-shadow:0 0 0 8px rgba(255,90,78,0)}100%{box-shadow:0 0 0 0 rgba(255,90,78,0)}}
+  .lvc{color:var(--mute)}
+  .nbtn:disabled{opacity:.25;cursor:not-allowed;border-color:var(--line);color:var(--ink)}
+  #toast{position:absolute;left:50%;bottom:76px;z-index:20;transform:translate(-50%,16px);opacity:0;pointer-events:none;background:var(--panel2);border:1px solid var(--y);color:var(--ink);font-size:20px;padding:12px 22px;border-radius:12px;transition:opacity .3s,transform .3s;box-shadow:0 12px 40px rgba(0,0,0,.5)}
+  #toast.on{opacity:1;transform:translate(-50%,0)}
+  /* ---------- shared deck bits ---------- */
+  .keyIdea{opacity:0;transform:translateY(12px);transition:opacity .6s ease .5s,transform .6s cubic-bezier(.2,.7,.2,1) .5s}
+  .keyIdea.on{opacity:1;transform:none}
+  .tight .bul li{font-size:21px} .tight .bul{gap:10px}
+  .grid2{display:grid;grid-template-columns:1fr 1fr;gap:22px}
+  .grid3{display:grid;grid-template-columns:repeat(3,1fr);gap:22px}
+  .grid4{display:grid;grid-template-columns:repeat(4,1fr);gap:18px}
+  .pad{padding:22px 24px}
+  .k{font-family:var(--mono);font-size:14px;letter-spacing:.1em;color:var(--mute);text-transform:uppercase}
+  code,.code{font-family:var(--mono);color:var(--y)}
+  .hint{font-family:var(--mono);font-size:15px;color:var(--mute)}
+  /* terminology */
+  .termS{display:flex;flex-direction:column;justify-content:center;height:100%;gap:22px;max-width:1250px}
+  .termS .word{font-size:132px;font-weight:700;letter-spacing:-.035em;line-height:.95;color:var(--ink)}
+  .termS .word span{color:var(--y)}
+  .termS .meta{display:flex;gap:22px;align-items:baseline;font-family:var(--mono);font-size:24px;color:var(--mute)}
+  .termS .meta i{font-family:var(--sans);font-style:italic;color:var(--blue)}
+  .termS .def{font-size:36px;line-height:1.38;color:#e5e2da;border-left:5px solid var(--y);padding-left:28px}
+  .termS .def b{color:var(--y)}
+  .termBg{position:absolute;right:-40px;top:50%;transform:translateY(-50%);font-family:var(--mono);font-size:15px;line-height:1.5;color:rgba(255,194,14,.08);white-space:pre;pointer-events:none;text-align:right}
+
+  /* data tables */
+  table.dt{border-collapse:separate;border-spacing:0;font-family:var(--mono);font-size:19px;width:100%}
+  table.dt th,table.dt td{padding:10px 14px;text-align:center;border-bottom:1px solid var(--line);transition:background .35s,color .35s,opacity .35s}
+  table.dt th{color:var(--mute);font-weight:600;font-size:14px;letter-spacing:.08em;text-transform:uppercase;border-bottom:2px solid var(--line)}
+  table.dt td{color:var(--ink)}
+  table.dt td.l,table.dt th.l{text-align:left}
+  table.dt .hF{background:rgba(106,184,255,.13);color:var(--blue)}
+  table.dt .hL{background:rgba(255,194,14,.15);color:var(--y)}
+  table.dt .bad{background:rgba(255,90,78,.18);color:var(--red);font-weight:600}
+  table.dt .ok{background:rgba(95,214,138,.16);color:var(--green);font-weight:600}
+  table.dt tr.gone td,table.dt .gone{opacity:.18;text-decoration:line-through}
+  table.dt .pop{animation:cellpop .6s ease}
+  @keyframes cellpop{0%{transform:scale(1)}40%{transform:scale(1.18)}100%{transform:scale(1)}}
+  .tbl{padding:12px 18px;overflow:hidden}
+  /* code */
+  pre.src{font-family:var(--mono);font-size:19px;line-height:1.55;color:#d6d3cb;background:#0d0d0f;border:1px solid var(--line);border-radius:14px;padding:18px 22px;white-space:pre;overflow:hidden}
+  pre.src .kw{color:var(--blue)} pre.src .fn{color:var(--green)} pre.src .s{color:var(--amber)} pre.src .c{color:var(--mute)} pre.src .n{color:var(--y)}
+  /* tabs */
+  .tabs{display:flex;gap:8px;flex-wrap:wrap}
+  .tabs button{background:transparent;border:1px solid var(--line);color:var(--mute);font:500 16px var(--sans);padding:8px 14px;border-radius:999px;cursor:pointer;display:inline-flex;gap:8px;align-items:center}
+  .tabs button:hover{border-color:var(--y);color:var(--ink)}
+  .tabs button.on{background:var(--y);border-color:var(--y);color:var(--bg)}
+  .tabs button.done::after{content:"✓";color:var(--green);font-weight:700}
+  .tabs button.on.done::after{color:var(--bg)}
+  .prompt{font-family:var(--mono);font-size:22px;padding:16px 22px;border-radius:14px;background:#0d0d0f;border:1px solid var(--line);color:var(--ink)}
+  .prompt::before{content:"› ";color:var(--y)}
+  .split3{display:grid;grid-template-columns:repeat(3,1fr);gap:18px}
+  .sp3{padding:22px;display:flex;flex-direction:column;gap:10px}
+  .sp3 h3{font-size:28px}
+  .sp3 .pct{font-family:var(--mono);font-size:44px;font-weight:600}
+  .sp3 p{font-size:18px;line-height:1.45}
+  .sp3 .an{font-size:16px;color:var(--mute);font-style:italic;border-top:1px solid var(--line);padding-top:10px}
+  .bar3{display:flex;height:34px;border-radius:10px;overflow:hidden;font-family:var(--mono);font-size:15px;font-weight:600}
+  .bar3 div{display:grid;place-items:center;color:var(--bg)}
+  /* ---------- machine learning deck ---------- */
+  input[type=range]{accent-color:var(--y);width:100%;cursor:pointer}
+  .ctl{display:grid;grid-template-columns:150px 1fr 96px;gap:14px;align-items:center}
+  .ctl span{font-family:var(--mono);font-size:17px;color:var(--mute)}
+  .ctl b{font-family:var(--mono);font-size:20px;text-align:right}
+  .ctls{display:flex;flex-direction:column;gap:12px}
+  .row{display:flex;gap:12px;align-items:center;flex-wrap:wrap}
+  .meter{display:flex;flex-direction:column;gap:6px}
+  .meter .trk{height:14px;border-radius:7px;background:var(--panel2);overflow:hidden}
+  .meter .fill{height:100%;background:var(--y);border-radius:7px;transition:width .2s}
+  .big{font-family:var(--mono);font-size:30px;font-weight:600}
+  .eq{font-family:var(--mono);font-size:34px;color:var(--ink)}
+  .eq .v{color:var(--y)}
+
+  /* ai > ml > dl */
+  .defs{display:flex;flex-direction:column;gap:12px}
+  .ndef{padding:14px 18px;border-radius:12px;border:1px solid var(--line);background:var(--panel);transition:border-color .3s,background .3s,opacity .3s;opacity:.45;cursor:default}
+  .ndef > b{font-family:var(--mono);font-size:16px;letter-spacing:.08em}
+  .ndef p{font-size:20px;margin-top:4px}
+  .ndef.hi{opacity:1;border-color:var(--y);background:rgba(255,194,14,.06)}
+
+  /* ml map */
+  .mapGrid{display:grid;grid-template-columns:repeat(3,1fr);gap:22px;margin-top:30px}
+  .branch{padding:22px 24px;display:flex;flex-direction:column;gap:14px;opacity:.25;transition:opacity .5s,border-color .5s,transform .5s;transform:translateY(10px)}
+  .branch.on{opacity:1;transform:none}
+  .branch h3{font-size:30px}
+  .branch .sub{font-family:var(--mono);font-size:15px;letter-spacing:.08em;margin-top:4px}
+  .branch .uses{display:flex;flex-wrap:wrap;gap:8px}
+  .branch .uses span{font-size:16px;padding:5px 11px;border-radius:999px;background:var(--panel2);border:1px solid var(--line);color:#d6d3cb}
+  .branch p{font-size:19px}
+
+  /* four tasks */
+  .tasks{display:grid;grid-template-columns:repeat(4,1fr);gap:18px;margin-top:26px}
+  .task{padding:16px 18px 18px;display:flex;flex-direction:column;gap:10px;transition:border-color .4s,opacity .4s;opacity:.4}
+  .task.on{border-color:var(--y);opacity:1}
+  .task.seen{opacity:1}
+  .task canvas{width:100%;height:170px;display:block;border-radius:10px;background:#0d0d0f}
+  .task h3{font-size:25px}
+  .task p{font-size:17px;line-height:1.4}
+  .task .ex{font-size:16px;color:var(--mute)}
+  .task .ex b{color:var(--y)}
+  .flow{display:flex;align-items:center;gap:16px;flex-wrap:wrap}
+  .fbox{font-family:var(--mono);font-size:18px;font-weight:600;letter-spacing:.06em;padding:12px 20px;border-radius:12px;border:1px solid var(--line);background:var(--panel);transition:border-color .4s,color .4s,opacity .4s,background .4s}
+  .fbox.on{border-color:var(--y);color:var(--y);background:rgba(255,194,14,.07)}
+  .farr{font-size:26px;color:var(--mute)}
+
+  /* compare table */
+  table.cmp{width:100%;border-collapse:separate;border-spacing:0;font-size:21px}
+  table.cmp th,table.cmp td{padding:14px 16px;border-bottom:1px solid var(--line);text-align:left;vertical-align:top;color:#d6d3cb}
+  table.cmp th{font-family:var(--mono);font-size:15px;letter-spacing:.08em;color:var(--mute);font-weight:600}
+  table.cmp td:first-child{font-family:var(--mono);font-size:16px;color:var(--mute);width:24%}
+
+  /* 10 models */
+  .mgrid{display:grid;grid-template-columns:repeat(5,1fr);gap:16px;margin-top:26px}
+  .mc{padding:14px 16px 16px;display:flex;flex-direction:column;gap:8px;cursor:pointer;transition:border-color .25s,transform .25s}
+  .mc:hover,.mc.sel{border-color:var(--y);transform:translateY(-3px)}
+  .mc svg{width:100%;height:118px;display:block;background:#0d0d0f;border-radius:10px}
+  .mc h3{font-size:20px;line-height:1.15}
+  .mc h3 i{font-style:normal;font-family:var(--mono);font-size:14px;color:var(--y);margin-right:8px}
+  .mc p{font-size:15px;line-height:1.38}
+  .mc .tags{display:flex;gap:6px;flex-wrap:wrap}
+  .mc .tag{font-size:12px;padding:3px 7px}
+  .t-purple{background:rgba(177,140,255,.15);color:#b18cff}
+
+  /* flows with emoji */
+  .sflow{display:grid;grid-template-columns:1fr 70px 300px 70px 1fr;align-items:center;gap:0;margin-top:30px}
+  .sflow .arr{text-align:center;font-size:40px;color:var(--mute)}
+  .exs{padding:18px 20px;display:flex;flex-direction:column;gap:10px}
+  .exs .r{display:flex;align-items:center;gap:14px;font-size:22px;padding:8px 12px;border-radius:10px;background:var(--panel2)}
+  .exs .r .e{font-size:40px;line-height:1}
+  .exs .r .lb{margin-left:auto;font-family:var(--mono);font-size:17px;color:var(--y)}
+  .brainbox{height:260px;display:grid;place-items:center;text-align:center;border:2px solid var(--y);border-radius:22px;background:rgba(255,194,14,.05)}
+  .brainbox .e{font-size:84px}
+  .brainbox b{font-family:var(--mono);color:var(--y);letter-spacing:.12em;font-size:20px}
+  .stp{opacity:.12;transition:opacity .6s}
+  .stp.on{opacity:1}
+
+  /* example cards */
+  .exgrid{display:grid;grid-template-columns:repeat(3,1fr);gap:18px}
+  .exc{padding:20px 22px;display:flex;flex-direction:column;gap:8px}
+  .exc .e{font-size:42px}
+  .exc h3{font-size:23px}
+  .exc p{font-size:18px}
+  .exc .io{font-family:var(--mono);font-size:15px;color:var(--mute);line-height:1.6;border-top:1px solid var(--line);padding-top:8px}
+  .exc .io b{color:var(--blue)} .exc .io i{font-style:normal;color:var(--y)}
+
+  /* 3-step explainer */
+  .steps3{display:grid;grid-template-columns:1fr 50px 1fr 50px 1fr;align-items:stretch;margin-top:26px}
+  .steps3 .arr{display:grid;place-items:center;font-size:34px;color:var(--mute)}
+  .s3{padding:20px 22px;display:flex;flex-direction:column;gap:12px}
+  .s3 h3{font-size:25px;display:flex;align-items:center;gap:12px}
+  .s3 h3 i{font-style:normal;font-family:var(--mono);font-size:18px;background:var(--y);color:var(--bg);border-radius:50%;width:34px;height:34px;display:grid;place-items:center;flex:none}
+  .s3 canvas{width:100%;height:200px;display:block}
+  .chain{display:grid;grid-template-columns:repeat(4,1fr);gap:16px;margin-top:22px}
+  .chain .card{padding:16px 20px;display:flex;flex-direction:column;gap:4px;justify-content:center;min-height:100px;transition:opacity .5s,border-color .5s;opacity:.15}
+  .chain .card.on{opacity:1}
+  .chain .card.last.on{border-color:var(--y)}
+  .chain .card .k{font-size:13px}
+  .chain .card b{font-family:var(--mono);font-size:28px;font-weight:600}
+
+  /* slope steps */
+  .calc{display:flex;flex-direction:column;gap:12px}
+  .calc{gap:9px}
+  .calc .ln{font-family:var(--mono);font-size:22px;padding:8px 16px;display:flex;justify-content:space-between;align-items:baseline;gap:16px;border-radius:10px;background:var(--panel);border:1px solid var(--line);opacity:.12;transition:opacity .5s,border-color .5s}
+  .calc .ln.on{opacity:1}
+  .calc .ln.cur{border-color:var(--y)}
+  .calc .ln .c{color:var(--mute);font-size:15px}
+
+  /* knn steps / step lists */
+  .slist{display:flex;flex-direction:column;gap:12px}
+  .slist .it{padding:14px 18px;border-radius:12px;border:1px solid var(--line);background:var(--panel);opacity:.35;transition:opacity .4s,border-color .4s}
+  .slist .it.on{opacity:1;border-color:var(--y)}
+  .slist .it.done{opacity:.85}
+  .slist .it h3{font-size:22px;display:flex;gap:12px;align-items:center}
+  .slist .it h3 i{font-style:normal;font-family:var(--mono);font-size:15px;background:var(--y);color:var(--bg);border-radius:6px;padding:1px 8px}
+  .slist .it p{font-size:17px;margin-top:4px;line-height:1.4}
+
+  /* which task quiz */
+  .quiz{display:grid;grid-template-columns:1fr 1fr;gap:18px;margin-top:26px}
+  .qz{padding:22px 24px;display:flex;flex-direction:column;gap:12px;cursor:pointer;transition:border-color .25s;min-height:190px}
+  .qz:hover{border-color:var(--y)}
+  .qz .q{font-size:24px;line-height:1.4;color:var(--ink)}
+  .qz .ans{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+  .qz .cover{font-family:var(--mono);font-size:16px;color:var(--mute);border:1px dashed var(--mute);border-radius:8px;padding:6px 12px;width:max-content}
+  .qz .why{font-size:17px;color:#c9c6be;line-height:1.4}
+  .qz.open .cover{display:none}
+  .qz:not(.open) .ans,.qz:not(.open) .why{display:none}
+
+  /* pipeline */
+  .pipe{display:grid;grid-template-columns:repeat(4,1fr);gap:22px;margin-top:40px;position:relative}
+  .pstep{padding:22px;display:flex;flex-direction:column;gap:12px;align-items:center;text-align:center;opacity:.18;transition:opacity .5s,border-color .5s,transform .5s;transform:translateY(8px)}
+  .pstep.on{opacity:1;transform:none}
+  .pstep.cur{border-color:var(--y)}
+  .pstep .e{font-size:60px;line-height:1.1}
+  .pstep h3{font-size:26px}
+  .pstep p{font-size:18px}
+  .pstep .k{font-size:13px}
+
+  /* model a vs b */
+  .ab{display:grid;grid-template-columns:1fr 1fr;gap:26px;margin-top:22px}
+  .abc{padding:26px 28px;display:flex;flex-direction:column;gap:16px;cursor:pointer;transition:border-color .3s,background .3s}
+  .abc:hover{border-color:var(--y)}
+  .abc.pick{border-color:var(--y);background:rgba(255,194,14,.05)}
+  .abc.right{border-color:var(--green);background:rgba(95,214,138,.07)}
+  .abc.wrong{border-color:var(--red);background:rgba(255,90,78,.06)}
+  .abc h3{font-family:var(--mono);font-size:24px;letter-spacing:.12em}
+  .abc .bars{display:flex;flex-direction:column;gap:12px}
+  .abc .br{display:grid;grid-template-columns:200px 1fr 70px;gap:12px;align-items:center;font-size:19px}
+  .abc .br .trk{height:22px;background:var(--panel2);border-radius:6px;overflow:hidden}
+  .abc .br .trk div{height:100%;border-radius:6px}
+  .abc .br b{font-family:var(--mono);font-size:22px;text-align:right}
+
+  /* metric cards */
+  .mets{display:grid;grid-template-columns:repeat(3,1fr);gap:14px}
+  .met{padding:14px 18px;display:flex;flex-direction:column;gap:4px}
+  .met .k{font-size:13px}
+  .met b{font-family:var(--mono);font-size:34px;font-weight:600}
+  .met .f{font-family:var(--mono);font-size:15px;color:var(--mute)}
+  .met .d{font-size:15px;color:#c9c6be;line-height:1.35}
+
+  /* dartboards */
+  .darts{display:grid;grid-template-columns:70px 1fr 1fr;grid-template-rows:36px 1fr 1fr;gap:8px;height:680px}
+  .darts .hd{font-family:var(--mono);font-size:16px;letter-spacing:.08em;color:var(--mute);display:grid;place-items:center}
+  .darts .vh{writing-mode:vertical-rl;transform:rotate(180deg)}
+  .darts canvas{width:100%;height:100%;display:block;cursor:pointer;border-radius:14px;border:1px solid var(--line);background:#0d0d0f}
+  .darts canvas:hover{border-color:var(--y)}
+
+  /* code */
+  .codeNote{font-size:19px}
+</style>
+</head>
+<body>
+<div id="stage">
+  <img id="logo" src="{{LOGO}}" alt="Neumont University">
+  <div id="brand"><b>AAI101</b> &nbsp;·&nbsp; Machine Learning</div>
+
+  <!-- title -->
+  <section class="slide" data-id="title">
+    <canvas class="bg" id="bgML"></canvas>
+    <div class="vignette"></div>
+    <div class="content center">
+      <div class="eyebrow rise" style="--i:0">AAI101 · Introduction to Artificial Intelligence</div>
+      <h1 class="rise" style="--i:1">Machine <span>Learning</span></h1>
+      <p class="lede rise" style="--i:2">Instead of writing the rules, we show a computer <b class="y">examples</b> and let it find the pattern: to predict a number, pick a category, or discover groups on its own.</p>
+    </div>
+  </section>
+
+  <!-- ai > ml > dl -->
+  <section class="slide" data-id="nest" style="cursor:pointer">
+    <div class="two" style="grid-template-columns:1fr .95fr;gap:50px">
+      <div class="stage-box rise" style="--i:1;height:680px"><svg id="nestSvg" viewBox="0 0 760 680"></svg></div>
+      <div class="stack" style="gap:16px">
+        <h2 class="rise" style="--i:0"><span class="n">WHERE WE ARE</span>AI ⊃ ML ⊃ <span class="y">DL</span></h2>
+        <div class="defs rise" style="--i:2">
+          <div class="ndef" data-k="ai"><b class="y">ARTIFICIAL INTELLIGENCE</b><p>The broad field: machines doing tasks that usually need human intelligence. The rules can be <b>written by people</b>.</p></div>
+          <div class="ndef" data-k="ml"><b style="color:var(--blue)">MACHINE LEARNING</b><p>AI that <b>learns patterns from data</b> instead of being explicitly programmed.</p></div>
+          <div class="ndef" data-k="dl"><b style="color:var(--green)">DEEP LEARNING</b><p>Machine learning with neural networks that have <b>many layers</b> and learn their own features from raw pixels and words.</p></div>
+        </div>
+        <div class="callout rise" style="--i:3" id="nestFb">Today we live in the <b style="color:var(--blue)">machine learning</b> circle. Press → or click to step in.</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ml map -->
+  <section class="slide" data-id="mlmap">
+    <h2 class="rise" style="--i:0"><span class="n">THE BIG PICTURE</span>Three ways a machine can learn</h2>
+    <div class="mapGrid">
+      <div class="card branch" id="mapS" style="border-top:4px solid var(--blue)">
+        <div><h3 style="color:var(--blue)">Supervised</h3><div class="sub muted">LEARNS FROM ANSWERS</div></div>
+        <p>Every example comes with the <b>right answer</b> (a label). The model learns to predict it.</p>
+        <div class="k" style="color:var(--blue)">Classification</div><div class="uses"><span>image classification</span><span>fraud detection</span><span>diagnostics</span><span>customer retention</span></div>
+        <div class="k" style="color:var(--blue)">Regression</div><div class="uses"><span>weather forecasting</span><span>market forecasting</span><span>life expectancy</span><span>population growth</span></div>
+      </div>
+      <div class="card branch" id="mapU" style="border-top:4px solid var(--green)">
+        <div><h3 style="color:var(--green)">Unsupervised</h3><div class="sub muted">FINDS STRUCTURE</div></div>
+        <p>No answers given. The model looks for <b>groups and patterns</b> on its own.</p>
+        <div class="k" style="color:var(--green)">Clustering</div><div class="uses"><span>customer segmentation</span><span>targeted marketing</span><span>recommender systems</span></div>
+        <div class="k" style="color:var(--green)">Dimensionality reduction</div><div class="uses"><span>big data visualization</span><span>structure discovery</span><span>feature elicitation</span></div>
+      </div>
+      <div class="card branch" id="mapR" style="border-top:4px solid var(--amber)">
+        <div><h3 style="color:var(--amber)">Reinforcement</h3><div class="sub muted">LEARNS BY TRIAL AND ERROR</div></div>
+        <p>An agent <b>acts</b>, gets a <b>reward</b> or penalty, and learns what works.</p>
+        <div class="k" style="color:var(--amber)">Uses</div><div class="uses"><span>game AI</span><span>robot navigation</span><span>real-time decisions</span><span>skill acquisition</span></div>
+        <p class="muted" style="font-size:17px">We’ll cover this one in its own deck.</p>
+      </div>
+    </div>
+    <p class="hint" id="mapHint" style="margin-top:22px">press → to reveal each branch</p>
+  </section>
+
+  <!-- four tasks -->
+  <section class="slide" data-id="tasks">
+    <div class="labHead rise" style="--i:0"><h2><span class="n">WHAT WE ASK A MODEL TO DO</span>Four common ML tasks</h2>
+      <div class="flow"><span class="fbox on">DATA (INPUT)</span><span class="farr">→</span><span class="fbox on">ALGORITHM</span><span class="farr">→</span><span class="fbox on">RESULT</span></div></div>
+    <div class="tasks rise" style="--i:1">
+      <div class="card task" data-t="0"><canvas id="tk0"></canvas><h3 style="color:var(--blue)">Classification</h3><p>Predicts which <b>category</b> something belongs to.</p><p class="ex">e.g. is this email <b>spam</b> or <b>not spam</b>?</p></div>
+      <div class="card task" data-t="1"><canvas id="tk1"></canvas><h3 class="y">Regression</h3><p>Predicts a <b>number</b> on a continuous scale.</p><p class="ex">e.g. a house’s <b>price</b> from its size</p></div>
+      <div class="card task" data-t="2"><canvas id="tk2"></canvas><h3 style="color:var(--green)">Clustering</h3><p><b>Groups</b> similar data points, with no predefined categories.</p><p class="ex">e.g. group customers by <b>shopping behavior</b></p></div>
+      <div class="card task" data-t="3"><canvas id="tk3"></canvas><h3 style="color:#b18cff">Recommendation</h3><p>Suggests items based on preferences and <b>similar users</b>.</p><p class="ex">e.g. Netflix suggesting a movie from your <b>viewing history</b></p></div>
+    </div>
+    <div class="callout keyIdea" id="tkIdea" style="margin-top:24px">The <b>task</b> decides what the model learns and what kind of answer it gives back.</div>
+    <p class="hint" id="tkHint" style="margin-top:12px">press → to step through each task</p>
+  </section>
+
+  <!-- traditional ml -->
+  <section class="slide" data-id="trad">
+    <div class="two" style="grid-template-columns:.85fr 1.15fr;gap:56px">
+      <div class="stack" style="gap:22px">
+        <h2 class="rise" style="--i:0"><span class="n">BEFORE DEEP LEARNING</span>Traditional machine learning</h2>
+        <p class="rise" style="--i:1">Methods that learn patterns from data <b>without</b> deep neural networks: linear regression, decision trees, support vector machines, k-means, k-nearest neighbors.</p>
+        <div class="callout rise" style="--i:2">Deep learning gets the headlines, but traditional ML is still the go-to for <b class="y">fast, reliable, explainable</b> answers on everyday data.</div>
+      </div>
+      <div class="card pad rise" style="--i:2">
+        <table class="cmp">
+          <tr><th></th><th class="y">TRADITIONAL ML</th><th style="color:var(--green)">DEEP LEARNING</th></tr>
+          <tr><td>Data needed</td><td>Hundreds to thousands of rows</td><td>Often millions of examples</td></tr>
+          <tr><td>Best at</td><td><b>Structured</b> data: tables, spreadsheets</td><td><b>Unstructured</b> data: images, text, audio</td></tr>
+          <tr><td>Explainable?</td><td>Usually: you can read the line or the tree</td><td>Hard: millions of weights</td></tr>
+          <tr><td>Compute</td><td>A laptop, in seconds</td><td>GPUs, hours to weeks</td></tr>
+          <tr><td>Features</td><td>People choose them</td><td>Learns its own</td></tr>
+        </table>
+      </div>
+    </div>
+  </section>
+
+  <!-- 10 models -->
+  <section class="slide" data-id="models" style="padding-top:90px">
+    <div class="labHead rise" style="--i:0"><h2><span class="n">THE TOOLBOX</span>10 popular machine learning models</h2>
+      <div class="row"><span class="tag t-blue">regression</span><span class="tag t-y">classification</span><span class="tag t-green">unsupervised</span></div></div>
+    <div class="mgrid rise" style="--i:1" id="mGrid"></div>
+    <p class="hint" style="margin-top:14px" id="mHint">today we build <b class="y">★</b> ones by hand. Click any card to highlight it.</p>
+  </section>
+
+  <!-- term: model -->
+  <section class="slide" data-id="t-model">
+    <div class="termS">
+      <div class="eyebrow rise" style="--i:0">Terminology</div>
+      <div class="word rise" style="--i:1">mod·<span>el</span></div>
+      <div class="meta rise" style="--i:2"><span>/ˈmäd(ə)l/</span><i>noun</i></div>
+      <div class="def rise" style="--i:3">A <b>mathematical representation</b> trained on data to recognize patterns or make predictions, so it can do a task like classification, regression or decision-making.</div>
+    </div>
+  </section>
+
+  <!-- term: supervised -->
+  <section class="slide" data-id="t-supervised">
+    <div class="termS">
+      <div class="eyebrow rise" style="--i:0">Terminology</div>
+      <div class="word rise" style="--i:1">supervised <span>learning</span></div>
+      <div class="meta rise" style="--i:2"><i>noun</i></div>
+      <div class="def rise" style="--i:3">Machine learning trained on <b>labeled data</b>: every training example pairs the input with the correct output. The model learns to map inputs to outputs, then predicts outputs for <b>new, unseen</b> data.</div>
+    </div>
+  </section>
+
+  <!-- supervised diagram -->
+  <section class="slide" data-id="supervised">
+    <h2 class="rise" style="--i:0"><span class="n">SUPERVISED LEARNING</span>Learn from labeled examples, predict new ones</h2>
+    <div class="sflow">
+      <div class="card exs stp" id="svA">
+        <div class="k">Training data · input + <span class="y">label</span></div>
+        <div class="r"><span class="e">🍎</span>red, round<span class="lb">apple</span></div>
+        <div class="r"><span class="e">🍌</span>yellow, long<span class="lb">banana</span></div>
+        <div class="r"><span class="e">🍏</span>green, round<span class="lb">apple</span></div>
+        <div class="r"><span class="e">🍋</span>yellow, oval<span class="lb">lemon</span></div>
+      </div>
+      <div class="arr stp" id="svA2">→</div>
+      <div class="brainbox stp" id="svM"><div><div class="e">⚙️</div><b>MODEL</b><p class="muted" style="font-size:17px;margin-top:6px" id="svMt">learns: color + shape → fruit</p></div></div>
+      <div class="arr stp" id="svB2">→</div>
+      <div class="card exs stp" id="svB">
+        <div class="k">New data · <span class="y">prediction</span></div>
+        <div class="r"><span class="e">🍎</span>red, round<span class="lb" id="svP1">?</span></div>
+        <div class="r"><span class="e">🍌</span>yellow, long<span class="lb" id="svP2">?</span></div>
+      </div>
+    </div>
+    <div class="callout keyIdea" id="svIdea" style="margin-top:30px">The labels are the <b>supervision</b>: like a teacher with an answer key. The goal is to predict well on inputs the model has <b class="y">never seen</b>.</div>
+  </section>
+
+  <!-- regression -->
+  <section class="slide" data-id="regression">
+    <h2 class="rise" style="--i:0"><span class="n">SUPERVISED TASK 1</span><span class="y">Regression</span>: predict a number</h2>
+    <div class="grid2 rise" style="--i:1;margin-top:28px">
+      <div class="card pad"><div class="k">Purpose</div><p style="margin-top:6px">Predict a <b class="y">continuous value</b> from input data: a price, a temperature, a score.</p></div>
+      <div class="card pad"><div class="k">How it works</div><p style="margin-top:6px">The algorithm learns the relationship between the input <b style="color:var(--blue)">features</b> and the <b class="y">target</b>, then uses it to predict.</p></div>
+    </div>
+    <div class="exgrid rise" style="--i:2;margin-top:22px">
+      <div class="card exc"><span class="e">🏠</span><h3>House prices</h3><p>Price from size, location and other features.</p><div class="io"><b>in:</b> sq ft, bedrooms, zip<br><i>out:</i> $ price</div></div>
+      <div class="card exc"><span class="e">📈</span><h3>Stock forecasting</h3><p>A future stock price from its history.</p><div class="io"><b>in:</b> past prices, volume<br><i>out:</i> tomorrow’s price</div></div>
+      <div class="card exc"><span class="e">🌡️</span><h3>Weather</h3><p>Tomorrow’s temperature from past weather.</p><div class="io"><b>in:</b> past temps, humidity<br><i>out:</i> °F</div></div>
+    </div>
+  </section>
+
+  <!-- linear regression: fit the line -->
+  <section class="slide" data-id="linfit">
+    <div class="two" style="grid-template-columns:.8fr 1.2fr;gap:46px">
+      <div class="stack" style="gap:18px">
+        <h2 class="rise" style="--i:0"><span class="n">LINEAR REGRESSION</span>Draw the <span class="y">best line</span></h2>
+        <p class="rise" style="--i:1">Linear regression finds the straight line that runs closest to all the points. Then it uses the line to predict.</p>
+        <div class="card pad rise ctls" style="--i:2">
+          <div class="ctl"><span>slope</span><input type="range" id="lfM" min="0" max="300" step="1" value="40"><b id="lfMv">40</b></div>
+          <div class="ctl"><span>intercept</span><input type="range" id="lfB" min="-200" max="400" step="1" value="200"><b id="lfBv">200</b></div>
+          <div class="meter"><div class="row" style="justify-content:space-between"><span class="k">average error</span><b class="mono" id="lfErr">–</b></div><div class="trk"><div class="fill" id="lfBar"></div></div></div>
+          <div class="row"><button class="btn on" id="lfFit">Fit it for me</button><button class="btn" id="lfReset">Reset</button></div>
+        </div>
+        <p class="hint rise" style="--i:3">drag the sliders to shrink the dashed error lines</p>
+      </div>
+      <div class="stack rise" style="--i:2;gap:10px">
+        <div class="stage-box" style="height:600px"><canvas id="lfCv"></canvas></div>
+        <p class="mono" id="lfCap" style="font-size:18px;color:var(--mute);text-align:center">price ($k) = slope × size (1000 sq ft) + intercept</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- y = mx + b -->
+  <section class="slide" data-id="ymxb">
+    <div class="two" style="grid-template-columns:.85fr 1.15fr;gap:50px">
+      <div class="stack" style="gap:18px">
+        <h2 class="rise" style="--i:0"><span class="n">THE EQUATION OF A LINE</span>y = <span class="y">m</span>x + <span style="color:var(--blue)">b</span></h2>
+        <ul class="bul rise" style="--i:1">
+          <li><b>x</b>: the <b>independent</b> value (the input)</li>
+          <li><b>y</b>: the <b>dependent</b> value (the output)</li>
+          <li><b class="y">m</b>: the <b class="y">slope</b>, how much y changes when x goes up by 1</li>
+          <li><b style="color:var(--blue)">b</b>: the <b style="color:var(--blue)">intercept</b>, where the line crosses the y-axis</li>
+        </ul>
+        <div class="card pad rise ctls" style="--i:2">
+          <div class="ctl"><span>m (slope)</span><input type="range" id="lnM" min="-4" max="4" step=".5" value="2"><b class="y" id="lnMv">2</b></div>
+          <div class="ctl"><span>b (intercept)</span><input type="range" id="lnB" min="-6" max="6" step="1" value="3"><b style="color:var(--blue)" id="lnBv">3</b></div>
+          <div class="row"><span class="k">try</span><button class="btn" data-p="2,3">y = 2x + 3</button><button class="btn" data-p="-1,5">y = −x + 5</button><button class="btn" data-p="0,4">y = 4</button></div>
+        </div>
+      </div>
+      <div class="stack rise" style="--i:2;gap:10px">
+        <div class="stage-box" style="height:600px"><canvas id="lnCv"></canvas></div>
+        <p class="eq" id="lnEq" style="text-align:center;font-size:28px"></p>
+      </div>
+    </div>
+  </section>
+
+  <!-- slope from two points -->
+  <section class="slide" data-id="slope">
+    <div class="two" style="grid-template-columns:.9fr 1.1fr;gap:50px">
+      <div class="stack" style="gap:16px">
+        <h2 class="rise" style="--i:0"><span class="n">FROM TWO POINTS</span>Find the line</h2>
+        <p class="rise" style="--i:1">Two students: one studied <b>1 hour</b> and scored <b>50</b>, the other studied <b>3 hours</b> and scored <b>80</b>.</p>
+        <div class="calc">
+          <div class="ln" id="sl0"><span class="c">rise = change in y</span><span>80 − 50 = <b class="y">30</b></span></div>
+          <div class="ln" id="sl1"><span class="c">run = change in x</span><span>3 − 1 = <b class="y">2</b></span></div>
+          <div class="ln" id="sl2"><span class="c">slope m = rise ÷ run</span><span>30 ÷ 2 = <b class="y">15</b> points per hour</span></div>
+          <div class="ln" id="sl3"><span class="c">intercept: plug in (1, 50)</span><span>50 = 15(1) + b → b = <b style="color:var(--blue)">35</b></span></div>
+          <div class="ln" id="sl4"><span class="c">the line</span><span>score = <b class="y">15</b> × hours + <b style="color:var(--blue)">35</b></span></div>
+        </div>
+        <div class="callout keyIdea" id="slIdea" style="font-size:19px">Real data never sits on one perfect line. Linear regression finds the slope and intercept with the <b class="y">smallest total error</b> across all points: the line of best fit.</div>
+      </div>
+      <div class="stack rise" style="--i:2;gap:10px">
+        <div class="stage-box" style="height:560px"><canvas id="slCv"></canvas></div>
+        <p class="hint" style="text-align:center">press → for each step</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- how linear regression works -->
+  <section class="slide" data-id="howlr">
+    <h2 class="rise" style="--i:0"><span class="n">PUTTING IT TOGETHER</span>How linear regression works</h2>
+    <div class="steps3 rise" style="--i:1">
+      <div class="card s3"><h3><i>1</i>Learn from data</h3><canvas id="hlCv"></canvas><p style="font-size:18px">Training finds the slope and intercept that make the <b>smallest errors</b>.</p></div>
+      <div class="arr">→</div>
+      <div class="card s3"><h3><i>2</i>The equation</h3><div class="eq" style="text-align:center;margin:18px 0;font-size:44px">ŷ = <span class="y">w</span>x + <span style="color:var(--blue)">b</span></div><p style="font-size:18px"><b>x</b> = input · <b class="y">w</b> = slope (weight) · <b style="color:var(--blue)">b</b> = intercept (bias) · <b>ŷ</b> (“y-hat”) = the prediction</p></div>
+      <div class="arr">→</div>
+      <div class="card s3"><h3><i>3</i>Predict</h3><div class="flow" style="flex-direction:column;gap:6px;margin:6px 0"><span class="fbox">input</span><span class="farr">↓</span><span class="fbox">equation</span><span class="farr">↓</span><span class="fbox on">prediction</span></div><p style="font-size:18px">Give it a new input, get a number back.</p></div>
+    </div>
+    <div class="k" style="margin-top:26px">Example: predict a student’s exam score</div>
+    <div class="chain">
+      <div class="card" id="hc0"><span class="k">hours studied</span><b>x = 4</b></div>
+      <div class="card" id="hc1"><span class="k">learned equation</span><b>ŷ = 5x + 50</b></div>
+      <div class="card" id="hc2"><span class="k">plug in</span><b>ŷ = 5(4) + 50</b></div>
+      <div class="card last" id="hc3"><span class="k">predicted score</span><b class="y">70</b></div>
+    </div>
+  </section>
+
+  <!-- multiple linear regression -->
+  <section class="slide" data-id="multi">
+    <div class="two" style="grid-template-columns:.85fr 1.15fr;gap:50px">
+      <div class="stack" style="gap:20px">
+        <h2 class="rise" style="--i:0"><span class="n">MORE THAN ONE INPUT</span>Multiple linear regression</h2>
+        <p class="rise" style="--i:1">One output (<b class="y">y</b>), two or more inputs (<b style="color:var(--blue)">x₁, x₂, … xₙ</b>). With two inputs the line becomes a <b>plane</b>.</p>
+        <div class="eq rise" style="--i:2;font-size:26px">ŷ = <span class="y">w₁</span>x₁ + <span class="y">w₂</span>x₂ + … + b</div>
+        <ul class="bul rise" style="--i:3">
+          <li>House price from <b>area</b>, <b>bedrooms</b> and <b>location</b></li>
+          <li>Student performance from <b>study hours</b>, <b>attendance</b> and <b>prior GPA</b></li>
+        </ul>
+        <p class="hint rise" style="--i:4">drag the 3D view to turn it</p>
+      </div>
+      <div class="stage-box rise" style="--i:2;height:640px"><canvas id="muCv" style="cursor:grab"></canvas><div class="cap tr">price ≈ w₁·area + w₂·bedrooms + b</div></div>
+    </div>
+  </section>
+
+  <!-- classification -->
+  <section class="slide" data-id="classification">
+    <h2 class="rise" style="--i:0"><span class="n">SUPERVISED TASK 2</span><span class="y">Classification</span>: predict a category</h2>
+    <div class="grid2 rise" style="--i:1;margin-top:28px">
+      <div class="card pad"><div class="k">Purpose</div><p style="margin-top:6px">Sort data into <b class="y">predefined classes</b> or groups.</p></div>
+      <div class="card pad"><div class="k">How it works</div><p style="margin-top:6px">The algorithm learns from <b>labeled</b> training data, then puts new, unseen data into one of the known classes.</p></div>
+    </div>
+    <div class="exgrid rise" style="--i:2;margin-top:22px">
+      <div class="card exc"><span class="e">📧</span><h3>Spam detection</h3><p>Is this email spam or not spam?</p><div class="io"><b>in:</b> words, sender, links<br><i>out:</i> spam / not spam</div></div>
+      <div class="card exc"><span class="e">🐈</span><h3>Image recognition</h3><p>Does the photo show a cat, dog or bird?</p><div class="io"><b>in:</b> pixels<br><i>out:</i> cat / dog / bird</div></div>
+      <div class="card exc"><span class="e">🩺</span><h3>Medical diagnosis</h3><p>Is a tumor benign or malignant?</p><div class="io"><b>in:</b> size, shape, scans<br><i>out:</i> benign / malignant</div></div>
+    </div>
+  </section>
+
+  <!-- logistic regression -->
+  <section class="slide" data-id="logistic">
+    <div class="two" style="grid-template-columns:.82fr 1.18fr;gap:44px">
+      <div class="stack" style="gap:14px">
+        <h2 class="rise" style="--i:0;font-size:50px"><span class="n">CLASSIFICATION, DESPITE THE NAME</span>Logistic regression</h2>
+        <p class="rise" style="--i:1;font-size:22px">Squeezes a straight-line score into an <b class="y">S-curve</b> (the sigmoid), so the output is a <b>probability between 0 and 1</b>.</p>
+        <div class="card pad rise" style="--i:2;display:flex;flex-direction:column;gap:6px;font-family:var(--mono);font-size:21px">
+          <div>z = <span class="y">w</span>·hours + <span style="color:var(--blue)">b</span> &nbsp;= <b id="lgZ">–</b></div>
+          <div>p = 1 / (1 + e<sup>−z</sup>) = <b class="y" id="lgP">–</b></div>
+          <div id="lgD" style="font-size:24px">–</div>
+        </div>
+        <div class="card pad rise ctls" style="--i:3">
+          <div class="ctl"><span>hours studied</span><input type="range" id="lgX" min="0" max="10" step=".5" value="4"><b id="lgXv">4</b></div>
+          <div class="ctl"><span>w (weight)</span><input type="range" id="lgW" min=".2" max="4" step=".1" value="2"><b class="y" id="lgWv">2</b></div>
+          <div class="ctl"><span>b (bias)</span><input type="range" id="lgB" min="-16" max="0" step=".5" value="-6"><b style="color:var(--blue)" id="lgBv">-6</b></div>
+          <div class="ctl"><span>threshold</span><input type="range" id="lgT" min=".1" max=".9" step=".05" value=".5"><b id="lgTv">0.5</b></div>
+        </div>
+      </div>
+      <div class="stack rise" style="--i:2;gap:10px">
+        <div class="stage-box" style="height:620px"><canvas id="lgCv"></canvas></div>
+        <p class="mono" id="lgCap" style="font-size:18px;color:var(--mute);text-align:center"></p>
+      </div>
+    </div>
+  </section>
+
+  <!-- knn -->
+  <section class="slide" data-id="knn">
+    <div class="two" style="grid-template-columns:.8fr 1.2fr;gap:46px">
+      <div class="stack" style="gap:18px">
+        <h2 class="rise" style="--i:0"><span class="n">CLASSIFICATION</span>k-Nearest Neighbors</h2>
+        <p class="rise" style="--i:1">To classify a new point, find the <b class="y">k closest</b> training points and take a <b>majority vote</b>. Simple, and no training step at all: it just remembers the data.</p>
+        <div class="card pad rise ctls" style="--i:2">
+          <div class="ctl"><span>k</span><input type="range" id="knK" min="1" max="15" step="2" value="5"><b class="y" id="knKv">5</b></div>
+          <div class="row" style="font-size:22px">votes: <b style="color:var(--blue)" id="knVB">0</b> blue · <b style="color:var(--amber)" id="knVA">0</b> orange</div>
+          <div style="font-size:26px">prediction: <b id="knPred">–</b></div>
+        </div>
+        <p class="callout rise" style="--i:3;font-size:19px">Pick an <b>odd</b> k to avoid ties. Distances depend on scale, so features are often normalized first.</p>
+        <p class="hint rise" style="--i:4">click anywhere in the plot to drop a new point</p>
+      </div>
+      <div class="stage-box rise" style="--i:2;height:660px"><canvas id="knCv" style="cursor:crosshair"></canvas><div class="cap">feature 1 →  ·  feature 2 ↑</div></div>
+    </div>
+  </section>
+
+  <!-- knn steps -->
+  <section class="slide" data-id="knnsteps">
+    <div class="two" style="grid-template-columns:.95fr 1.05fr;gap:46px">
+      <div class="stack" style="gap:16px">
+        <h2 class="rise" style="--i:0;font-size:50px"><span class="n">K-NN STEP BY STEP</span>How the vote works</h2>
+        <div class="slist" id="ksList">
+          <div class="it"><h3><i>1</i>Choose k</h3><p>The number of neighbors that get a vote. Usually odd, and tuned by experiment. Here, <b class="y">k = 5</b>.</p></div>
+          <div class="it"><h3><i>2</i>Measure distances</h3><p>From the new point to <b>every</b> training point. Usually straight-line (Euclidean) distance.</p></div>
+          <div class="it"><h3><i>3</i>Find the k nearest</h3><p>Keep the 5 closest points. These are the <b>neighbors</b>.</p></div>
+          <div class="it"><h3><i>4</i>Vote</h3><p>The most common class among the neighbors wins.</p></div>
+        </div>
+      </div>
+      <div class="stage-box rise" style="--i:2;height:660px"><canvas id="ksCv"></canvas><div class="cap" id="ksCap">new point: ?</div></div>
+    </div>
+  </section>
+
+  <!-- decision tree -->
+  <section class="slide" data-id="tree">
+    <div class="stack" style="gap:14px">
+      <div class="labHead rise" style="--i:0"><h2><span class="n">CLASSIFICATION</span>Decision trees</h2>
+        <p style="max-width:780px;font-size:21px">A tree learns a series of <b class="y">if/else</b> questions from labeled data. Each split picks the question that best separates the classes. The leaves are the answers.</p></div>
+      <div class="grid2 rise" style="--i:1;grid-template-columns:1fr 1fr;gap:24px">
+        <div class="stage-box" style="height:520px"><svg id="trSvg" viewBox="0 0 650 520"></svg></div>
+        <div class="stage-box" style="height:520px"><canvas id="trCv"></canvas><div class="cap tr" id="trCap">each split cuts the data into boxes</div></div>
+      </div>
+      <div class="row rise" style="--i:2"><span class="hint" id="trHint">press → to grow the tree one split at a time</span><span style="flex:1"></span><span class="k">route a student:</span><button class="btn" data-s="0">Ana · 2 h, 95%</button><button class="btn" data-s="1">Ben · 6 h, 40%</button><button class="btn" data-s="2">Cy · 5 h, 85%</button></div>
+    </div>
+  </section>
+
+  <!-- term: unsupervised -->
+  <section class="slide" data-id="t-unsupervised">
+    <div class="termS">
+      <div class="eyebrow rise" style="--i:0">Terminology</div>
+      <div class="word rise" style="--i:1">unsupervised <span>learning</span></div>
+      <div class="meta rise" style="--i:2"><i>noun</i></div>
+      <div class="def rise" style="--i:3">Machine learning trained on <b>unlabeled data</b>: inputs with no answers. The model discovers <b>patterns, structures or groupings</b> on its own.</div>
+    </div>
+  </section>
+
+  <!-- unsupervised compare -->
+  <section class="slide" data-id="unsupervised">
+    <h2 class="rise" style="--i:0"><span class="n">NO ANSWER KEY</span>Labeled vs. unlabeled</h2>
+    <div class="grid2 rise" style="--i:1;margin-top:24px;gap:26px">
+      <div class="stack" style="gap:10px"><div class="k" style="color:var(--blue)">Supervised · every point has a label</div><div class="stage-box" style="height:480px"><canvas id="unL"></canvas></div></div>
+      <div class="stack" style="gap:10px"><div class="k" style="color:var(--green)">Unsupervised · just the inputs</div><div class="stage-box" style="height:480px"><canvas id="unU"></canvas></div></div>
+    </div>
+    <p class="callout keyIdea" id="unIdea" style="margin-top:20px">Used when labels <b>don’t exist</b> or are too expensive to make. The model finds the groups, but <b class="y">we</b> decide what they mean.</p>
+    <p class="hint" id="unHint" style="margin-top:8px">press → to let the model find groups</p>
+  </section>
+
+  <!-- k-means -->
+  <section class="slide" data-id="kmeans">
+    <div class="two" style="grid-template-columns:.8fr 1.2fr;gap:46px">
+      <div class="stack" style="gap:16px">
+        <h2 class="rise" style="--i:0"><span class="n">CLUSTERING</span>K-means</h2>
+        <p class="rise" style="--i:1">Groups points into <b class="y">k clusters</b> by repeating two moves until nothing changes:</p>
+        <div class="slist rise" style="--i:2" id="kmList">
+          <div class="it"><h3><i>A</i>Assign</h3><p>Each point joins its <b>nearest center</b>.</p></div>
+          <div class="it"><h3><i>B</i>Update</h3><p>Each center moves to the <b>average</b> of its points.</p></div>
+        </div>
+        <div class="card pad rise ctls" style="--i:3">
+          <div class="ctl"><span>k (clusters)</span><input type="range" id="kmK" min="2" max="6" step="1" value="4"><b class="y" id="kmKv">4</b></div>
+          <div class="row"><button class="btn on" id="kmStep">Step ▶</button><button class="btn" id="kmRun">Run</button><button class="btn" id="kmNew">New centers</button></div>
+          <div class="mono" id="kmMsg" style="font-size:18px;color:var(--mute)">round 0</div>
+        </div>
+        <p class="hint rise" style="--i:4">→ also takes one step. Uses: customer groups, sorting similar documents.</p>
+      </div>
+      <div class="stage-box rise" style="--i:2;height:660px"><canvas id="kmCv"></canvas><div class="cap">✕ = cluster center</div></div>
+    </div>
+  </section>
+
+  <!-- which task -->
+  <section class="slide" data-id="whichtask">
+    <h2 class="rise" style="--i:0"><span class="n">YOUR TURN</span>Which algorithm fits?</h2>
+    <p class="hint rise" style="--i:1;margin-top:10px">decide with a neighbor, then click a card to check</p>
+    <div class="quiz rise" style="--i:2">
+      <div class="card qz"><div class="q">Predict the <b>price</b> of a house based on its square footage.</div><span class="cover">? click to reveal</span><div class="ans"><span class="tag t-blue">REGRESSION</span><b class="y">Linear regression</b></div><div class="why">The answer is a number on a continuous scale.</div></div>
+      <div class="card qz"><div class="q">Predict whether a student will <b>pass or fail</b> based on hours studied.</div><span class="cover">? click to reveal</span><div class="ans"><span class="tag t-y">CLASSIFICATION</span><b class="y">Logistic regression</b></div><div class="why">Two classes, and the sigmoid gives the chance of passing.</div></div>
+      <div class="card qz"><div class="q"><b>Group</b> customers by their shopping habits, with no predefined categories.</div><span class="cover">? click to reveal</span><div class="ans"><span class="tag t-green">CLUSTERING</span><b class="y">K-means</b></div><div class="why">No labels: we want the model to find the groups.</div></div>
+      <div class="card qz"><div class="q">Predict whether a new email is <b>spam</b> based on how similar it is to emails already sorted.</div><span class="cover">? click to reveal</span><div class="ans"><span class="tag t-y">CLASSIFICATION</span><b class="y">k-Nearest Neighbors</b></div><div class="why">“Similar to” = close to its neighbors, then a vote.</div></div>
+    </div>
+  </section>
+
+  <!-- term: training -->
+  <section class="slide" data-id="t-training">
+    <div class="termS">
+      <div class="eyebrow rise" style="--i:0">Terminology</div>
+      <div class="word rise" style="--i:1">train<span>ing</span></div>
+      <div class="meta rise" style="--i:2"><span>/ˈtrā-niŋ/</span><i>noun</i></div>
+      <div class="def rise" style="--i:3">Teaching a model to make accurate predictions by showing it data and <b>adjusting its internal parameters</b> to shrink the difference (error) between its predictions and the real answers.</div>
+    </div>
+  </section>
+
+  <!-- term: inference -->
+  <section class="slide" data-id="t-inference">
+    <div class="termS">
+      <div class="eyebrow rise" style="--i:0">Terminology</div>
+      <div class="word rise" style="--i:1">infer<span>ence</span></div>
+      <div class="meta rise" style="--i:2"><span>/ˈin-f(ə-)rən(t)s/</span><i>noun</i></div>
+      <div class="def rise" style="--i:3">Using a trained model to make predictions on input data <b>without changing</b> what it has learned. Training is studying; inference is <b>taking the test</b>.</div>
+    </div>
+  </section>
+
+  <!-- pipeline -->
+  <section class="slide" data-id="pipeline">
+    <h2 class="rise" style="--i:0"><span class="n">THE LIFE OF A MODEL</span>From data to predictions</h2>
+    <div class="pipe">
+      <div class="card pstep" id="pp0"><div class="e">🗃️</div><h3>Data</h3><p>Collected, cleaned and <b>split</b> into training and testing sets.</p></div>
+      <div class="card pstep" id="pp1"><div class="e">🔁</div><h3>Training</h3><p>The model sees the training set again and again and adjusts its parameters.</p><div class="meter" style="width:100%"><div class="trk"><div class="fill" id="ppBar" style="width:0"></div></div><span class="k" id="ppEp">error: high</span></div></div>
+      <div class="card pstep" id="pp2"><div class="e">⚙️</div><h3>AI model</h3><p>The learned parameters are <b>frozen</b>. Checked on the testing set it never saw.</p></div>
+      <div class="card pstep" id="pp3"><div class="e">💡</div><h3>Inference</h3><p>New, real-world input goes in. A prediction comes out.</p><div class="mono" style="font-size:17px;color:var(--y)" id="ppOut">&nbsp;</div></div>
+    </div>
+    <div class="flow" style="justify-content:center;margin-top:36px"><span class="fbox" id="ppL1">TRAINING: the model changes</span><span class="farr">·</span><span class="fbox" id="ppL2">INFERENCE: the model is fixed</span></div>
+  </section>
+
+  <!-- 80/10/10 split -->
+  <section class="slide" data-id="split">
+    <div class="two" style="grid-template-columns:.75fr 1.25fr;gap:46px">
+      <div class="stack" style="gap:18px">
+        <h2 class="rise" style="--i:0"><span class="n">ONE DATASET, THREE JOBS</span>Split the data</h2>
+        <p class="rise" style="--i:1">Before training, <b>shuffle</b> the dataset and deal it into three piles. A common split:</p>
+        <div class="bar3 rise" style="--i:2"><div style="width:80%;background:var(--green)">TRAINING 80%</div><div style="width:10%;background:var(--y)">VAL</div><div style="width:10%;background:var(--blue)">TEST</div></div>
+        <p class="rise muted" style="--i:3;font-size:20px">70 / 15 / 15 is common too. The exact numbers matter less than keeping the sets <b>separate</b>.</p>
+        <div class="row rise" style="--i:4"><button class="btn on" id="spGo">Shuffle &amp; split ▶</button></div>
+      </div>
+      <div class="stage-box rise" style="--i:2;height:640px"><canvas id="spCv"></canvas></div>
+    </div>
+  </section>
+
+  <!-- roles of the sets -->
+  <section class="slide" data-id="roles">
+    <h2 class="rise" style="--i:0"><span class="n">THREE SETS</span>Training, validation, testing</h2>
+    <div class="split3 rise" style="--i:1;margin-top:36px">
+      <div class="card sp3"><h3 style="color:var(--green)">Training · 80%</h3><p>The examples the model <b>learns from</b>. It sees them over and over, adjusting its parameters to reduce error.</p><div class="an">like the homework problems</div></div>
+      <div class="card sp3"><h3 style="color:var(--y)">Validation · 10%</h3><p>Used <b>during</b> development to tune settings (hyperparameters, e.g. learning rate) and catch overfitting early.</p><div class="an">like the practice quiz</div></div>
+      <div class="card sp3"><h3 style="color:var(--blue)">Testing · 10%</h3><p>Used <b>once, at the end</b>. The model has never seen it, during training <b>or</b> validation, so it gives an honest score.</p><div class="an">like the final exam</div></div>
+    </div>
+    <div class="callout rise" style="--i:2;margin-top:30px">Validation helps <b>improve</b> the model. Testing only <b class="y">measures</b> it. If you tune on the test set, it stops being an honest exam.</div>
+  </section>
+
+  <!-- term: validation -->
+  <section class="slide" data-id="t-validation">
+    <div class="termS">
+      <div class="eyebrow rise" style="--i:0">Terminology</div>
+      <div class="word rise" style="--i:1">valid<span>ation</span></div>
+      <div class="meta rise" style="--i:2"><span>/ˌvaləˈdāSHən/</span><i>noun</i></div>
+      <div class="def rise" style="--i:3">Checking a model on a <b>separate set of data</b> it did not train on, to see how well it generalizes and to guide decisions like <b>tuning settings</b> or stopping before it overfits.</div>
+    </div>
+  </section>
+
+  <!-- term: test -->
+  <section class="slide" data-id="t-test">
+    <div class="termS">
+      <div class="eyebrow rise" style="--i:0">Terminology</div>
+      <div class="word rise" style="--i:1">te<span>st</span></div>
+      <div class="meta rise" style="--i:2"><span>/test/</span><i>noun</i></div>
+      <div class="def rise" style="--i:3">The <b>final evaluation</b> of a trained model on data it never saw during training <b>or</b> validation: an unbiased measure of how it will perform in the real world.</div>
+    </div>
+  </section>
+
+  <!-- code -->
+  <section class="slide" data-id="seed">
+    <div class="stack" style="gap:24px">
+      <h2 class="rise" style="--i:0"><span class="n">IN CODE</span>Splitting with scikit-learn</h2>
+<pre class="src rise" style="--i:1;font-size:22px"><span class="kw">from</span> sklearn.model_selection <span class="kw">import</span> train_test_split
+
+X_train, X_test, y_train, y_test = <span class="fn">train_test_split</span>(X, y, test_size=<span class="n">0.2</span>, random_state=<span class="n">42</span>)</pre>
+      <div class="grid3 rise" style="--i:2">
+        <div class="card pad"><div class="k">X, y</div><p class="codeNote" style="margin-top:6px"><b style="color:var(--blue)">X</b> = the features (inputs), <b class="y">y</b> = the labels (answers).</p></div>
+        <div class="card pad"><div class="k">test_size=0.2</div><p class="codeNote" style="margin-top:6px">Hold back <b>20%</b> for testing. Call it again on the training part to carve out a validation set.</p></div>
+        <div class="card pad"><div class="k">random_state=42</div><p class="codeNote" style="margin-top:6px">Fixes the shuffle so the split is the <b>same every run</b>. Results can be reproduced.</p></div>
+      </div>
+      <p class="rise" style="--i:3;font-size:22px">Why <b class="y">42</b>? No math reason. It’s the “Answer to the Ultimate Question of Life, the Universe, and Everything” in <i class="t">The Hitchhiker’s Guide to the Galaxy</i>, and it stuck as a default.</p>
+    </div>
+  </section>
+
+  <!-- term: error -->
+  <section class="slide" data-id="t-error">
+    <div class="termS">
+      <div class="eyebrow rise" style="--i:0">Terminology</div>
+      <div class="word rise" style="--i:1">err<span>or</span></div>
+      <div class="meta rise" style="--i:2"><span>/ˈerər/</span><i>noun</i></div>
+      <div class="def rise" style="--i:3">The difference between the <b>actual value</b> and the model’s <b>predicted value</b>: how far off one prediction is.</div>
+    </div>
+  </section>
+
+  <!-- error plot -->
+  <section class="slide" data-id="errplot">
+    <div class="two" style="grid-template-columns:.7fr 1.3fr;gap:44px">
+      <div class="stack" style="gap:18px">
+        <h2 class="rise" style="--i:0"><span class="n">SEEING ERROR</span>Target vs. prediction</h2>
+        <div class="eq rise" style="--i:1;font-size:30px">e = <span style="color:var(--blue)">y</span> − <span style="color:var(--red)">ŷ</span></div>
+        <ul class="bul rise" style="--i:2">
+          <li><b style="color:var(--blue)">●</b> <b>target y</b>: the real answer</li>
+          <li><b style="color:var(--red)">✕</b> <b>prediction ŷ</b>: on the model’s line</li>
+          <li>the dashed line between them is the <b class="y">error</b></li>
+        </ul>
+        <div class="card pad rise" style="--i:3;font-family:var(--mono);font-size:20px;line-height:1.6;min-height:120px" id="epInfo">hover a point</div>
+      </div>
+      <div class="stage-box rise" style="--i:2;height:640px"><canvas id="epCv"></canvas></div>
+    </div>
+  </section>
+
+  <!-- term: loss -->
+  <section class="slide" data-id="t-loss">
+    <div class="termS">
+      <div class="eyebrow rise" style="--i:0">Terminology</div>
+      <div class="word rise" style="--i:1">lo<span>ss</span></div>
+      <div class="meta rise" style="--i:2"><span>/lôs/</span><i>noun</i></div>
+      <div class="def rise" style="--i:3">One number from a <b>loss function</b> that sums up how badly the model’s predictions match the true values. Training adjusts the parameters to <b>make the loss smaller</b>.</div>
+    </div>
+  </section>
+
+  <!-- mae mse rmse -->
+  <section class="slide" data-id="metrics" style="padding-top:90px">
+    <div class="stack" style="gap:14px">
+      <h2 class="rise" style="--i:0"><span class="n">MEASURING ERROR IN REGRESSION</span>MAE, MSE and RMSE</h2>
+      <div class="mets rise" style="--i:1">
+        <div class="card met" style="border-top:4px solid var(--amber)"><span class="k">MAE · mean absolute error</span><b style="color:var(--amber)" id="mtMAE">–</b><span class="f">average of |e|</span><span class="d">Same units as the target. Less bothered by outliers.</span></div>
+        <div class="card met" style="border-top:4px solid var(--blue)"><span class="k">MSE · mean squared error</span><b style="color:var(--blue)" id="mtMSE">–</b><span class="f">average of e²</span><span class="d">Punishes big errors hard. Squared units.</span></div>
+        <div class="card met" style="border-top:4px solid #b18cff"><span class="k">RMSE · root mean squared error</span><b style="color:#b18cff" id="mtRMSE">–</b><span class="f">√MSE</span><span class="d">Back in the target’s units, still weighted toward big errors.</span></div>
+      </div>
+      <div class="stage-box rise" style="--i:2;height:380px"><canvas id="mtCv" style="cursor:ns-resize"></canvas></div>
+      <div class="row rise" style="--i:3"><span class="hint">drag any bar up or down to change that error · lower is better for all three</span><span style="flex:1"></span><button class="btn" id="mtNo">Remove the 2 outliers</button><button class="btn" id="mtReset">Reset</button></div>
+    </div>
+  </section>
+
+  <!-- generalization -->
+  <section class="slide" data-id="general">
+    <div class="content center" style="gap:34px">
+      <div class="eyebrow rise" style="--i:0">The real goal</div>
+      <h2 class="rise" style="--i:1;font-size:80px"><span class="y">Generalization</span></h2>
+      <p class="lede rise" style="--i:2">A model’s ability to make accurate predictions on <b>new, unseen data</b>, using patterns it learned from its training data.</p>
+      <div class="callout rise" style="--i:3;max-width:1100px;text-align:left;font-size:25px">The goal is <b>not</b> a perfect score on the training data. A student who memorizes the answer key aces the homework and fails the exam. We want the one who <b class="y">learned the pattern</b>.</div>
+    </div>
+  </section>
+
+  <!-- under / over fit -->
+  <section class="slide" data-id="fit">
+    <div class="two" style="grid-template-columns:.8fr 1.2fr;gap:44px">
+      <div class="stack" style="gap:16px">
+        <h2 class="rise" style="--i:0;font-size:52px"><span class="n">TOO SIMPLE, TOO COMPLEX</span>Underfit vs. <span class="y">overfit</span></h2>
+        <p class="rise" style="--i:1;font-size:22px">Make the model more flexible and watch both errors. <b style="color:var(--blue)">Training</b> error keeps dropping. <b style="color:var(--amber)">Test</b> error tells the truth.</p>
+        <div class="card pad rise ctls" style="--i:2">
+          <div class="ctl"><span>flexibility</span><input type="range" id="ftD" min="1" max="11" step="1" value="1"><b class="y" id="ftDv">1</b></div>
+          <div class="row"><button class="btn" data-d="1">Underfit</button><button class="btn" data-d="3">Balanced</button><button class="btn" data-d="11">Overfit</button></div>
+          <div class="mono" style="font-size:20px;line-height:1.7">train error <b style="color:var(--blue)" id="ftTr">–</b><br>test error &nbsp;<b style="color:var(--amber)" id="ftTe">–</b></div>
+          <div style="font-size:28px;font-weight:700" id="ftVerdict">–</div>
+        </div>
+        <p class="hint rise" style="--i:3">flexibility = degree of the curve (1 is a straight line)</p>
+      </div>
+      <div class="stage-box rise" style="--i:2;height:660px"><canvas id="ftCv"></canvas><div class="cap tr"><b style="color:var(--blue)">●</b> training data · <b style="color:var(--amber)">●</b> test data</div></div>
+    </div>
+  </section>
+
+  <!-- term: underfitting -->
+  <section class="slide" data-id="t-underfit">
+    <div class="termS">
+      <div class="eyebrow rise" style="--i:0">Terminology</div>
+      <div class="word rise" style="--i:1">under<span>fitting</span></div>
+      <div class="meta rise" style="--i:2"><i>noun</i></div>
+      <div class="def rise" style="--i:3">When a model is <b>too simple</b> to capture the real pattern in the data, so it does poorly on <b>both</b> the training and the test sets.</div>
+    </div>
+  </section>
+
+  <!-- term: overfitting -->
+  <section class="slide" data-id="t-overfit">
+    <div class="termS">
+      <div class="eyebrow rise" style="--i:0">Terminology</div>
+      <div class="word rise" style="--i:1">over<span>fitting</span></div>
+      <div class="meta rise" style="--i:2"><i>noun</i></div>
+      <div class="def rise" style="--i:3">When a model learns the pattern <b>and the noise</b> in its training data: excellent on training data, poor on new, unseen data.</div>
+    </div>
+  </section>
+
+  <!-- model a vs b -->
+  <section class="slide" data-id="modelab">
+    <h2 class="rise" style="--i:0"><span class="n">YOUR TURN</span>Which model would you ship?</h2>
+    <p class="rise" style="--i:1;margin-top:10px">Two models were trained to predict house prices. Which would you use for <b>new houses</b>? Click one.</p>
+    <div class="ab rise" style="--i:2">
+      <div class="card abc" data-m="a"><h3>MODEL A</h3><div class="bars">
+        <div class="br"><span>Training accuracy</span><div class="trk"><div style="width:99%;background:var(--blue)"></div></div><b>99%</b></div>
+        <div class="br"><span>Testing accuracy</span><div class="trk"><div style="width:65%;background:var(--amber)"></div></div><b>65%</b></div></div></div>
+      <div class="card abc" data-m="b"><h3>MODEL B</h3><div class="bars">
+        <div class="br"><span>Training accuracy</span><div class="trk"><div style="width:90%;background:var(--blue)"></div></div><b>90%</b></div>
+        <div class="br"><span>Testing accuracy</span><div class="trk"><div style="width:88%;background:var(--amber)"></div></div><b>88%</b></div></div></div>
+    </div>
+    <div class="callout keyIdea" id="abIdea" style="margin-top:26px"><b class="y">Model B.</b> Model A memorized its training data (99%) but falls apart on houses it hasn’t seen (65%): it <b>overfit</b>. Model B scores almost the same on both, so it <b>generalizes</b>.</div>
+  </section>
+
+  <!-- shoe size -->
+  <section class="slide" data-id="shoes">
+    <div class="two" style="grid-template-columns:.75fr 1.25fr;gap:46px">
+      <div class="stack" style="gap:18px">
+        <h2 class="rise" style="--i:0"><span class="n">A REAL CHECK</span>Height → shoe size</h2>
+        <p class="rise" style="--i:1">The line is fitted to the <b style="color:var(--blue)">training data</b> only. Then we see how well it predicts the <b style="color:var(--amber)">test data</b> it never saw.</p>
+        <div class="card pad rise" style="--i:2;font-family:var(--mono);font-size:20px;line-height:1.7" id="shInfo"></div>
+        <div class="row rise" style="--i:3"><button class="btn" id="shTest">Show test errors</button></div>
+      </div>
+      <div class="stage-box rise" style="--i:2;height:640px"><canvas id="shCv"></canvas></div>
+    </div>
+  </section>
+
+  <!-- bias / variance dartboards -->
+  <section class="slide" data-id="biasvar">
+    <div class="two" style="grid-template-columns:.85fr 1.15fr;gap:44px">
+      <div class="stack" style="gap:18px">
+        <h2 class="rise" style="--i:0;font-size:52px"><span class="n">TWO KINDS OF MISTAKES</span>Bias and variance</h2>
+        <div class="card pad rise" style="--i:1"><div class="k" style="color:var(--red)">Bias · consistently off</div><p style="font-size:20px;margin-top:6px">Error from a model that’s <b>too simple</b> for the data. It misses the target the same way every time. High bias → <b>underfitting</b>.</p></div>
+        <div class="card pad rise" style="--i:2"><div class="k" style="color:var(--blue)">Variance · all over the place</div><p style="font-size:20px;margin-top:6px">Error from a model that’s <b>too sensitive</b> to its training data. Retrain on slightly different data and the answers jump around. High variance → <b>overfitting</b>.</p></div>
+        <p class="callout rise" style="--i:3;font-size:20px">Each dart = the model trained on a different sample of data. The bullseye = the true answer. The goal: <b class="y">low bias and low variance</b>.</p>
+        <p class="hint rise" style="--i:4">click a board to throw again</p>
+      </div>
+      <div class="darts rise" style="--i:2">
+        <span></span><span class="hd">LOW VARIANCE</span><span class="hd">HIGH VARIANCE</span>
+        <span class="hd vh">LOW BIAS</span><canvas id="bv0"></canvas><canvas id="bv1"></canvas>
+        <span class="hd vh">HIGH BIAS</span><canvas id="bv2"></canvas><canvas id="bv3"></canvas>
+      </div>
+    </div>
+  </section>
+
+  <!-- term: bias -->
+  <section class="slide" data-id="t-bias">
+    <div class="termS">
+      <div class="eyebrow rise" style="--i:0">Terminology · in a model</div>
+      <div class="word rise" style="--i:1">bi·<span>as</span></div>
+      <div class="meta rise" style="--i:2"><span>/ˈbīəs/</span><i>noun</i></div>
+      <div class="def rise" style="--i:3">When a model makes <b>overly simple assumptions</b> about the data and misses the real pattern. Predictions are consistently off on both training and test sets, usually from <b>underfitting</b>.</div>
+      <p class="rise muted" style="--i:4;font-size:20px">Not the same as the <i>unfair</i> bias from skewed data in the Data deck, though both make predictions wrong in a consistent direction.</p>
+    </div>
+  </section>
+
+  <!-- term: variance -->
+  <section class="slide" data-id="t-variance">
+    <div class="termS">
+      <div class="eyebrow rise" style="--i:0">Terminology · in a model</div>
+      <div class="word rise" style="--i:1">vari<span>ance</span></div>
+      <div class="meta rise" style="--i:2"><span>/ˈverēəns/</span><i>noun</i></div>
+      <div class="def rise" style="--i:3">When a model is <b>overly sensitive</b> to small changes in its training data and learns the noise along with the pattern. High training accuracy, poor test accuracy, usually from <b>overfitting</b>.</div>
+    </div>
+  </section>
+
+  <!-- recap -->
+  <section class="slide" data-id="recap">
+    <canvas class="bg" id="bgRecap"></canvas>
+    <div class="vignette"></div>
+    <div class="content center" style="gap:30px">
+      <div class="eyebrow rise" style="--i:0">Recap</div>
+      <h2 class="rise" style="--i:1;font-size:84px">Learn the pattern, <span class="y">not the noise</span>.</h2>
+      <div class="rise" style="--i:2;display:flex;flex-wrap:wrap;gap:12px;justify-content:center;max-width:1250px" id="rcChips"></div>
+    </div>
+  </section>
+
+  <div id="chrome"><span class="sp"></span><button class="nbtn" id="prev" aria-label="Previous">←</button><span id="count"></span><button class="nbtn" id="next" aria-label="Next">→</button><button class="nbtn" id="fs" aria-label="Fullscreen" title="Fullscreen (F)">⤢</button></div>
+  <div id="progress"></div>
+  <div id="livewrap"><span id="liveauth"></span><div id="livebar"></div></div>
+  <div id="toast" role="status"></div>
+</div>
+<script>
+{{APP}}
+</script>
+</body>
+</html>

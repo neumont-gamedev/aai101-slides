@@ -22,6 +22,10 @@ def data():
     s = read("decks/data/shell.html").replace("{{LOGO}}", LOGO)
     return s.replace("{{APP}}", read("decks/data/app.js").replace("/*LIVE_CORE*/", CORE))
 
+def machine_learning():
+    s = read("decks/machine-learning/shell.html").replace("{{LOGO}}", LOGO)
+    return s.replace("{{APP}}", read("decks/machine-learning/app.js").replace("/*LIVE_CORE*/", CORE))
+
 def cellular_automata():
     return read("decks/cellular-automata/deck.html").replace("/*LIVE_CORE*/", CORE)
 
@@ -33,6 +37,8 @@ DECKS = [
      "Simple rules, complex worlds: Conway’s Game of Life, patterns, and a sandbox to play in."),
     ("data", data, "03", "Data",
      "Features and labels, cleaning messy data, mean/median/mode, bias, supervised vs. unsupervised, and scaling."),
+    ("machine-learning", machine_learning, "04", "Machine Learning",
+     "Regression, classification and clustering by hand: fit a line, k-NN, decision trees, k-means, error metrics, and over/underfitting."),
 ]
 
 def stamp():
