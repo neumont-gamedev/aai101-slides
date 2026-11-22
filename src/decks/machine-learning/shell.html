@@ -248,6 +248,22 @@
   .exs .r.hot{background:rgba(255,194,14,.16)}
   .exs .r .lb.pop{animation:cellpop .5s}
   #svFly{position:absolute;inset:0;pointer-events:none;z-index:5}
+  .svWrap{position:relative;height:560px;margin-top:22px}
+  .svWrap #svA,.svWrap #svB{position:absolute;left:0;width:470px}
+  .svWrap #svA{top:0}
+  .svWrap #svB{top:342px;transition:opacity .6s,transform .7s cubic-bezier(.2,.7,.2,1)}
+  .svWrap #svB:not(.on){opacity:0;transform:translateY(40px)}
+  .svWrap #svM{position:absolute;left:570px;width:300px;height:240px;top:40px;transition:top .8s cubic-bezier(.5,0,.25,1),box-shadow .3s}
+  .svWrap #svM.down{top:316px}
+  .svWrap #svIdea{position:absolute;left:950px;width:430px;top:358px}
+  #svArr{position:absolute;left:0;top:0;pointer-events:none;overflow:visible}
+  #svArr path{transition:stroke .4s,opacity .4s}
+  .svBtn{position:absolute;left:570px;width:300px;display:flex;justify-content:center;transition:opacity .4s,transform .4s;z-index:6}
+  .svBtn:not(.show){opacity:0;transform:translateY(8px);pointer-events:none}
+  .svBtn .btn{font-size:20px;padding:10px 26px;animation:svPulse 1.8s infinite}
+  @keyframes svPulse{0%{box-shadow:0 0 0 0 rgba(255,194,14,.45)}70%{box-shadow:0 0 0 14px rgba(255,194,14,0)}100%{box-shadow:0 0 0 0 rgba(255,194,14,0)}}
+  #svTrainW{top:-22px}
+  #svPredW{top:254px}
   #svFly .fly{position:absolute;left:0;top:0;display:flex;align-items:center;gap:8px;font-size:40px;line-height:1;opacity:0;will-change:transform}
   #svFly .fly .lb{font-family:var(--mono);font-size:16px;color:#141414;background:var(--y);padding:4px 9px;border-radius:6px}
   .stp.on{opacity:1}
@@ -490,25 +506,26 @@
   <section class="slide" data-id="supervised">
     <h2 class="rise" style="--i:0"><span class="n">SUPERVISED LEARNING</span>Learn from labeled examples, predict new ones</h2>
     <div class="svStages rise" style="--i:1"><span class="pill" id="svS1">① TRAIN</span><span class="sep">→</span><span class="pill" id="svS2">② PREDICT</span></div>
-    <div class="sflow" style="margin-top:22px">
-      <div class="card exs stp" id="svA">
+    <div class="svWrap">
+      <div class="card exs" id="svA">
         <div class="k">Training data · input + <span class="y">label</span></div>
         <div class="r"><span class="e">🍎</span>red, round<span class="lb">apple</span></div>
         <div class="r"><span class="e">🍌</span>yellow, long<span class="lb">banana</span></div>
         <div class="r"><span class="e">🍏</span>green, round<span class="lb">apple</span></div>
         <div class="r"><span class="e">🍋</span>yellow, oval<span class="lb">lemon</span></div>
       </div>
-      <div class="arr stp" id="svA2">→</div>
-      <div class="brainbox stp" id="svM"><div><svg id="svGear" viewBox="0 0 100 100" width="96" height="96"><g fill="var(--y)"><rect x="44" y="4" width="12" height="18" rx="3" transform="rotate(0 50 50)"/><rect x="44" y="4" width="12" height="18" rx="3" transform="rotate(36 50 50)"/><rect x="44" y="4" width="12" height="18" rx="3" transform="rotate(72 50 50)"/><rect x="44" y="4" width="12" height="18" rx="3" transform="rotate(108 50 50)"/><rect x="44" y="4" width="12" height="18" rx="3" transform="rotate(144 50 50)"/><rect x="44" y="4" width="12" height="18" rx="3" transform="rotate(180 50 50)"/><rect x="44" y="4" width="12" height="18" rx="3" transform="rotate(216 50 50)"/><rect x="44" y="4" width="12" height="18" rx="3" transform="rotate(252 50 50)"/><rect x="44" y="4" width="12" height="18" rx="3" transform="rotate(288 50 50)"/><rect x="44" y="4" width="12" height="18" rx="3" transform="rotate(324 50 50)"/><circle cx="50" cy="50" r="34"/></g><circle cx="50" cy="50" r="13" fill="var(--bg)"/><circle cx="50" cy="50" r="23" fill="none" stroke="var(--bg)" stroke-width="3" opacity=".35"/></svg><b>MODEL</b><div class="svBar"><i id="svBarI"></i></div><p class="muted" style="font-size:17px;margin-top:8px" id="svMt">untrained: no idea yet</p></div></div>
-      <div class="arr stp" id="svB2">→</div>
-      <div class="card exs stp" id="svB">
+      <div class="card exs" id="svB">
         <div class="k">New data · <span class="y">prediction</span></div>
         <div class="r"><span class="e">🍎</span>red, round<span class="lb" id="svP1">?</span></div>
         <div class="r"><span class="e">🍌</span>yellow, long<span class="lb" id="svP2">?</span></div>
       </div>
+      <svg id="svArr" width="1380" height="560"><defs><marker id="svHd" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="context-stroke"/></marker></defs><path id="svArA" fill="none" stroke-width="3" marker-end="url(#svHd)"/><path id="svArB" fill="none" stroke-width="3" marker-end="url(#svHd)"/></svg>
+      <div class="svBtn" id="svTrainW"><button class="btn on" id="svTrain">Train ▶</button></div>
+      <div class="svBtn" id="svPredW"><button class="btn on" id="svPred">Predict ▶</button></div>
+      <div class="brainbox" id="svM"><div><svg id="svGear" viewBox="0 0 100 100" width="96" height="96"><g fill="var(--y)"><rect x="44" y="4" width="12" height="18" rx="3" transform="rotate(0 50 50)"/><rect x="44" y="4" width="12" height="18" rx="3" transform="rotate(36 50 50)"/><rect x="44" y="4" width="12" height="18" rx="3" transform="rotate(72 50 50)"/><rect x="44" y="4" width="12" height="18" rx="3" transform="rotate(108 50 50)"/><rect x="44" y="4" width="12" height="18" rx="3" transform="rotate(144 50 50)"/><rect x="44" y="4" width="12" height="18" rx="3" transform="rotate(180 50 50)"/><rect x="44" y="4" width="12" height="18" rx="3" transform="rotate(216 50 50)"/><rect x="44" y="4" width="12" height="18" rx="3" transform="rotate(252 50 50)"/><rect x="44" y="4" width="12" height="18" rx="3" transform="rotate(288 50 50)"/><rect x="44" y="4" width="12" height="18" rx="3" transform="rotate(324 50 50)"/><circle cx="50" cy="50" r="34"/></g><circle cx="50" cy="50" r="13" fill="var(--bg)"/><circle cx="50" cy="50" r="23" fill="none" stroke="var(--bg)" stroke-width="3" opacity=".35"/></svg><b>MODEL</b><div class="svBar"><i id="svBarI"></i></div><p class="muted" style="font-size:17px;margin-top:8px" id="svMt">untrained: no idea yet</p></div></div>
+      <div class="callout keyIdea" id="svIdea">The labels are the <b>supervision</b>: like a teacher with an answer key. The goal is to predict well on inputs the model has <b class="y">never seen</b>.</div>
     </div>
     <div id="svFly"></div>
-    <div class="callout keyIdea" id="svIdea" style="margin-top:30px">The labels are the <b>supervision</b>: like a teacher with an answer key. The goal is to predict well on inputs the model has <b class="y">never seen</b>.</div>
   </section>
 
   <!-- regression -->
