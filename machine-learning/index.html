@@ -197,6 +197,14 @@
   table.cmp th,table.cmp td{padding:14px 16px;border-bottom:1px solid var(--line);text-align:left;vertical-align:top;color:#d6d3cb}
   table.cmp th{font-family:var(--mono);font-size:15px;letter-spacing:.08em;color:var(--mute);font-weight:600}
   table.cmp td:first-child{font-family:var(--mono);font-size:16px;color:var(--mute);width:24%}
+  #trTbl th.tm{background:var(--y);color:#141414;border-radius:10px 10px 0 0;border-bottom:none}
+  #trTbl td.tm{background:rgba(255,194,14,.09);color:#f3efe4;border-left:2px solid rgba(255,194,14,.55);border-right:2px solid rgba(255,194,14,.55)}
+  #trTbl tr:last-child td.tm{border-bottom:2px solid rgba(255,194,14,.55);border-radius:0 0 10px 10px}
+  #trTbl td.tm b{color:var(--y)}
+  #trTbl tr.rv td,#trTbl tr.rv td b{transition:opacity .45s ease,transform .45s cubic-bezier(.2,.7,.2,1),color .45s ease}
+  #trTbl tr.rv:not(.on) td{opacity:0;transform:translateY(10px)}
+  #trTbl tr.rv:not(.on) td.tm{opacity:1;transform:none;color:transparent}
+  #trTbl tr.rv:not(.on) td.tm b{color:transparent}
 
   /* 10 models */
   .mgrid{display:grid;grid-template-columns:repeat(5,1fr);gap:16px;margin-top:26px}
@@ -416,13 +424,13 @@
         <div class="callout rise" style="--i:2">Deep learning gets the headlines, but traditional ML is still the go-to for <b class="y">fast, reliable, explainable</b> answers on everyday data.</div>
       </div>
       <div class="card pad rise" style="--i:2">
-        <table class="cmp">
-          <tr><th></th><th class="y">TRADITIONAL ML</th><th style="color:var(--green)">DEEP LEARNING</th></tr>
-          <tr><td>Data needed</td><td>Hundreds to thousands of rows</td><td>Often millions of examples</td></tr>
-          <tr><td>Best at</td><td><b>Structured</b> data: tables, spreadsheets</td><td><b>Unstructured</b> data: images, text, audio</td></tr>
-          <tr><td>Explainable?</td><td>Usually: you can read the line or the tree</td><td>Hard: millions of weights</td></tr>
-          <tr><td>Compute</td><td>A laptop, in seconds</td><td>GPUs, hours to weeks</td></tr>
-          <tr><td>Features</td><td>People choose them</td><td>Learns its own</td></tr>
+        <table class="cmp" id="trTbl">
+          <tr><th></th><th class="tm">TRADITIONAL ML</th><th>DEEP LEARNING</th></tr>
+          <tr class="rv"><td>Data needed</td><td class="tm">Hundreds to thousands of rows</td><td>Often millions of examples</td></tr>
+          <tr class="rv"><td>Best at</td><td class="tm"><b>Structured</b> data: tables, spreadsheets</td><td><b>Unstructured</b> data: images, text, audio</td></tr>
+          <tr class="rv"><td>Explainable?</td><td class="tm">Usually: you can read the line or the tree</td><td>Hard: millions of weights</td></tr>
+          <tr class="rv"><td>Compute</td><td class="tm">A laptop, in seconds</td><td>GPUs, hours to weeks</td></tr>
+          <tr class="rv"><td>Features</td><td class="tm">People choose them</td><td>Learns its own</td></tr>
         </table>
       </div>
     </div>
@@ -1006,7 +1014,7 @@ X_train, X_test, y_train, y_test = <span class="fn">train_test_split</span>(X, y
     </div>
   </section>
 
-  <div id="chrome"><span class="sp"></span><button class="nbtn" id="prev" aria-label="Previous">←</button><span class="ver" style="font-size:12px;opacity:.6;margin-right:8px">updated Nov 22, 11:02 AM</span><span id="count"></span><button class="nbtn" id="next" aria-label="Next">→</button><button class="nbtn" id="fs" aria-label="Fullscreen" title="Fullscreen (F)">⤢</button></div>
+  <div id="chrome"><span class="sp"></span><button class="nbtn" id="prev" aria-label="Previous">←</button><span class="ver" style="font-size:12px;opacity:.6;margin-right:8px">updated Nov 22, 11:35 AM</span><span id="count"></span><button class="nbtn" id="next" aria-label="Next">→</button><button class="nbtn" id="fs" aria-label="Fullscreen" title="Fullscreen (F)">⤢</button></div>
   <div id="progress"></div>
   <div id="livewrap"><span id="liveauth"></span><div id="livebar"></div></div>
   <div id="toast" role="status"></div>
@@ -1218,6 +1226,15 @@ $("rcChips").innerHTML=["model","supervised","regression","linear regression","y
   const B=["mapS","mapU","mapR"].map($); let n=0;
   const show=i=>{ n=i; B.forEach((b,j)=>b.classList.toggle("on",j<n)); $("mapHint").style.opacity=n>=3?0:1; };
   A.mlmap={ enter(d){ show(d<0?3:0); }, step(){ if(n>=3) return false; show(n+1); return true; }, back(){ if(n<=0) return false; show(n-1); return true; } };
+})();
+
+/* ---------- traditional ML vs deep learning: one row per click ---------- */
+(() => {
+  const rows=[...document.querySelectorAll("#trTbl tr.rv")]; let n=0;
+  function show(i){ n=i; rows.forEach((r,j)=>r.classList.toggle("on",j<n)); }
+  A.trad={ enter(d){ show(d<0?rows.length:0); },
+    step(){ if(n>=rows.length) return false; show(n+1); return true; },
+    back(){ if(n<=0) return false; show(n-1); return true; } };
 })();
 
 /* ---------- four tasks: tiny live demos ---------- */

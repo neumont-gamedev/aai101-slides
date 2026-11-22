@@ -206,6 +206,15 @@ $("rcChips").innerHTML=["model","supervised","regression","linear regression","y
   A.mlmap={ enter(d){ show(d<0?3:0); }, step(){ if(n>=3) return false; show(n+1); return true; }, back(){ if(n<=0) return false; show(n-1); return true; } };
 })();
 
+/* ---------- traditional ML vs deep learning: one row per click ---------- */
+(() => {
+  const rows=[...document.querySelectorAll("#trTbl tr.rv")]; let n=0;
+  function show(i){ n=i; rows.forEach((r,j)=>r.classList.toggle("on",j<n)); }
+  A.trad={ enter(d){ show(d<0?rows.length:0); },
+    step(){ if(n>=rows.length) return false; show(n+1); return true; },
+    back(){ if(n<=0) return false; show(n-1); return true; } };
+})();
+
 /* ---------- four tasks: tiny live demos ---------- */
 (() => {
   const cards=[...document.querySelectorAll('[data-id="tasks"] .task')], cvs=[0,1,2,3].map(i=>$("tk"+i));
