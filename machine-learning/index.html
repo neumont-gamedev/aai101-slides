@@ -1056,7 +1056,7 @@ X_train, X_test, y_train, y_test = <span class="fn">train_test_split</span>(X, y
     </div>
   </section>
 
-  <div id="chrome"><span class="sp"></span><button class="nbtn" id="prev" aria-label="Previous">←</button><span class="ver" style="font-size:12px;opacity:.6;margin-right:8px">updated Nov 22, 3:25 PM</span><span id="count"></span><button class="nbtn" id="next" aria-label="Next">→</button><button class="nbtn" id="fs" aria-label="Fullscreen" title="Fullscreen (F)">⤢</button></div>
+  <div id="chrome"><span class="sp"></span><button class="nbtn" id="prev" aria-label="Previous">←</button><span class="ver" style="font-size:12px;opacity:.6;margin-right:8px">updated Nov 22, 3:46 PM</span><span id="count"></span><button class="nbtn" id="next" aria-label="Next">→</button><button class="nbtn" id="fs" aria-label="Fullscreen" title="Fullscreen (F)">⤢</button></div>
   <div id="progress"></div>
   <div id="livewrap"><span id="liveauth"></span><div id="livebar"></div></div>
   <div id="toast" role="status"></div>
@@ -1158,9 +1158,12 @@ $("rcChips").innerHTML=["model","supervised","regression","linear regression","y
 /* ---------- warm-up cannon: learn from each miss ---------- */
 (() => {
   const cv=$("cnCv"), G=9.8, V=p=>10+p*.25, HIT=3, LIFT=16;
-  let ang=45, pow=50, tx=78, shots=[], ball=null, boom=[], ai=false, hit=false, aiTimer=null;
+  let ang=45, pow=50, tx=78, hh=14, shots=[], ball=null, boom=[], ai=false, hit=false, aiTimer=null;
   const geo=()=>{ const W=cv.offsetWidth, H=cv.offsetHeight, gy=H-60, x0=64, ppm=(W-x0-30)/125;
-    return {W,H,gy,x0,ppm,X:m=>x0+m*ppm,Yp:m=>gy-LIFT-m*ppm}; };
+    return {W,H,gy,x0,ppm,X:m=>x0+m*ppm,Yp:m=>gy-LIFT-m*ppm,G:m=>gy-hill(m)*ppm}; };
+  // the target sits on a flat-topped hill: TOP m of flat top either side of the flag, SL m of rounded slope
+  const TOP=6, SL=12;
+  function hill(m){ const d=Math.abs(m-tx); return d<=TOP?hh:d<TOP+SL?hh*(.5+.5*Math.cos(Math.PI*(d-TOP)/SL)):0; }
   function sync(){ $("cnA").value=ang; $("cnP").value=Math.round(pow); $("cnAv").textContent=ang+"°"; $("cnPv").textContent=Math.round(pow);
     $("cnFire").disabled=!!ball||ai; $("cnAI").disabled=!!ball||ai; $("cnAI").classList.toggle("on",ai); }
   function msg(h){ $("cnMsg").innerHTML=h; }
@@ -1171,7 +1174,7 @@ $("rcChips").innerHTML=["model","supervised","regression","linear regression","y
     shots.push({x,err,ai:b.ai,path:b.path,hit:h}); ball=null;
     const who=b.ai?'<span style="color:var(--blue)">AI</span> shot':"Shot";
     if(h){ hit=true; ai=false;
-      const r=geo(); boom=Array.from({length:40},()=>({x:r.X(x),y:r.Yp(0),vx:rnd(-4,4),vy:rnd(-7,-2),l:1}));
+      const r=geo(); boom=Array.from({length:40},()=>({x:r.X(x),y:r.G(x),vx:rnd(-4,4),vy:rnd(-7,-2),l:1}));
       msg(`<b style="color:var(--green)">HIT!</b> ${who} ${n} landed ${Math.abs(err).toFixed(1)} m from the center. It took <b class="y">${n} ${n===1?"try":"tries"}</b>.`);
       $("cnIdea").classList.add("on"); }
     else {
@@ -1184,34 +1187,42 @@ $("rcChips").innerHTML=["model","supervised","regression","linear regression","y
   $("cnP").oninput=e=>{ pow=+e.target.value; sync(); };
   $("cnFire").onclick=()=>fire(false);
   $("cnAI").onclick=()=>{ if(ball) return; ai=true; hit=false; msg('<span style="color:var(--blue)">The AI keeps your angle and changes only the power, using each miss to decide how much.</span>'); sync(); fire(true); };
-  function reset(dist){ clearTimeout(aiTimer); aiTimer=null; shots=[]; ball=null; boom=[]; ai=false; hit=false; tx=dist;
+  function reset(dist,height){ clearTimeout(aiTimer); aiTimer=null; shots=[]; ball=null; boom=[]; ai=false; hit=false; tx=dist; hh=height;
     msg("No shots yet. Take your best guess."); $("cnIdea").classList.remove("on"); sync(); }
-  $("cnNew").onclick=()=>reset(Math.round(rnd(45,110)));
+  $("cnNew").onclick=()=>reset(Math.round(rnd(45,108)),Math.round(rnd(8,20)));
   A.cannon={
-    enter(){ ang=45; pow=50; reset(78); },
+    enter(){ ang=45; pow=50; reset(78,14); },
     step(){ if($("cnIdea").classList.contains("on")) return false; $("cnIdea").classList.add("on"); return true; },
     back(){ if(!$("cnIdea").classList.contains("on")) return false; $("cnIdea").classList.remove("on"); return true; },
     tick(dt){
       const r=geo(), x=ctxOf(cv); x.clearRect(0,0,r.W,r.H);
       // flight (runs 2.2× real time)
-      if(ball){ ball.t+=dt/1000*2.2; const T=(ball.vy+Math.sqrt(ball.vy**2+2*G*LIFT/r.ppm))/G;
-        if(ball.t>=T){ ball.path.push([ball.vx*T,-LIFT/r.ppm]); land(ball.vx*T); }
-        else ball.path.push([ball.vx*ball.t,ball.vy*ball.t-G*ball.t*ball.t/2]); }
+      if(ball){ const b=ball, lo=-LIFT/r.ppm, P=t=>[b.vx*t,b.vy*t-G*t*t/2], under=t=>{ const [px,py]=P(t); return py<=lo+hill(px); };
+        const t0=b.t, t1=b.t+dt/1000*2.2;
+        if(under(t1)&&t1>.05){ let a=t0,c=t1; for(let i=0;i<30;i++){ const m=(a+c)/2; if(under(m)) c=m; else a=m; }
+          const [px]=P(c); b.path.push([px,lo+hill(px)]); land(px); }
+        else { b.t=t1; b.path.push(P(t1)); } }
       // ground + distance ticks
-      x.fillStyle="#17171b"; x.fillRect(0,r.gy,r.W,r.H-r.gy); x.strokeStyle="#55534d"; x.lineWidth=2; x.beginPath(); x.moveTo(0,r.gy); x.lineTo(r.W,r.gy); x.stroke();
+      x.fillStyle="#17171b"; x.fillRect(0,r.gy,r.W,r.H-r.gy);
+      // hill under the target
+      x.beginPath(); x.moveTo(r.X(tx-TOP-SL),r.gy); for(let m=tx-TOP-SL;m<=tx+TOP+SL;m+=.5) x.lineTo(r.X(m),r.G(m)); x.lineTo(r.X(tx+TOP+SL),r.gy); x.closePath();
+      x.fillStyle="#1e1f24"; x.fill();
+      x.strokeStyle="#55534d"; x.lineWidth=2; x.beginPath(); x.moveTo(0,r.gy); for(let m=-r.x0/r.ppm;m<=(r.W-r.x0)/r.ppm;m+=.5) x.lineTo(r.X(m),r.G(m)); x.stroke();
+      label(x,`hill ${hh} m`,r.X(tx),r.G(tx)+Math.min(32,hh*r.ppm/2+6),"#6b6960",13,"center");
       for(let m=0;m<=120;m+=10){ x.strokeStyle="#55534d"; x.beginPath(); x.moveTo(r.X(m),r.gy); x.lineTo(r.X(m),r.gy+8); x.stroke(); label(x,m+" m",r.X(m),r.gy+28,MUTE,13,"center"); }
       // target pad + flag
       const tl=r.X(tx-HIT), tw=2*HIT*r.ppm;
-      for(let i=0;i<6;i++){ x.fillStyle=i%2?"#f3f1ea":RED; x.fillRect(tl+i*tw/6,r.gy-6,tw/6,6); }
-      x.strokeStyle=INK; x.lineWidth=2.5; x.beginPath(); x.moveTo(r.X(tx),r.gy-6); x.lineTo(r.X(tx),r.gy-70); x.stroke();
-      x.fillStyle=hit?GREEN:RED; x.beginPath(); x.moveTo(r.X(tx),r.gy-70); x.lineTo(r.X(tx)+30,r.gy-60); x.lineTo(r.X(tx),r.gy-50); x.closePath(); x.fill();
+      const ty=r.G(tx);
+      for(let i=0;i<6;i++){ x.fillStyle=i%2?"#f3f1ea":RED; x.fillRect(tl+i*tw/6,ty-6,tw/6,6); }
+      x.strokeStyle=INK; x.lineWidth=2.5; x.beginPath(); x.moveTo(r.X(tx),ty-6); x.lineTo(r.X(tx),ty-70); x.stroke();
+      x.fillStyle=hit?GREEN:RED; x.beginPath(); x.moveTo(r.X(tx),ty-70); x.lineTo(r.X(tx)+30,ty-60); x.lineTo(r.X(tx),ty-50); x.closePath(); x.fill();
       // earlier shots: faint arcs, landing marks and error labels
       const path=(p,col,w,dash)=>{ x.save(); x.strokeStyle=col; x.lineWidth=w; x.setLineDash(dash||[]); x.beginPath(); p.forEach(([a,b],i)=>i?x.lineTo(r.X(a),r.Yp(b)):x.moveTo(r.X(a),r.Yp(b))); x.stroke(); x.restore(); };
       shots.forEach((s,i)=>{ const last=i===shots.length-1, col=s.hit?GREEN:s.ai?BLUE:Y;
         path(s.path,col,last?2.5:1.5,last?[]:[4,6]); x.globalAlpha=last?1:.35;
-        dot(x,r.X(s.x),r.gy-4,5,col);
-        if(last&&!s.hit){ dashed(x,r.X(s.x),r.gy-14,r.X(tx),r.gy-14,RED,2,[5,4]);
-          label(x,`${Math.abs(s.err).toFixed(1)} m ${s.err<0?"short":"long"}`,(r.X(s.x)+r.X(tx))/2,r.gy-24,RED,15,"center"); }
+        dot(x,r.X(s.x),r.G(s.x)-4,5,col);
+        if(last&&!s.hit){ const my=Math.min(r.G(s.x),ty)-14; dashed(x,r.X(s.x),my,r.X(tx),my,RED,2,[5,4]);
+          label(x,`${Math.abs(s.err).toFixed(1)} m ${s.err<0?"short":"long"}`,(r.X(s.x)+r.X(tx))/2,my-10,RED,15,"center"); }
         x.globalAlpha=1; });
       // ball in flight
       if(ball){ path(ball.path,ball.ai?BLUE:Y,2.5); const p=ball.path[ball.path.length-1]; if(p) dot(x,r.X(p[0]),r.Yp(p[1]),8,INK); }
@@ -1221,7 +1232,7 @@ $("rcChips").innerHTML=["model","supervised","regression","linear regression","y
       dot(x,r.x0,r.gy-12,14,"#24242a",INK); dot(x,r.x0,r.gy-12,4,INK);
       // hit burst
       boom=boom.filter(p=>{ p.x+=p.vx*dt/16; p.y+=p.vy*dt/16; p.vy+=.25*dt/16; p.l-=dt/1200; if(p.l<=0) return false; x.globalAlpha=p.l; dot(x,p.x,p.y,4,pick([Y,GREEN,INK])); x.globalAlpha=1; return true; });
-      if(hit) label(x,"HIT!",r.X(tx),r.gy-90,GREEN,30,"center","Space Grotesk");
+      if(hit) label(x,"HIT!",r.X(tx),ty-90,GREEN,30,"center","Space Grotesk");
       // miss distance per shot: the learning curve
       const bx=r.W-300, by=20, bw=280, bh=130; x.fillStyle="rgba(28,28,32,.92)"; x.strokeStyle=LINE; x.lineWidth=1; x.beginPath(); x.roundRect(bx,by,bw,bh,10); x.fill(); x.stroke();
       label(x,"miss distance per shot",bx+12,by+22,MUTE,13);
