@@ -232,6 +232,8 @@
   .brainbox .e{font-size:84px}
   .brainbox b{font-family:var(--mono);color:var(--y);letter-spacing:.12em;font-size:20px}
   .stp{opacity:.12;transition:opacity .6s}
+  #cnAI{transition:opacity .5s,transform .5s}
+  #cnAI.locked{opacity:0;transform:scale(.9);pointer-events:none}
   .svStages{display:flex;gap:12px;align-items:center;margin-top:16px;font-family:var(--mono);font-size:16px;letter-spacing:.1em}
   .svStages .pill{padding:7px 16px;border:1px solid var(--line);border-radius:999px;color:var(--mute);transition:background .4s,color .4s,border-color .4s}
   .svStages .pill.on{background:var(--y);color:#141414;border-color:var(--y)}
@@ -387,7 +389,7 @@
         <div class="card pad rise ctls" style="--i:2">
           <div class="ctl"><span>angle</span><input type="range" id="cnA" min="10" max="80" step="1" value="45"><b id="cnAv">45°</b></div>
           <div class="ctl"><span>power</span><input type="range" id="cnP" min="0" max="100" step="1" value="50"><b id="cnPv">50</b></div>
-          <div class="row"><button class="btn on" id="cnFire">Fire!</button><button class="btn" id="cnAI">Let the AI learn</button><button class="btn" id="cnNew">New target</button></div>
+          <div class="row"><button class="btn on" id="cnFire">Fire!</button><button class="btn" id="cnNew">New target</button><button class="btn" id="cnAI">Let the AI learn</button></div>
         </div>
         <div class="card pad rise" style="--i:3;font-size:22px;line-height:1.45;height:172px;overflow:hidden" id="cnMsg">No shots yet. Take your best guess.</div>
         <div class="callout keyIdea" id="cnIdea" style="font-size:20px">That’s machine learning: <b>guess → measure the error → adjust → repeat</b>. A model does this thousands of times, nudging its numbers a little after every miss.</div>

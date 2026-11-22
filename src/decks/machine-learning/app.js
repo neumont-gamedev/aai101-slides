@@ -94,14 +94,14 @@ $("rcChips").innerHTML=["model","supervised","regression","linear regression","y
 /* ---------- warm-up cannon: learn from each miss ---------- */
 (() => {
   const cv=$("cnCv"), G=9.8, V=p=>10+p*.25, HIT=3, LIFT=16;
-  let ang=45, pow=50, tx=78, hh=14, shots=[], ball=null, boom=[], ai=false, hit=false, aiTimer=null;
+  let ang=45, pow=50, tx=78, hh=14, unlocked=false, shots=[], ball=null, boom=[], ai=false, hit=false, aiTimer=null;
   const geo=()=>{ const W=cv.offsetWidth, H=cv.offsetHeight, gy=H-60, x0=64, ppm=(W-x0-30)/125;
     return {W,H,gy,x0,ppm,X:m=>x0+m*ppm,Yp:m=>gy-LIFT-m*ppm,G:m=>gy-hill(m)*ppm}; };
   // the target sits on a flat-topped hill: TOP m of flat top either side of the flag, SL m of rounded slope
   const TOP=6, SL=12;
   function hill(m){ const d=Math.abs(m-tx); return d<=TOP?hh:d<TOP+SL?hh*(.5+.5*Math.cos(Math.PI*(d-TOP)/SL)):0; }
   function sync(){ $("cnA").value=ang; $("cnP").value=Math.round(pow); $("cnAv").textContent=ang+"°"; $("cnPv").textContent=Math.round(pow);
-    $("cnFire").disabled=!!ball||ai; $("cnAI").disabled=!!ball||ai; $("cnAI").classList.toggle("on",ai); }
+    $("cnFire").disabled=!!ball||ai; $("cnAI").disabled=!!ball||ai; $("cnAI").classList.toggle("on",ai); $("cnAI").classList.toggle("locked",!unlocked); }
   function msg(h){ $("cnMsg").innerHTML=h; }
   function fire(byAI){ if(ball) return; const v=V(pow), a=ang*Math.PI/180;
     ball={t:0,vx:v*Math.cos(a),vy:v*Math.sin(a),path:[],ai:byAI,a:ang,p:Math.round(pow)}; sync(); }
@@ -111,7 +111,9 @@ $("rcChips").innerHTML=["model","supervised","regression","linear regression","y
     const who=b.ai?'<span style="color:var(--blue)">AI</span> shot':"Shot";
     if(h){ hit=true; ai=false;
       const r=geo(); boom=Array.from({length:40},()=>({x:r.X(x),y:r.G(x),vx:rnd(-4,4),vy:rnd(-7,-2),l:1}));
-      msg(`<b style="color:var(--green)">HIT!</b> ${who} ${n} landed ${Math.abs(err).toFixed(1)} m from the center. It took <b class="y">${n} ${n===1?"try":"tries"}</b>.`);
+      const first=!b.ai&&!unlocked; if(!b.ai) unlocked=true;
+      msg(`<b style="color:var(--green)">HIT!</b> ${who} ${n} landed ${Math.abs(err).toFixed(1)} m from the center. It took <b class="y">${n} ${n===1?"try":"tries"}</b>.`+
+        (first?'<br><span style="font-size:18px;color:var(--blue)">Now press <b>New target</b> and <b>Let the AI learn</b> to watch a machine do the same thing.</span>':""));
       $("cnIdea").classList.add("on"); }
     else {
       msg(`${who} ${n} (angle ${b.a}°, power ${b.p}): <b style="color:${err<0?"var(--amber)":"var(--red)"}">${Math.abs(err).toFixed(1)} m ${err<0?"short":"long"}</b><br><span class="muted" style="font-size:18px">error = ${err>0?"+":"−"}${Math.abs(err).toFixed(1)} m → ${err<0?"more":"less"} power or a different angle?</span>`);
@@ -127,7 +129,7 @@ $("rcChips").innerHTML=["model","supervised","regression","linear regression","y
     msg("No shots yet. Take your best guess."); $("cnIdea").classList.remove("on"); sync(); }
   $("cnNew").onclick=()=>reset(Math.round(rnd(45,108)),Math.round(rnd(8,20)));
   A.cannon={
-    enter(){ ang=45; pow=50; reset(78,14); },
+    enter(){ ang=45; pow=50; unlocked=false; reset(78,14); },
     step(){ if($("cnIdea").classList.contains("on")) return false; $("cnIdea").classList.add("on"); return true; },
     back(){ if(!$("cnIdea").classList.contains("on")) return false; $("cnIdea").classList.remove("on"); return true; },
     tick(dt){
