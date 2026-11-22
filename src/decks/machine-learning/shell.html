@@ -228,6 +228,24 @@
   .brainbox .e{font-size:84px}
   .brainbox b{font-family:var(--mono);color:var(--y);letter-spacing:.12em;font-size:20px}
   .stp{opacity:.12;transition:opacity .6s}
+  .svStages{display:flex;gap:12px;align-items:center;margin-top:16px;font-family:var(--mono);font-size:16px;letter-spacing:.1em}
+  .svStages .pill{padding:7px 16px;border:1px solid var(--line);border-radius:999px;color:var(--mute);transition:background .4s,color .4s,border-color .4s}
+  .svStages .pill.on{background:var(--y);color:#141414;border-color:var(--y)}
+  .svStages .pill.done{color:var(--green);border-color:var(--green)}
+  .svStages .sep{color:var(--mute)}
+  #svGear{display:block;margin:0 auto 8px;transform-origin:50% 50%;filter:drop-shadow(0 4px 10px rgba(255,194,14,.25))}
+  .svBar{width:190px;height:8px;border-radius:4px;background:var(--panel2);margin:12px auto 0;overflow:hidden}
+  .svBar i{display:block;height:100%;width:0;background:var(--y);transition:width .3s,background .4s}
+  .svBar i.full{background:var(--green)}
+  .brainbox{transition:box-shadow .3s,opacity .6s}
+  .brainbox.busy{box-shadow:0 0 0 6px rgba(255,194,14,.12),0 0 44px rgba(255,194,14,.28)}
+  .exs .r{transition:opacity .4s,background .3s}
+  .exs .r.sent{opacity:.4}
+  .exs .r.hot{background:rgba(255,194,14,.16)}
+  .exs .r .lb.pop{animation:cellpop .5s}
+  #svFly{position:absolute;inset:0;pointer-events:none;z-index:5}
+  #svFly .fly{position:absolute;left:0;top:0;display:flex;align-items:center;gap:8px;font-size:40px;line-height:1;opacity:0;will-change:transform}
+  #svFly .fly .lb{font-family:var(--mono);font-size:16px;color:#141414;background:var(--y);padding:4px 9px;border-radius:6px}
   .stp.on{opacity:1}
 
   /* example cards */
@@ -466,7 +484,8 @@
   <!-- supervised diagram -->
   <section class="slide" data-id="supervised">
     <h2 class="rise" style="--i:0"><span class="n">SUPERVISED LEARNING</span>Learn from labeled examples, predict new ones</h2>
-    <div class="sflow">
+    <div class="svStages rise" style="--i:1"><span class="pill" id="svS1">① TRAIN</span><span class="sep">→</span><span class="pill" id="svS2">② PREDICT</span></div>
+    <div class="sflow" style="margin-top:22px">
       <div class="card exs stp" id="svA">
         <div class="k">Training data · input + <span class="y">label</span></div>
         <div class="r"><span class="e">🍎</span>red, round<span class="lb">apple</span></div>
@@ -475,7 +494,7 @@
         <div class="r"><span class="e">🍋</span>yellow, oval<span class="lb">lemon</span></div>
       </div>
       <div class="arr stp" id="svA2">→</div>
-      <div class="brainbox stp" id="svM"><div><div class="e">⚙️</div><b>MODEL</b><p class="muted" style="font-size:17px;margin-top:6px" id="svMt">learns: color + shape → fruit</p></div></div>
+      <div class="brainbox stp" id="svM"><div><svg id="svGear" viewBox="0 0 100 100" width="96" height="96"><g fill="var(--y)"><rect x="44" y="4" width="12" height="18" rx="3" transform="rotate(0 50 50)"/><rect x="44" y="4" width="12" height="18" rx="3" transform="rotate(36 50 50)"/><rect x="44" y="4" width="12" height="18" rx="3" transform="rotate(72 50 50)"/><rect x="44" y="4" width="12" height="18" rx="3" transform="rotate(108 50 50)"/><rect x="44" y="4" width="12" height="18" rx="3" transform="rotate(144 50 50)"/><rect x="44" y="4" width="12" height="18" rx="3" transform="rotate(180 50 50)"/><rect x="44" y="4" width="12" height="18" rx="3" transform="rotate(216 50 50)"/><rect x="44" y="4" width="12" height="18" rx="3" transform="rotate(252 50 50)"/><rect x="44" y="4" width="12" height="18" rx="3" transform="rotate(288 50 50)"/><rect x="44" y="4" width="12" height="18" rx="3" transform="rotate(324 50 50)"/><circle cx="50" cy="50" r="34"/></g><circle cx="50" cy="50" r="13" fill="var(--bg)"/><circle cx="50" cy="50" r="23" fill="none" stroke="var(--bg)" stroke-width="3" opacity=".35"/></svg><b>MODEL</b><div class="svBar"><i id="svBarI"></i></div><p class="muted" style="font-size:17px;margin-top:8px" id="svMt">untrained: no idea yet</p></div></div>
       <div class="arr stp" id="svB2">→</div>
       <div class="card exs stp" id="svB">
         <div class="k">New data · <span class="y">prediction</span></div>
@@ -483,6 +502,7 @@
         <div class="r"><span class="e">🍌</span>yellow, long<span class="lb" id="svP2">?</span></div>
       </div>
     </div>
+    <div id="svFly"></div>
     <div class="callout keyIdea" id="svIdea" style="margin-top:30px">The labels are the <b>supervision</b>: like a teacher with an answer key. The goal is to predict well on inputs the model has <b class="y">never seen</b>.</div>
   </section>
 

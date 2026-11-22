@@ -300,13 +300,51 @@ $("rcChips").innerHTML=["model","supervised","regression","linear regression","y
   A.models={ enter(){ grid.querySelectorAll(".sel").forEach(e=>e.classList.remove("sel")); } };
 })();
 
-/* ---------- supervised flow ---------- */
+/* ---------- supervised flow: train, then predict (animated) ---------- */
 (() => {
-  const P=["svA","svA2","svM","svB2","svB"].map($); let n=0;
-  function show(i){ n=i; const vis=[1,2,2,3,3]; P.forEach((p,j)=>p.classList.toggle("on",vis[j]<=Math.max(1,n)));
-    $("svP1").textContent=n>=4?"apple":"?"; $("svP2").textContent=n>=4?"banana":"?";
-    $("svMt").textContent=n>=2?"learned: color + shape → fruit":"learning…"; $("svIdea").classList.toggle("on",n>=5); }
-  A.supervised={ enter(d){ show(d<0?5:1); }, step(){ if(n>=5) return false; show(n===1?2:n+1); return true; }, back(){ if(n<=1) return false; show(n===2?1:n-1); return true; } };
+  const P=["svA","svA2","svM","svB2","svB"].map($), M=$("svM"), gear=$("svGear"), layer=$("svFly");
+  const trRows=[...$("svA").querySelectorAll(".r")], pdRows=[...$("svB").querySelectorAll(".r")], ANS=["apple","banana"];
+  const TS=1100, TD=1200, TT=(trRows.length-1)*TS+TD+300;          // training timeline (ms)
+  const PS=2000, PT=pdRows.length*PS;                               // prediction timeline (ms)
+  const mk=h=>{ const d=document.createElement("div"); d.className="fly"; d.innerHTML=h; layer.appendChild(d); return d; };
+  const emo=r=>r.querySelector(".e").textContent;
+  const trFly=trRows.map(r=>mk(`<span>${emo(r)}</span><span class="lb">${r.querySelector(".lb").textContent}</span>`));
+  const pdIn=pdRows.map(r=>mk(`<span>${emo(r)}</span>`)), pdOut=ANS.map(a=>mk(`<span class="lb">${a}</span>`));
+  let n=1, t=0, ang=0, shown=[];
+  const ease=u=>u<.5?2*u*u:1-(-2*u+2)**2/2, cl=u=>Math.max(0,Math.min(1,u));
+  function ctr(el){ const L=layer.getBoundingClientRect(), r=el.getBoundingClientRect(), k=L.width/1600||1;
+    return [(r.left+r.width/2-L.left)/k,(r.top+r.height/2-L.top)/k]; }
+  function place(el,a,b,u,arc,s0,s1){ if(u<=0||u>=1){ el.style.opacity=0; return; }
+    const e=ease(u), x=a[0]+(b[0]-a[0])*e, y=a[1]+(b[1]-a[1])*e-arc*Math.sin(Math.PI*e);
+    el.style.opacity=u>.85?(1-u)/.15:Math.min(1,u/.1);
+    el.style.transform=`translate(${x}px,${y}px) translate(-50%,-50%) scale(${s0+(s1-s0)*e})`; }
+  function render(){
+    const tr=n<2?0:n===2?Math.min(t,TT):TT, pd=n<3?0:n===3?Math.min(t,PT):PT, g=ctr(gear);
+    P.forEach((p,j)=>p.classList.toggle("on",j<3||n>=3));
+    let k=0;
+    trRows.forEach((r,i)=>{ const u=cl((tr-i*TS)/TD); if(u>=1) k++;
+      r.classList.toggle("hot",u>0&&u<1); r.classList.toggle("sent",u>=1&&n===2&&tr<TT);
+      place(trFly[i],ctr(r.querySelector(".e")),g,u,90,1,.45); });
+    let busy=n===2&&tr<TT;
+    pdRows.forEach((r,j)=>{ const d=pd-j*PS, lb=r.querySelector(".lb");
+      place(pdIn[j],ctr(r.querySelector(".e")),g,cl(d/700),70,1,.45);
+      if(d>650&&d<1350) busy=true;
+      place(pdOut[j],g,ctr(lb),cl((d-1300)/600),25,.6,1);
+      const done=d>=1900; r.classList.toggle("hot",d>0&&d<1900);
+      if(done!==!!shown[j]){ shown[j]=done; lb.textContent=done?ANS[j]:"?"; if(done) lb.classList.remove("pop"),void lb.offsetWidth,lb.classList.add("pop"); } });
+    const trained=n>2||tr>=TT;
+    $("svBarI").style.width=(trained?100:k/trRows.length*100)+"%"; $("svBarI").classList.toggle("full",trained);
+    $("svMt").textContent=n<2?"untrained: no idea yet":!trained?`learning… ${k} / ${trRows.length} examples`:n===3&&pd<PT?"predicting…":"learned: color + shape → fruit";
+    M.classList.toggle("busy",busy); M._busy=busy; M._trained=trained;
+    $("svS1").className="pill "+(n<=2&&!trained?"on":trained?"done":"");
+    $("svS2").className="pill "+(n===3&&pd<PT?"on":n>=3?"done":"");
+    $("svIdea").classList.toggle("on",n>=4); }
+  const running=()=>(n===2&&t<TT)||(n===3&&t<PT);
+  A.supervised={
+    enter(d){ n=d<0?4:1; t=d<0?1e9:0; shown=[]; render(); },
+    step(){ if(running()){ t=1e9; render(); return true; } if(n>=4) return false; n++; t=0; render(); return true; },
+    back(){ if(n<=1) return false; n--; t=1e9; render(); return true; },
+    tick(dt){ if(running()) t+=dt; ang+=(M._busy?.55:M._trained?.05:0)*dt; gear.style.transform=`rotate(${ang%360}deg)`; render(); } };
 })();
 
 /* ---------- linear regression: fit the line by hand ---------- */
