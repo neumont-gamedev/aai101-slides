@@ -710,19 +710,6 @@
     </div>
   </section>
 
-  <!-- decision tree -->
-  <section class="slide" data-id="tree">
-    <div class="stack" style="gap:14px">
-      <div class="labHead rise" style="--i:0"><h2><span class="n">CLASSIFICATION</span>Decision trees</h2>
-        <p style="max-width:780px;font-size:21px">A tree learns a series of <b class="y">if/else</b> questions from labeled data. Each split picks the question that best separates the classes. The leaves are the answers.</p></div>
-      <div class="grid2 rise" style="--i:1;grid-template-columns:1fr 1fr;gap:24px">
-        <div class="stage-box" style="height:520px"><svg id="trSvg" viewBox="0 0 650 520"></svg></div>
-        <div class="stage-box" style="height:520px"><canvas id="trCv"></canvas><div class="cap tr" id="trCap">each split cuts the data into boxes</div></div>
-      </div>
-      <div class="row rise" style="--i:2"><span class="hint" id="trHint">press → to grow the tree one split at a time</span><span style="flex:1"></span><span class="k">route a student:</span><button class="btn" data-s="0">Ana · 2 h, 95%</button><button class="btn" data-s="1">Ben · 6 h, 40%</button><button class="btn" data-s="2">Cy · 5 h, 85%</button></div>
-    </div>
-  </section>
-
   <!-- term: unsupervised -->
   <section class="slide" data-id="t-unsupervised">
     <div class="termS">
@@ -1047,7 +1034,7 @@ X_train, X_test, y_train, y_test = <span class="fn">train_test_split</span>(X, y
     </div>
   </section>
 
-  <div id="chrome"><span class="sp"></span><button class="nbtn" id="prev" aria-label="Previous">←</button><span class="ver" style="font-size:12px;opacity:.6;margin-right:8px">updated Nov 23, 1:01 PM</span><span id="count"></span><button class="nbtn" id="next" aria-label="Next">→</button><button class="nbtn" id="fs" aria-label="Fullscreen" title="Fullscreen (F)">⤢</button></div>
+  <div id="chrome"><span class="sp"></span><button class="nbtn" id="prev" aria-label="Previous">←</button><span class="ver" style="font-size:12px;opacity:.6;margin-right:8px">updated Nov 23, 1:06 PM</span><span id="count"></span><button class="nbtn" id="next" aria-label="Next">→</button><button class="nbtn" id="fs" aria-label="Fullscreen" title="Fullscreen (F)">⤢</button></div>
   <div id="progress"></div>
   <div id="livewrap"><span id="liveauth"></span><div id="livebar"></div></div>
   <div id="toast" role="status"></div>
@@ -1143,7 +1130,7 @@ function clusterBg(id){
   };
 }
 A.title=clusterBg("bgML"); A.recap=clusterBg("bgRecap");
-$("rcChips").innerHTML=["model","supervised","regression","linear regression","y = mx + b","multiple regression","classification","logistic regression","sigmoid","k-NN","decision tree","unsupervised","k-means","training","inference","train · validation · test","error","loss","MAE · MSE · RMSE","generalization","underfitting","overfitting","bias","variance"]
+$("rcChips").innerHTML=["model","supervised","regression","linear regression","y = mx + b","multiple regression","classification","logistic regression","sigmoid","k-NN","unsupervised","k-means","training","inference","train · validation · test","error","loss","MAE · MSE · RMSE","generalization","underfitting","overfitting","bias","variance"]
   .map(t=>`<span class="tag t-y" style="font-size:20px;padding:8px 16px">${t}</span>`).join("");
 
 /* ---------- warm-up cannon: learn from each miss ---------- */
@@ -1625,57 +1612,6 @@ function knnDraw(x,cv,D,q,k,opts={}){
     enter(d){ show(d<0?4:0); }, step(){ if(n>=4) return false; show(n+1); return true; }, back(){ if(n<=0) return false; show(n-1); return true; },
     tick(){ const x=ctxOf(cv), res=knnDraw(x,cv,D,q,5,{all:n===2,nn:n>=3,vote:n>=4});
       $("ksCap").innerHTML=n>=4?`5 neighbors: ${res.vB} blue, ${res.vA} orange → <b style="color:${res.pred?AMBER:BLUE}">${res.pred?"orange":"blue"}</b>`:n>=3?"the 5 nearest neighbors":n>=2?`distances to all ${D.length} points`:"new point: ?"; }
-  };
-})();
-
-/* ---------- decision tree: tree on the left, boxes on the right ---------- */
-(() => {
-  const svg=$("trSvg"), cv=$("trCv"), r=srand(19);
-  const rule=(h,a)=>h<3?(a>=90?1:0):(a>=60?1:0);
-  const D=Array.from({length:34},()=>{ const h=r()*8, a=20+r()*80; return [h,a,rule(h,a)]; });
-  D.push([1.2,94,1],[2.1,97,1],[.8,92,1]);
-  const S=[["Ana",2,95],["Ben",6,40],["Cy",5,85]];
-  let n=0, sel=-1;
-  const cnt=f=>{ const s=D.filter(f); return [s.filter(d=>d[2]).length,s.filter(d=>!d[2]).length]; };
-  function node(x,y,txt,sub,kind,hi){ const w=kind==="q"?250:150, h=kind==="q"?56:62;
-    const col=kind==="q"?INK:kind==="p"?GREEN:RED;
-    svgEl("rect",{x:x-w/2,y:y-h/2,width:w,height:h,rx:12,fill:kind==="q"?"#1c1c20":kind==="p"?"rgba(95,214,138,.14)":"rgba(255,90,78,.14)",stroke:hi?Y:kind==="q"?"#4a4a52":col,"stroke-width":hi?3.5:2},svg);
-    const t=svgEl("text",{x,y:y+(sub?-3:7),"text-anchor":"middle",fill:col,"font-size":kind==="q"?20:22,"font-weight":700,"font-family":"Space Grotesk"},svg); t.textContent=txt;
-    if(sub){ const s=svgEl("text",{x,y:y+19,"text-anchor":"middle",fill:MUTE,"font-size":13,"font-family":"JetBrains Mono"},svg); s.textContent=sub; } }
-  function edge(x1,y1,x2,y2,t,hi){ svgEl("line",{x1,y1,x2,y2,stroke:hi?Y:"#55534d","stroke-width":hi?4:2},svg);
-    const e=svgEl("text",{x:(x1+x2)/2+(x2<x1?-14:14),y:(y1+y2)/2,"text-anchor":x2<x1?"end":"start",fill:hi?Y:MUTE,"font-size":16,"font-family":"JetBrains Mono"},svg); e.textContent=t; }
-  function leaf(x,y,f,hi){ const [p,q]=cnt(f); node(x,y,p>=q?"PASS":"FAIL",`${p} pass · ${q} fail`,p>=q?"p":"f",hi); }
-  function draw(){
-    svg.innerHTML=""; const s=sel>=0?S[sel]:null, goR=s&&s[1]>=3;
-    if(n===0){ const [p,q]=cnt(()=>1); node(325,70,"All students",`${p} pass · ${q} fail`,"q",false);
-      const t=svgEl("text",{x:325,y:180,"text-anchor":"middle",fill:MUTE,"font-size":17,"font-family":"Space Grotesk"},svg); t.textContent="No questions yet: which split separates pass from fail best?"; return; }
-    edge(325,98,165,192,"no",s&&!goR); edge(325,98,485,192,"yes",s&&goR);
-    node(325,70,"hours ≥ 3 ?",null,"q",!!s);
-    if(n>=2){ edge(165,220,85,342,"no",s&&!goR&&s[2]<90); edge(165,220,245,342,"yes",s&&!goR&&s[2]>=90);
-      node(165,192,"attendance ≥ 90% ?",null,"q",s&&!goR); leaf(85,372,d=>d[0]<3&&d[1]<90,s&&!goR&&s[2]<90); leaf(245,372,d=>d[0]<3&&d[1]>=90,s&&!goR&&s[2]>=90); }
-    else leaf(165,192,d=>d[0]<3,s&&!goR);
-    if(n>=3){ edge(485,220,405,342,"no",s&&goR&&s[2]<60); edge(485,220,565,342,"yes",s&&goR&&s[2]>=60);
-      node(485,192,"attendance ≥ 60% ?",null,"q",s&&goR); leaf(405,372,d=>d[0]>=3&&d[1]<60,s&&goR&&s[2]<60); leaf(565,372,d=>d[0]>=3&&d[1]>=60,s&&goR&&s[2]>=60); }
-    else leaf(485,192,d=>d[0]>=3,s&&goR);
-    if(s){ const p=rule(s[1],s[2]); const t=svgEl("text",{x:325,y:470,"text-anchor":"middle",fill:p?GREEN:RED,"font-size":22,"font-weight":700,"font-family":"Space Grotesk"},svg);
-      t.textContent=`${s[0]}: ${s[1]} h, ${s[2]}% attendance → ${p?"PASS":"FAIL"}`; }
-  }
-  function show(i){ n=i; if(n<3) sel=-1; document.querySelectorAll('[data-id="tree"] [data-s]').forEach(b=>b.classList.toggle("on",+b.dataset.s===sel)); draw();
-    $("trHint").textContent=n<3?"press → to grow the tree one split at a time":"the tree is done: route a student through it";
-    $("trCap").textContent=["each split cuts the data into boxes","split 1: hours ≥ 3","split 2: attendance ≥ 90% (low hours)","split 3: attendance ≥ 60% (high hours)"][n]; }
-  document.querySelectorAll('[data-id="tree"] [data-s]').forEach(b=>b.onclick=()=>{ sel=+b.dataset.s; show(3); });
-  A.tree={
-    enter(d){ sel=-1; show(d<0?3:0); }, step(){ if(n>=3) return false; show(n+1); return true; }, back(){ if(n<=0) return false; sel=-1; show(n-1); return true; },
-    tick(){ const x=ctxOf(cv), P=plot(cv,[0,8],[20,100],[70,50,24,60]); x.clearRect(0,0,P.W,P.H);
-      const box=(x0,x1,y0,y1,f)=>{ const [p,q]=cnt(d=>d[0]>=x0&&d[0]<x1&&d[1]>=y0&&d[1]<y1&&f(d)); x.fillStyle=p>=q?"rgba(95,214,138,.09)":"rgba(255,90,78,.09)"; x.fillRect(P.px(x0),P.py(y1),P.px(x1)-P.px(x0),P.py(y0)-P.py(y1)); };
-      const all=()=>1;
-      if(n>=1){ if(n>=2){ box(0,3,20,90,all); box(0,3,90,101,all); } else box(0,3,20,101,all); if(n>=3){ box(3,8.01,20,60,all); box(3,8.01,60,101,all); } else box(3,8.01,20,101,all); }
-      frame(x,P,[0,2,4,6,8],[20,40,60,80,100],"hours studied","attendance (%)",v=>v,v=>v+"%");
-      if(n>=1){ x.strokeStyle=Y; x.lineWidth=3; x.beginPath(); x.moveTo(P.px(3),P.T); x.lineTo(P.px(3),P.B); x.stroke(); label(x,"1",P.px(3)+8,P.T+18,Y,16); }
-      if(n>=2){ x.strokeStyle=Y; x.beginPath(); x.moveTo(P.L,P.py(90)); x.lineTo(P.px(3),P.py(90)); x.stroke(); label(x,"2",P.L+8,P.py(90)-8,Y,16); }
-      if(n>=3){ x.strokeStyle=Y; x.beginPath(); x.moveTo(P.px(3),P.py(60)); x.lineTo(P.R,P.py(60)); x.stroke(); label(x,"3",P.R-18,P.py(60)-8,Y,16); }
-      for(const [h,a,p] of D) dot(x,P.px(h),P.py(a),6,p?GREEN:RED,"#0d0d0f");
-      if(sel>=0){ const s=S[sel]; dot(x,P.px(s[1]),P.py(s[2]),11,null,Y); dot(x,P.px(s[1]),P.py(s[2]),4,Y); label(x,s[0],P.px(s[1])+14,P.py(s[2])+5,Y,17); } }
   };
 })();
 
