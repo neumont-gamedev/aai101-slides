@@ -536,27 +536,6 @@
     </div>
   </section>
 
-  <!-- linear regression: fit the line -->
-  <section class="slide" data-id="linfit">
-    <div class="two" style="grid-template-columns:.8fr 1.2fr;gap:46px">
-      <div class="stack" style="gap:18px">
-        <h2 class="rise" style="--i:0"><span class="n">LINEAR REGRESSION</span>Draw the <span class="y">best line</span></h2>
-        <p class="rise" style="--i:1">Linear regression finds the straight line that runs closest to all the points. Then it uses the line to predict.</p>
-        <div class="card pad rise ctls" style="--i:2">
-          <div class="ctl"><span>slope</span><input type="range" id="lfM" min="0" max="300" step="1" value="40"><b id="lfMv">40</b></div>
-          <div class="ctl"><span>intercept</span><input type="range" id="lfB" min="-200" max="400" step="1" value="200"><b id="lfBv">200</b></div>
-          <div class="meter"><div class="row" style="justify-content:space-between"><span class="k">average error</span><b class="mono" id="lfErr">–</b></div><div class="trk"><div class="fill" id="lfBar"></div></div></div>
-          <div class="row"><button class="btn on" id="lfFit">Fit it for me</button><button class="btn" id="lfReset">Reset</button></div>
-        </div>
-        <p class="hint rise" style="--i:3">drag the sliders to shrink the dashed error lines</p>
-      </div>
-      <div class="stack rise" style="--i:2;gap:10px">
-        <div class="stage-box" style="height:600px"><canvas id="lfCv"></canvas></div>
-        <p class="mono" id="lfCap" style="font-size:18px;color:var(--mute);text-align:center">price ($k) = slope × size (1000 sq ft) + intercept</p>
-      </div>
-    </div>
-  </section>
-
   <!-- y = mx + b -->
   <section class="slide" data-id="ymxb">
     <div class="two" style="grid-template-columns:.85fr 1.15fr;gap:50px">
@@ -577,6 +556,27 @@
       <div class="stack rise" style="--i:2;gap:10px">
         <div class="stage-box" style="height:600px"><canvas id="lnCv"></canvas></div>
         <p class="eq" id="lnEq" style="text-align:center;font-size:28px"></p>
+      </div>
+    </div>
+  </section>
+
+  <!-- linear regression: fit the line -->
+  <section class="slide" data-id="linfit">
+    <div class="two" style="grid-template-columns:.8fr 1.2fr;gap:46px">
+      <div class="stack" style="gap:18px">
+        <h2 class="rise" style="--i:0"><span class="n">LINEAR REGRESSION</span>Draw the <span class="y">best line</span></h2>
+        <p class="rise" style="--i:1">Linear regression finds the straight line that runs closest to all the points. Then it uses the line to predict.</p>
+        <div class="card pad rise ctls" style="--i:2">
+          <div class="ctl"><span>slope</span><input type="range" id="lfM" min="0" max="300" step="1" value="40"><b id="lfMv">40</b></div>
+          <div class="ctl"><span>intercept</span><input type="range" id="lfB" min="-200" max="400" step="1" value="200"><b id="lfBv">200</b></div>
+          <div class="meter"><div class="row" style="justify-content:space-between"><span class="k">average error</span><b class="mono" id="lfErr">–</b></div><div class="trk"><div class="fill" id="lfBar"></div></div></div>
+          <div class="row"><button class="btn on" id="lfFit">Fit it for me</button><button class="btn" id="lfReset">Reset</button></div>
+        </div>
+        <p class="hint rise" style="--i:3">drag the sliders to shrink the dashed error lines</p>
+      </div>
+      <div class="stack rise" style="--i:2;gap:10px">
+        <div class="stage-box" style="height:600px"><canvas id="lfCv"></canvas></div>
+        <p class="mono" id="lfCap" style="font-size:18px;color:var(--mute);text-align:center">price ($k) = slope × size (1000 sq ft) + intercept</p>
       </div>
     </div>
   </section>
