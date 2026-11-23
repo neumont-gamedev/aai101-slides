@@ -477,6 +477,36 @@ $("rcChips").innerHTML=["model","supervised","regression","linear regression","y
   };
 })();
 
+/* ---------- why not just a line: the regression line bends into the sigmoid ---------- */
+(() => {
+  const cv=$("wlCv"), it=[...$("wlList").children], r=srand(31);   // same students as the logistic slide
+  const D=Array.from({length:26},(_,i)=>{ const h=.3+i/25*9.4+(r()-.5)*.3; return [h, r()<sig(1.6*(h-3.4))?1:0, (r()-.5)*.05]; });
+  const [M,B]=ols(D.map(([h,y])=>[h,y])), S=h=>sig(1.6*(h-3.4)), DRAW=900, BEND=1400;
+  let n=0, t=0;
+  const show=(i,anim)=>{ n=i; t=anim?0:1e9; it.forEach((e,j)=>{ e.classList.toggle("on",j===n-1); e.classList.toggle("done",j<n-1); }); $("wlIdea").classList.toggle("on",n>=3); };
+  A.whyline={
+    enter(d){ show(d<0?3:0); },
+    step(){ if((n===1&&t<DRAW)||(n===2&&t<BEND)){ t=1e9; return true; } if(n>=3) return false; show(n+1,n<2); return true; },
+    back(){ if(n<=0) return false; show(n-1); return true; },
+    tick(dt){
+      t+=dt; const x=ctxOf(cv), P=plot(cv,[0,10],[-.45,1.45],[80,30,30,64]); x.clearRect(0,0,P.W,P.H);
+      const k=n>=3?1:n===2?ease(t/BEND):0, grow=n>=2?1:n===1?ease(t/DRAW):0;
+      if(n>=1){ const a=(1-k)*.12;   // shade the impossible zones while the line is still straight
+        x.fillStyle=`rgba(255,90,78,${a})`; x.fillRect(P.L,P.T,P.R-P.L,P.py(1)-P.T); x.fillRect(P.L,P.py(0),P.R-P.L,P.B-P.py(0));
+        if(k<.5&&grow>=1){ label(x,"above 1: not a probability",P.L+12,P.T+24,RED,15); label(x,"below 0: not a probability",P.R-12,P.B-14,RED,15,"right"); } }
+      frame(x,P,[0,2,4,6,8,10],[-.25,0,.25,.5,.75,1,1.25],"hours studied","chance of passing",v=>v,v=>v<0||v>1?"":v.toFixed(2));
+      dashed(x,P.L,P.py(0),P.R,P.py(0),MUTE,1); dashed(x,P.L,P.py(1),P.R,P.py(1),MUTE,1);
+      if(n>=1){ x.save(); x.beginPath(); x.rect(P.L,P.T,P.R-P.L,P.B-P.T); x.clip();
+        x.strokeStyle=Y; x.lineWidth=3.5; x.beginPath();
+        for(let h=0;h<=10*grow+.001;h+=.05){ const q=[P.px(h),P.py(lerp(M*h+B,S(h),k))]; h?x.lineTo(...q):x.moveTo(...q); } x.stroke(); x.restore();
+        if(grow>=1&&k<.5){ for(const h of [0,10]){ const v=M*h+B; dot(x,P.px(h),P.py(v),7,Y,"#0d0d0f"); label(x,`ŷ = ${v.toFixed(2)} at ${h} h`,P.px(h)+(h?-16:14),h?P.py(v)+6:P.py(-.2),Y,15,h?"right":"left"); } }
+        if(k>=1) label(x,"σ(wx + b): always between 0 and 1",P.px(5.2),P.py(.42),Y,16); }
+      for(const [h,y,j] of D) dot(x,P.px(h),P.py(y+j),7,y?GREEN:RED,"#0d0d0f");
+      label(x,"● passed (1)",P.R-8,P.py(1)-12,GREEN,14,"right"); label(x,"● failed (0)",P.L+8,P.py(0)+26,RED,14);
+    }
+  };
+})();
+
 /* ---------- logistic regression ---------- */
 (() => {
   const cv=$("lgCv"), r=srand(31);
