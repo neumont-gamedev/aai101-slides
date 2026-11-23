@@ -293,14 +293,6 @@
   .chain .card .k{font-size:13px}
   .chain .card b{font-family:var(--mono);font-size:28px;font-weight:600}
 
-  /* slope steps */
-  .calc{display:flex;flex-direction:column;gap:12px}
-  .calc{gap:9px}
-  .calc .ln{font-family:var(--mono);font-size:22px;padding:8px 16px;display:flex;justify-content:space-between;align-items:baseline;gap:16px;border-radius:10px;background:var(--panel);border:1px solid var(--line);opacity:.12;transition:opacity .5s,border-color .5s}
-  .calc .ln.on{opacity:1}
-  .calc .ln.cur{border-color:var(--y)}
-  .calc .ln .c{color:var(--mute);font-size:15px}
-
   /* knn steps / step lists */
   .slist{display:flex;flex-direction:column;gap:12px}
   .slist .it{padding:14px 18px;border-radius:12px;border:1px solid var(--line);background:var(--panel);opacity:.35;transition:opacity .4s,border-color .4s}
@@ -585,28 +577,6 @@
       <div class="stack rise" style="--i:2;gap:10px">
         <div class="stage-box" style="height:600px"><canvas id="lnCv"></canvas></div>
         <p class="eq" id="lnEq" style="text-align:center;font-size:28px"></p>
-      </div>
-    </div>
-  </section>
-
-  <!-- slope from two points -->
-  <section class="slide" data-id="slope">
-    <div class="two" style="grid-template-columns:.9fr 1.1fr;gap:50px">
-      <div class="stack" style="gap:16px">
-        <h2 class="rise" style="--i:0"><span class="n">FROM TWO POINTS</span>Find the line</h2>
-        <p class="rise" style="--i:1">Two students: one studied <b>1 hour</b> and scored <b>50</b>, the other studied <b>3 hours</b> and scored <b>80</b>.</p>
-        <div class="calc">
-          <div class="ln" id="sl0"><span class="c">rise = change in y</span><span>80 − 50 = <b class="y">30</b></span></div>
-          <div class="ln" id="sl1"><span class="c">run = change in x</span><span>3 − 1 = <b class="y">2</b></span></div>
-          <div class="ln" id="sl2"><span class="c">slope m = rise ÷ run</span><span>30 ÷ 2 = <b class="y">15</b> points per hour</span></div>
-          <div class="ln" id="sl3"><span class="c">intercept: plug in (1, 50)</span><span>50 = 15(1) + b → b = <b style="color:var(--blue)">35</b></span></div>
-          <div class="ln" id="sl4"><span class="c">the line</span><span>score = <b class="y">15</b> × hours + <b style="color:var(--blue)">35</b></span></div>
-        </div>
-        <div class="callout keyIdea" id="slIdea" style="font-size:19px">Real data never sits on one perfect line. Linear regression finds the slope and intercept with the <b class="y">smallest total error</b> across all points: the line of best fit.</div>
-      </div>
-      <div class="stack rise" style="--i:2;gap:10px">
-        <div class="stage-box" style="height:560px"><canvas id="slCv"></canvas></div>
-        <p class="hint" style="text-align:center">press → for each step</p>
       </div>
     </div>
   </section>

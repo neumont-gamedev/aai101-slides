@@ -428,25 +428,6 @@ $("rcChips").innerHTML=["model","supervised","regression","linear regression","y
   };
 })();
 
-/* ---------- slope from two points ---------- */
-(() => {
-  const cv=$("slCv"), L=[0,1,2,3,4].map(i=>$("sl"+i)); let n=0;
-  function show(i){ n=i; L.forEach((l,j)=>{ l.classList.toggle("on",j<n); l.classList.toggle("cur",j===n-1); }); $("slIdea").classList.toggle("on",n>=6); }
-  A.slope={
-    enter(d){ show(d<0?6:0); }, step(){ if(n>=6) return false; show(n+1); return true; }, back(){ if(n<=0) return false; show(n-1); return true; },
-    tick(){
-      const x=ctxOf(cv), P=plot(cv,[0,5],[0,120],[70,30,30,64]); x.clearRect(0,0,P.W,P.H);
-      frame(x,P,[0,1,2,3,4,5],[0,20,40,60,80,100,120],"hours studied","exam score");
-      if(n>=3){ x.strokeStyle=Y; x.lineWidth=3; x.globalAlpha=n>=5?1:.5; x.beginPath(); x.moveTo(P.px(n>=5?0:1),P.py(n>=5?35:50)); x.lineTo(P.px(n>=5?5:3),P.py(n>=5?110:80)); x.stroke(); x.globalAlpha=1; }
-      if(n>=1){ dashed(x,P.px(3),P.py(50),P.px(3),P.py(80),Y,3,[6,4]); label(x,"rise 30",P.px(3)+12,P.py(65)+5,Y,17); }
-      if(n>=2){ dashed(x,P.px(1),P.py(50),P.px(3),P.py(50),Y,3,[6,4]); label(x,"run 2",P.px(2),P.py(50)+24,Y,17,"center"); }
-      if(n>=4){ dot(x,P.px(0),P.py(35),8,BLUE,"#0d0d0f"); label(x,"b = 35",P.px(0)+14,P.py(35)+22,BLUE,17); }
-      if(n>=5){ dot(x,P.px(4),P.py(95),7,null,Y); label(x,"4 h → 95",P.px(4)+12,P.py(95)+22,Y,16); }
-      for(const [a,s] of [[1,50],[3,80]]){ dot(x,P.px(a),P.py(s),9,BLUE,"#0d0d0f"); label(x,`(${a}, ${s})`,P.px(a)-12,P.py(s)-14,INK,17,"right"); }
-    }
-  };
-})();
-
 /* ---------- how linear regression works ---------- */
 (() => {
   const cv=$("hlCv"), C=[0,1,2,3].map(i=>$("hc"+i)), r=srand(4);

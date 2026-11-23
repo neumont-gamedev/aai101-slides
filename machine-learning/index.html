@@ -294,14 +294,6 @@
   .chain .card .k{font-size:13px}
   .chain .card b{font-family:var(--mono);font-size:28px;font-weight:600}
 
-  /* slope steps */
-  .calc{display:flex;flex-direction:column;gap:12px}
-  .calc{gap:9px}
-  .calc .ln{font-family:var(--mono);font-size:22px;padding:8px 16px;display:flex;justify-content:space-between;align-items:baseline;gap:16px;border-radius:10px;background:var(--panel);border:1px solid var(--line);opacity:.12;transition:opacity .5s,border-color .5s}
-  .calc .ln.on{opacity:1}
-  .calc .ln.cur{border-color:var(--y)}
-  .calc .ln .c{color:var(--mute);font-size:15px}
-
   /* knn steps / step lists */
   .slist{display:flex;flex-direction:column;gap:12px}
   .slist .it{padding:14px 18px;border-radius:12px;border:1px solid var(--line);background:var(--panel);opacity:.35;transition:opacity .4s,border-color .4s}
@@ -586,28 +578,6 @@
       <div class="stack rise" style="--i:2;gap:10px">
         <div class="stage-box" style="height:600px"><canvas id="lnCv"></canvas></div>
         <p class="eq" id="lnEq" style="text-align:center;font-size:28px"></p>
-      </div>
-    </div>
-  </section>
-
-  <!-- slope from two points -->
-  <section class="slide" data-id="slope">
-    <div class="two" style="grid-template-columns:.9fr 1.1fr;gap:50px">
-      <div class="stack" style="gap:16px">
-        <h2 class="rise" style="--i:0"><span class="n">FROM TWO POINTS</span>Find the line</h2>
-        <p class="rise" style="--i:1">Two students: one studied <b>1 hour</b> and scored <b>50</b>, the other studied <b>3 hours</b> and scored <b>80</b>.</p>
-        <div class="calc">
-          <div class="ln" id="sl0"><span class="c">rise = change in y</span><span>80 − 50 = <b class="y">30</b></span></div>
-          <div class="ln" id="sl1"><span class="c">run = change in x</span><span>3 − 1 = <b class="y">2</b></span></div>
-          <div class="ln" id="sl2"><span class="c">slope m = rise ÷ run</span><span>30 ÷ 2 = <b class="y">15</b> points per hour</span></div>
-          <div class="ln" id="sl3"><span class="c">intercept: plug in (1, 50)</span><span>50 = 15(1) + b → b = <b style="color:var(--blue)">35</b></span></div>
-          <div class="ln" id="sl4"><span class="c">the line</span><span>score = <b class="y">15</b> × hours + <b style="color:var(--blue)">35</b></span></div>
-        </div>
-        <div class="callout keyIdea" id="slIdea" style="font-size:19px">Real data never sits on one perfect line. Linear regression finds the slope and intercept with the <b class="y">smallest total error</b> across all points: the line of best fit.</div>
-      </div>
-      <div class="stack rise" style="--i:2;gap:10px">
-        <div class="stage-box" style="height:560px"><canvas id="slCv"></canvas></div>
-        <p class="hint" style="text-align:center">press → for each step</p>
       </div>
     </div>
   </section>
@@ -1058,7 +1028,7 @@ X_train, X_test, y_train, y_test = <span class="fn">train_test_split</span>(X, y
     </div>
   </section>
 
-  <div id="chrome"><span class="sp"></span><button class="nbtn" id="prev" aria-label="Previous">←</button><span class="ver" style="font-size:12px;opacity:.6;margin-right:8px">updated Nov 22, 5:04 PM</span><span id="count"></span><button class="nbtn" id="next" aria-label="Next">→</button><button class="nbtn" id="fs" aria-label="Fullscreen" title="Fullscreen (F)">⤢</button></div>
+  <div id="chrome"><span class="sp"></span><button class="nbtn" id="prev" aria-label="Previous">←</button><span class="ver" style="font-size:12px;opacity:.6;margin-right:8px">updated Nov 23, 12:28 PM</span><span id="count"></span><button class="nbtn" id="next" aria-label="Next">→</button><button class="nbtn" id="fs" aria-label="Fullscreen" title="Fullscreen (F)">⤢</button></div>
   <div id="progress"></div>
   <div id="livewrap"><span id="liveauth"></span><div id="livebar"></div></div>
   <div id="toast" role="status"></div>
@@ -1490,25 +1460,6 @@ $("rcChips").innerHTML=["model","supervised","regression","linear regression","y
       dot(x,X(0),Yp(b),8,BLUE,"#0d0d0f"); label(x,"b = "+b,X(0)-14,Yp(b)-12,BLUE,16,"right");
       const tag=(t,px,py,al)=>{ x.font='15px "JetBrains Mono",monospace'; const w=x.measureText(t).width+14, lx=al==="right"?px-w:px; x.fillStyle="rgba(13,13,15,.9)"; x.fillRect(lx,py-17,w,24); label(x,t,lx+7,py,INK,15); };
       tag("x (independent) →",W-12,cy-12,"right"); tag("↑ y (dependent)",cx+10,26);
-    }
-  };
-})();
-
-/* ---------- slope from two points ---------- */
-(() => {
-  const cv=$("slCv"), L=[0,1,2,3,4].map(i=>$("sl"+i)); let n=0;
-  function show(i){ n=i; L.forEach((l,j)=>{ l.classList.toggle("on",j<n); l.classList.toggle("cur",j===n-1); }); $("slIdea").classList.toggle("on",n>=6); }
-  A.slope={
-    enter(d){ show(d<0?6:0); }, step(){ if(n>=6) return false; show(n+1); return true; }, back(){ if(n<=0) return false; show(n-1); return true; },
-    tick(){
-      const x=ctxOf(cv), P=plot(cv,[0,5],[0,120],[70,30,30,64]); x.clearRect(0,0,P.W,P.H);
-      frame(x,P,[0,1,2,3,4,5],[0,20,40,60,80,100,120],"hours studied","exam score");
-      if(n>=3){ x.strokeStyle=Y; x.lineWidth=3; x.globalAlpha=n>=5?1:.5; x.beginPath(); x.moveTo(P.px(n>=5?0:1),P.py(n>=5?35:50)); x.lineTo(P.px(n>=5?5:3),P.py(n>=5?110:80)); x.stroke(); x.globalAlpha=1; }
-      if(n>=1){ dashed(x,P.px(3),P.py(50),P.px(3),P.py(80),Y,3,[6,4]); label(x,"rise 30",P.px(3)+12,P.py(65)+5,Y,17); }
-      if(n>=2){ dashed(x,P.px(1),P.py(50),P.px(3),P.py(50),Y,3,[6,4]); label(x,"run 2",P.px(2),P.py(50)+24,Y,17,"center"); }
-      if(n>=4){ dot(x,P.px(0),P.py(35),8,BLUE,"#0d0d0f"); label(x,"b = 35",P.px(0)+14,P.py(35)+22,BLUE,17); }
-      if(n>=5){ dot(x,P.px(4),P.py(95),7,null,Y); label(x,"4 h → 95",P.px(4)+12,P.py(95)+22,Y,16); }
-      for(const [a,s] of [[1,50],[3,80]]){ dot(x,P.px(a),P.py(s),9,BLUE,"#0d0d0f"); label(x,`(${a}, ${s})`,P.px(a)-12,P.py(s)-14,INK,17,"right"); }
     }
   };
 })();
