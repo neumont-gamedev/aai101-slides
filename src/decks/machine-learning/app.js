@@ -589,13 +589,57 @@ function knnDraw(x,cv,D,q,k,opts={}){
     tick(dt){ k=lerp(k,n,Math.min(1,dt/400)); draw(L,"l",0); draw(U,"u",k); } };
 })();
 
+/* ---------- k-means data, shared by "guess the centers" and k-means ---------- */
+const KM_D=(()=>{ const r=srand(29), G=[[.25,.7],[.72,.75],[.3,.25],[.75,.3]];
+  return Array.from({length:120},(_,i)=>{ const g=G[i%4]; return [clamp(g[0]+gauss(r)*.09,.02,.98),clamp(g[1]+gauss(r)*.09,.02,.98),i%4]; }); })();
+let kmGuess=null;   // the student's centers from "guess the centers"; k-means starts from them
+
+/* ---------- guess the centers: drag four ✕, then check against the real averages ---------- */
+(() => {
+  const cv=$("kgCv"), D=KM_D, TRAY=[[.38,.5],[.46,.5],[.54,.5],[.62,.5]];
+  const TRUE=[0,1,2,3].map(g=>{ const m=D.filter(p=>p[2]===g); return [m.reduce((s,p)=>s+p[0],0)/m.length,m.reduce((s,p)=>s+p[1],0)/m.length]; });
+  const PERMS=[]; (function perm(p,rest){ if(!rest.length) PERMS.push(p); rest.forEach((v,i)=>perm([...p,v],rest.filter((_,j)=>j!==i))); })([],[0,1,2,3]);
+  let g=[], checked=false, match=null, drag=-1, geo=null, t=0;
+  const near=p=>{ let b=0,bd=9; g.forEach((c,j)=>{ const d=Math.hypot(p[0]-c[0],p[1]-c[1]); if(d<bd){ bd=d; b=j; } }); return b; };
+  function msg(h){ $("kgMsg").innerHTML=h; }
+  function reset(){ g=TRAY.map(c=>c.slice()); kmGuess=null; uncheck(); }
+  function uncheck(){ checked=false; match=null; $("kgIdea").classList.remove("on"); msg("drag each ✕, then press <b>Check</b>"); }
+  function check(){   // pair each guess with a real center so the total miss is smallest
+    let best=null,bd=1e9; for(const p of PERMS){ const d=p.reduce((s,tj,j)=>s+Math.hypot(g[j][0]-TRUE[tj][0],g[j][1]-TRUE[tj][1]),0); if(d<bd){ bd=d; best=p; } }
+    match=best; checked=true; t=0; const avg=bd/4*100;
+    const [txt,col]=avg<4?["spot on!","var(--green)"]:avg<9?["close","var(--y)"]:["way off: k-means will fix it","var(--amber)"];
+    msg(`average miss: <b class="mono" style="color:var(--ink)">${avg.toFixed(1)}%</b> of the plot · <b style="color:${col}">${txt}</b>`);
+    $("kgIdea").classList.add("on"); }
+  $("kgCheck").onclick=check; $("kgReset").onclick=reset;
+  const toData=([px,py])=>[clamp((px-geo.ox)/geo.S,.02,.98),clamp(1-(py-geo.oy)/geo.S,.02,.98)];
+  cv.addEventListener("pointerdown",e=>{ if(!geo) return; const [px,py]=localXY(e,cv); let b=-1,bd=34;
+    g.forEach((c,j)=>{ const d=Math.hypot(geo.X(c[0])-px,geo.Y(c[1])-py); if(d<bd){ bd=d; b=j; } });
+    if(b>=0){ drag=b; cv.setPointerCapture(e.pointerId); cv.style.cursor="grabbing"; if(checked) uncheck(); } });
+  cv.addEventListener("pointermove",e=>{ if(drag<0) return; g[drag]=toData(localXY(e,cv)); kmGuess=g.map(c=>c.slice()); });
+  cv.addEventListener("pointerup",()=>{ drag=-1; cv.style.cursor="grab"; });
+  A.kmguess={
+    enter(d){ if(d<0&&kmGuess){ g=kmGuess.map(c=>c.slice()); check(); t=1e9; } else reset(); },   // coming back: show the result again
+    step(){ if(checked) return false; check(); return true; },
+    back(){ if(!checked) return false; uncheck(); return true; },
+    tick(dt){ t+=dt;
+      const x=ctxOf(cv), W=cv.offsetWidth, H=cv.offsetHeight, S=Math.min(W,H)-60, ox=(W-S)/2, oy=(H-S)/2, X=v=>ox+v*S, Yp=v=>oy+(1-v)*S;
+      geo={S,ox,oy,X,Y:Yp}; x.clearRect(0,0,W,H);
+      D.forEach(p=>dot(x,X(p[0]),Yp(p[1]),6,CL[near(p)],"#0d0d0f"));
+      if(checked){ const k=ease(t/600);
+        g.forEach((c,j)=>{ const T=TRUE[match[j]]; dashed(x,X(c[0]),Yp(c[1]),X(lerp(c[0],T[0],k)),Yp(lerp(c[1],T[1],k)),INK,2,[5,4]); });
+        TRUE.forEach(T=>{ x.globalAlpha=k; dot(x,X(T[0]),Yp(T[1]),11,null,INK); x.globalAlpha=1; }); }
+      g.forEach((c,j)=>{ cross(x,X(c[0]),Yp(c[1]),15,"#0d0d0f",9); cross(x,X(c[0]),Yp(c[1]),14,CL[j],5); });
+    }
+  };
+})();
+
 /* ---------- k-means ---------- */
 (() => {
-  const cv=$("kmCv"), r=srand(29), G=[[.25,.7],[.72,.75],[.3,.25],[.75,.3]];
-  const D=Array.from({length:120},(_,i)=>{ const g=G[i%4]; return [clamp(g[0]+gauss(r)*.09,.02,.98),clamp(g[1]+gauss(r)*.09,.02,.98)]; });
-  let K=4, cen=[], shown=[], as=[], phase="assign", round=0, done=false, timer=0, running=false, seedR=srand(3);
-  function init(rand){ cen=Array.from({length:K},()=>{ const p=D[Math.floor(rand()*D.length)]; return [p[0],p[1]]; }); shown=cen.map(c=>c.slice()); as=D.map(()=>-1); phase="assign"; round=0; done=false; running=false; msg(); steps($("kmList"),-1); }
-  function msg(){ $("kmMsg").innerHTML=done?`<span style="color:var(--green)">converged after ${round} rounds ✓</span>`:`round ${round} · next: <b class="y">${phase}</b>`; $("kmRun").textContent=running?"Pause":"Run"; }
+  const cv=$("kmCv"), D=KM_D;
+  let K=4, cen=[], shown=[], as=[], phase="assign", round=0, done=false, timer=0, running=false, seedR=srand(3), mine=false;
+  // rand: a random source for k random starting points, or an array of starting centers (the student's guesses)
+  function init(rand){ mine=Array.isArray(rand); cen=mine?rand.map(c=>c.slice()):Array.from({length:K},()=>{ const p=D[Math.floor(rand()*D.length)]; return [p[0],p[1]]; }); shown=cen.map(c=>c.slice()); as=D.map(()=>-1); phase="assign"; round=0; done=false; running=false; msg(); steps($("kmList"),-1); }
+  function msg(){ $("kmMsg").innerHTML=done?`<span style="color:var(--green)">converged after ${round} rounds ✓</span>`:`round ${round} · next: <b class="y">${phase}</b>`+(mine&&!round?" · from your guesses":""); $("kmRun").textContent=running?"Pause":"Run"; }
   function one(){ if(done) return false;
     if(phase==="assign"){ let ch=0; D.forEach((p,i)=>{ let b=0,bd=9; cen.forEach((c,j)=>{ const d=Math.hypot(p[0]-c[0],p[1]-c[1]); if(d<bd){ bd=d; b=j; } }); if(as[i]!==b){ as[i]=b; ch++; } });
       round++; phase="update"; steps($("kmList"),0); if(!ch&&round>1){ done=true; running=false; } }
@@ -605,7 +649,7 @@ function knnDraw(x,cv,D,q,k,opts={}){
   $("kmStep").onclick=()=>{ running=false; one(); msg(); }; $("kmRun").onclick=()=>{ if(done) return; running=!running; timer=0; msg(); };
   $("kmNew").onclick=()=>init(Math.random);
   A.kmeans={
-    enter(){ K=4; $("kmK").value=4; $("kmKv").textContent=4; seedR=srand(7); init(seedR); },
+    enter(){ K=4; $("kmK").value=4; $("kmKv").textContent=4; seedR=srand(7); init(kmGuess||seedR); },
     step(){ running=false; return one(); },
     tick(dt){
       if(running){ timer+=dt; if(timer>650){ timer=0; one(); } }

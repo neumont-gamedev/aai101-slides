@@ -730,6 +730,22 @@
     <p class="hint" id="unHint" style="margin-top:8px">press → to let the model find groups</p>
   </section>
 
+  <!-- guess the centers: students drag the cluster centers before k-means does it -->
+  <section class="slide" data-id="kmguess">
+    <div class="two" style="grid-template-columns:.8fr 1.2fr;gap:46px">
+      <div class="stack" style="gap:18px">
+        <h2 class="rise" style="--i:0;font-size:54px"><span class="n">YOUR TURN</span>Where are the <span class="y">centers</span>?</h2>
+        <p class="rise" style="--i:1">These points have <b>no labels</b>. Drag the four <b class="y">✕</b> to where you think the center of each group is. Each point takes the color of its <b>nearest</b> ✕.</p>
+        <div class="card pad rise ctls" style="--i:2">
+          <div class="row"><button class="btn on" id="kgCheck">Check</button><button class="btn" id="kgReset">Reset</button></div>
+          <div id="kgMsg" style="font-size:20px;line-height:1.45;height:62px;overflow:hidden;color:var(--mute)">drag each ✕, then press <b>Check</b></div>
+        </div>
+        <div class="callout keyIdea" id="kgIdea" style="font-size:20px">You just did k-means by eye: each center belongs in the <b class="y">middle (the average)</b> of its points. Next, k-means starts from <b>your</b> guesses and fixes them.</div>
+      </div>
+      <div class="stage-box rise" style="--i:2;height:660px"><canvas id="kgCv" style="cursor:grab"></canvas><div class="cap">○ = real center (after Check)</div></div>
+    </div>
+  </section>
+
   <!-- k-means -->
   <section class="slide" data-id="kmeans">
     <div class="two" style="grid-template-columns:.8fr 1.2fr;gap:46px">
