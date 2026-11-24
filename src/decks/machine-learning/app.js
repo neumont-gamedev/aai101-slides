@@ -867,11 +867,11 @@ let kmGuess=null;   // the student's centers from "guess the centers"; k-means s
       x.strokeStyle=INK; x.lineWidth=3.5; x.beginPath(); x.moveTo(P.px(0),P.py(tr(0))); x.lineTo(P.px(10),P.py(tr(10))); x.stroke();
       const n=Math.min(D.length,Math.floor((now-t0)/30)+1);
       D.slice(0,n).forEach(([a,y])=>dashed(x,P.px(a),P.py(tr(a)),P.px(a),P.py(y),"rgba(255,194,14,.25)",1,[3,3]));
-      D.slice(0,n).forEach(([a,y])=>dot(x,P.px(a),P.py(y),7,Y,"#0d0d0f"));
+      D.slice(0,n).forEach(([a,y])=>{ cross(x,P.px(a),P.py(y),7,"#0d0d0f",6); cross(x,P.px(a),P.py(y),6,Y,3); });
       if(n>=D.length){ const bias=D.reduce((s,[a,y])=>s+y-tr(a),0)/D.length, m=bias, sd=Math.sqrt(D.reduce((s,[a,y])=>s+(y-tr(a)-m)**2,0)/D.length);
         label(x,`average miss (bias): ${bias>=0?"+":""}${bias.toFixed(1)}`,P.R-14,P.B-40,Math.abs(bias)>1?RED:GREEN,16,"right");
         label(x,`spread (variance): ${sd.toFixed(1)}`,P.R-14,P.B-16,sd>1?BLUE:GREEN,16,"right"); }
-      label(x,"— true answers",P.L+16,P.T+18,INK,15); label(x,"● predictions (one per retrained model)",P.L+16,P.T+40,Y,15); }
+      label(x,"— true answers",P.L+16,P.T+18,INK,15); label(x,"✕ predictions (one per retrained model)",P.L+16,P.T+40,Y,15); label(x,"each ✕ = what a retrained model predicts, not a data point",P.L+16,P.T+62,MUTE,14); }
   };
 })();
 
