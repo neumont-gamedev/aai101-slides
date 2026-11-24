@@ -727,6 +727,46 @@ let kmGuess=null;   // the student's centers from "guess the centers"; k-means s
   };
 })();
 
+/* ---------- shooting game: 10 shots, average the misses = loss ---------- */
+(() => {
+  const cv=$("sgCv"), LAND=40, FLY=1100, HALF=2;   // ball always lands at 40 m after 1.1 s; target is 4 m wide
+  const tx=t=>40+12*Math.sin(t*.0017)+5*Math.sin(t*.0031+1);   // target center (m) at time t (ms)
+  let E=[], ball=null, clock=0, done=false;
+  const loss=()=>E.reduce((s,e)=>s+Math.abs(e),0)/E.length;
+  function info(){ const n=E.length, hits=E.filter(e=>Math.abs(e)<=HALF).length, last=E[n-1];
+    $("sgInfo").innerHTML=`shot ${Math.min(n+(ball?1:0),10)} / 10 · hits ${hits}<br>`+
+      (n?`last error: <b style="color:${Math.abs(last)<=HALF?"var(--green)":"var(--amber)"}">${last>0?"+":"−"}${Math.abs(last).toFixed(1)} m</b> <span class="muted">${Math.abs(last)<.05?"bullseye":last>0?"long":"short"}</span>`:'<span class="muted">click Shoot, the plot, or press →</span>')+"<br>"+
+      (done?`loss = average |error| = <b class="y">${loss().toFixed(2)} m</b>`:`loss: <span class="muted">after 10 shots</span>`);
+    $("sgShoot").classList.toggle("locked",done); $("sgIdea").classList.toggle("on",done); }
+  function shoot(){ if(ball||done) return; ball={t0:clock}; info(); }
+  function reset(){ E=[]; ball=null; done=false; info(); }
+  $("sgShoot").onclick=shoot; cv.onclick=shoot; $("sgAgain").onclick=reset;
+  A.shoot={ enter(){ reset(); },
+    step(){ if(done) return false; shoot(); return true; },
+    back(){ if(!E.length&&!ball) return false; reset(); return true; },
+    tick(dt){ clock+=dt; const x=ctxOf(cv), W=cv.offsetWidth, H=cv.offsetHeight; x.clearRect(0,0,W,H);
+      // ---- game (top) ----
+      const gy=H*.52, L=50, R=W-30, M=v=>L+v/62*(R-L), S=(R-L)/62;
+      x.strokeStyle="#55534d"; x.lineWidth=2; x.beginPath(); x.moveTo(L-20,gy); x.lineTo(R,gy); x.stroke();
+      for(let v=0;v<=60;v+=10) label(x,v+" m",M(v),gy+22,MUTE,13,"center");
+      dashed(x,M(LAND),gy-150,M(LAND),gy,"rgba(243,241,234,.4)",2,[6,5]); label(x,"ball lands here",M(LAND),gy-158,MUTE,14,"center");
+      const c=tx(clock); x.fillStyle=RED; x.fillRect(M(c-HALF),gy-10,4*S,10); x.fillStyle=INK; x.fillRect(M(c)-1.5,gy-26,3,26);
+      x.fillStyle=Y; x.beginPath(); x.moveTo(M(c),gy-26); x.lineTo(M(c)+16,gy-21); x.lineTo(M(c),gy-16); x.fill();
+      x.fillStyle="#55534d"; x.fillRect(M(0)-14,gy-18,28,18);
+      if(ball){ const u=(clock-ball.t0)/FLY;
+        if(u>=1){ E.push(LAND-tx(ball.t0+FLY)); ball=null; if(E.length>=10) done=true; info(); }
+        else dot(x,M(LAND*u),gy-4*130*u*(1-u)-6,9,Y,"#0d0d0f"); }
+      if(E.length&&!ball){ const e=E[E.length-1]; dot(x,M(LAND),gy-6,8,Y,"#0d0d0f"); }
+      // ---- error bars (bottom) ----
+      const bt=H*.64, bb=H-40, bw=(R-L)/10, top=Math.max(8,...E.map(Math.abs))*1.15, py=v=>bb-v/top*(bb-bt);
+      label(x,"size of each miss |error| (m)",L,bt-14,MUTE,14);
+      x.strokeStyle="#55534d"; x.lineWidth=2; x.beginPath(); x.moveTo(L,bb); x.lineTo(R,bb); x.stroke();
+      for(let i=0;i<10;i++){ const cx=L+i*bw+bw/2; label(x,"#"+(i+1),cx,bb+22,MUTE,13,"center");
+        if(i<E.length){ const v=Math.abs(E[i]), col=v<=HALF?GREEN:AMBER; x.fillStyle=col; x.fillRect(cx-bw*.3,py(v),bw*.6,Math.max(2,bb-py(v))); label(x,v.toFixed(1),cx,py(v)-8,col,14,"center"); } }
+      if(done){ const l=loss(); dashed(x,L,py(l),R,py(l),Y,2.5,[8,5]); label(x,"loss (average) = "+l.toFixed(2)+" m  - - -",R,bt-14,Y,17,"right"); }
+    } };
+})();
+
 /* ---------- MAE / MSE / RMSE with draggable errors (start at 0) ---------- */
 (() => {
   const cv=$("mtCv"), N=10; let E=Array(N).fill(0), drag=-1, G=null, M=[0,0,0], shown=[0,0,0], top=4;
