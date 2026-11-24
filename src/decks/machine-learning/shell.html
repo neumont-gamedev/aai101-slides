@@ -919,7 +919,7 @@ X_train, X_test, y_train, y_test = <span class="fn">train_test_split</span>(X, y
         <div class="card met" style="border-top:4px solid #b18cff"><span class="k">RMSE · root mean squared error</span><b style="color:#b18cff" id="mtRMSE">–</b><span class="f">√MSE</span><span class="d">Back in the target’s units, still weighted toward big errors.</span></div>
       </div>
       <div class="stage-box rise" style="--i:2;height:380px"><canvas id="mtCv" style="cursor:ns-resize"></canvas></div>
-      <div class="row rise" style="--i:3"><span class="hint">drag any bar up or down to change that error · lower is better for all three</span><span style="flex:1"></span><button class="btn" id="mtNo">Remove the 2 outliers</button><button class="btn" id="mtReset">Reset</button></div>
+      <div class="row rise" style="--i:3"><span class="hint">drag any bar up or down to change that error · big misses (over 5) turn red · lower is better</span><span style="flex:1"></span><button class="btn on" id="mtRand">Random error</button><button class="btn" id="mtReset">Reset to 0</button></div>
     </div>
   </section>
 
