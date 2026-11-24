@@ -858,22 +858,6 @@
     </div>
   </section>
 
-  <!-- code -->
-  <section class="slide" data-id="seed">
-    <div class="stack" style="gap:24px">
-      <h2 class="rise" style="--i:0"><span class="n">IN CODE</span>Splitting with scikit-learn</h2>
-<pre class="src rise" style="--i:1;font-size:22px"><span class="kw">from</span> sklearn.model_selection <span class="kw">import</span> train_test_split
-
-X_train, X_test, y_train, y_test = <span class="fn">train_test_split</span>(X, y, test_size=<span class="n">0.2</span>, random_state=<span class="n">42</span>)</pre>
-      <div class="grid3 rise" style="--i:2">
-        <div class="card pad"><div class="k">X, y</div><p class="codeNote" style="margin-top:6px"><b style="color:var(--blue)">X</b> = the features (inputs), <b class="y">y</b> = the labels (answers).</p></div>
-        <div class="card pad"><div class="k">test_size=0.2</div><p class="codeNote" style="margin-top:6px">Hold back <b>20%</b> for testing. Call it again on the training part to carve out a validation set.</p></div>
-        <div class="card pad"><div class="k">random_state=42</div><p class="codeNote" style="margin-top:6px">Fixes the shuffle so the split is the <b>same every run</b>. Results can be reproduced.</p></div>
-      </div>
-      <p class="rise" style="--i:3;font-size:22px">Why <b class="y">42</b>? No math reason. It’s the “Answer to the Ultimate Question of Life, the Universe, and Everything” in <i class="t">The Hitchhiker’s Guide to the Galaxy</i>, and it stuck as a default.</p>
-    </div>
-  </section>
-
   <!-- term: error -->
   <section class="slide" data-id="t-error">
     <div class="termS">
