@@ -798,22 +798,38 @@ let kmGuess=null;   // the student's centers from "guess the centers"; k-means s
   A.modelab={ enter(){ C.forEach(o=>o.classList.remove("pick","right","wrong")); $("abIdea").classList.remove("on"); } };
 })();
 
-/* ---------- height → shoe size ---------- */
+/* ---------- name length → typing time: students are the test data ---------- */
 (() => {
-  const cv=$("shCv");
-  const TR=[[59,5.5],[60,5],[62,6],[62.5,5],[63,8.2],[66,10.5],[67,11],[68,9],[69,9],[69,10],[69,11],[71,13],[71,9.5],[72,10.5],[72,11],[73,9.5]];
-  const TE=[[66,9.5],[67,9.5],[67.5,7.5],[70,12],[74,13]];
-  const [m,b]=ols(TR), mae=S=>S.reduce((s,[h,y])=>s+Math.abs(y-(m*h+b)),0)/S.length; let showT=false;
-  $("shInfo").innerHTML=`shoe = ${m.toFixed(2)} × height ${b<0?"−":"+"} ${Math.abs(b).toFixed(1)}<br><span style="color:var(--blue)">training MAE: ${mae(TR).toFixed(2)} sizes</span><br><span style="color:var(--amber)">test MAE: ${mae(TE).toFixed(2)} sizes</span>`;
-  $("shTest").onclick=()=>{ showT=!showT; $("shTest").classList.toggle("on",showT); };
-  A.shoes={ enter(){ showT=false; $("shTest").classList.remove("on"); },
-    tick(){ const x=ctxOf(cv), P=plot(cv,[58,75],[4,14],[70,30,30,64]); x.clearRect(0,0,P.W,P.H);
-      frame(x,P,[58,60,62,64,66,68,70,72,74],[4,6,8,10,12,14],"height (inches)","shoe size (U.S. men’s)");
-      x.strokeStyle=RED; x.lineWidth=3; x.beginPath(); x.moveTo(P.px(59),P.py(m*59+b)); x.lineTo(P.px(74),P.py(m*74+b)); x.stroke();
-      if(showT) for(const [h,y] of TE){ dashed(x,P.px(h),P.py(y),P.px(h),P.py(m*h+b),AMBER,2,[5,4]); label(x,(y-(m*h+b)>0?"+":"")+(y-(m*h+b)).toFixed(1),P.px(h)+10,(P.py(y)+P.py(m*h+b))/2+5,AMBER,14); }
-      for(const [h,y] of TR) dot(x,P.px(h),P.py(y),7,BLUE,"#0d0d0f");
-      for(const [h,y] of TE) dot(x,P.px(h),P.py(y),8,AMBER,"#0d0d0f");
-      label(x,"● training data",P.L+16,P.T+18,BLUE,15); label(x,"● test data",P.L+16,P.T+40,AMBER,15); label(x,"— regression line",P.L+16,P.T+62,RED,15); }
+  const cv=$("shCv"), r=srand(43), inp=$("shName");
+  const TR=Array.from({length:16},(_,i)=>{ const c=Math.round(8+i/15*22+(r()-.5)*3); return [c,Math.max(1.2,.7+.21*c+gauss(r)*.55)]; });
+  const STORED=[[13,4.1],[24,5.6],[18,4.2],[28,6.9],[16,8.4]];   // the last one is a slow hunt-and-peck typist
+  const [m,b]=ols(TR), pr=c=>m*c+b, mae=S=>S.reduce((s,[c,y])=>s+Math.abs(y-pr(c)),0)/S.length;
+  let TE=[], si=0, t0=0, last=-1, born=[];
+  function info(){ const n=TE.length;
+    $("shInfo").innerHTML=`seconds = ${m.toFixed(2)} × letters + ${b.toFixed(2)}<br><span style="color:var(--blue)">training error (MAE): ${mae(TR).toFixed(2)} s</span><br><span style="color:var(--amber)">test error (MAE): ${n?mae(TE).toFixed(2)+" s":"–"}</span> <span class="muted">· ${n} test typist${n===1?"":"s"}</span>`;
+    $("shIdea").classList.toggle("on",n>=3); }
+  function add(c,y,who){ TE.push([c,y]); born.push(performance.now()); last=TE.length-1; const p=pr(c), e=y-p;
+    $("shLast").innerHTML=`${who}: ${c} letters · predicted <b>${p.toFixed(1)} s</b> · actual <b style="color:var(--amber)">${y.toFixed(1)} s</b> · <b class="y">off by ${Math.abs(e).toFixed(1)} s</b>`; info(); }
+  inp.addEventListener("input",()=>{ if(inp.value.length===1&&!t0) t0=performance.now(); if(!inp.value) t0=0; });
+  function addMe(){ const c=inp.value.trim().length; if(c<3||!t0){ $("shLast").textContent="type a full name first (at least 3 letters)"; return; }
+    const y=Math.min(30,(performance.now()-t0)/1000); inp.value=""; t0=0; inp.blur(); add(c,y,"You"); }
+  inp.addEventListener("keydown",e=>{ if(e.key==="Enter"){ e.preventDefault(); addMe(); } });
+  $("shAdd").onclick=addMe;
+  $("shClear").onclick=()=>{ TE=[]; born=[]; si=0; last=-1; $("shLast").textContent="waiting for a typist…"; info(); };
+  A.shoes={ enter(){ TE=[]; born=[]; si=0; last=-1; inp.value=""; t0=0; $("shLast").textContent="waiting for a typist…"; info(); },
+    step(){ if(si>=STORED.length) return false; const [c,y]=STORED[si++]; add(c,y,"Test typist "+si); return true; },
+    back(){ if(!si||!TE.length) return false; TE.pop(); born.pop(); si--; last=TE.length-1; info(); return true; },
+    tick(){ const x=ctxOf(cv), xmax=Math.max(36,...TE.map(p=>p[0]+2)), ymax=Math.max(10,...TE.map(p=>p[1]+1)), P=plot(cv,[4,xmax],[0,ymax],[70,30,30,64]); x.clearRect(0,0,P.W,P.H);
+      const yt=[]; for(let v=0;v<=ymax;v+=ymax>14?4:2) yt.push(v);
+      frame(x,P,[5,10,15,20,25,30,35].filter(v=>v<=xmax),yt,"letters in the name","seconds to type it",v=>v,v=>v);
+      x.strokeStyle=RED; x.lineWidth=3; x.beginPath(); x.moveTo(P.px(4),P.py(pr(4))); x.lineTo(P.px(xmax),P.py(pr(xmax))); x.stroke();
+      for(const [c,y] of TR) dot(x,P.px(c),P.py(y),7,BLUE,"#0d0d0f");
+      const now=performance.now();
+      TE.forEach(([c,y],i)=>{ const k=ease((now-born[i])/600), yy=lerp(pr(c),y,k);
+        dashed(x,P.px(c),P.py(pr(c)),P.px(c),P.py(yy),AMBER,i===last?2.5:1.5,[5,4]); cross(x,P.px(c),P.py(pr(c)),6,RED,2.5);
+        dot(x,P.px(c),P.py(yy),i===last?10:8,AMBER,i===last?INK:"#0d0d0f");
+        if(i===last&&k>=1){ const e=y-pr(c); label(x,(e>0?"+":"")+e.toFixed(1)+" s",P.px(c)+14,(P.py(y)+P.py(pr(c)))/2+5,AMBER,16); } });
+      label(x,"● training typists",P.L+16,P.T+18,BLUE,15); label(x,"● test typists",P.L+16,P.T+40,AMBER,15); label(x,"— regression line",P.L+16,P.T+62,RED,15); }
   };
 })();
 
