@@ -846,6 +846,38 @@ let kmGuess=null;   // the student's centers from "guess the centers"; k-means s
       T[i].slice(0,shown).forEach(([a,b])=>dot(x,cx+a*R,cy-b*R,5.5,Y,"#0d0d0f")); }); } };
 })();
 
+/* ---------- bias and variance on one regression plot ---------- */
+(() => {
+  const cv=$("bvlCv"), tr=x=>.6*x+3;   // the truth
+  // [forced through 0? (a wrong, too-simple assumption = bias), points per sample (few = variance)]
+  const CASES=[[false,40,"LOW BIAS · LOW VARIANCE","The model can fit the truth and each sample is big. Every line lands on the truth. <b class='y'>The goal.</b>"],
+    [false,4,"LOW BIAS · HIGH VARIANCE","Each line is trained on only 4 points. On <b>average</b> they're right, but each one swings with its sample: the model is too sensitive to its data."],
+    [true,40,"HIGH BIAS · LOW VARIANCE","The model wrongly assumes the line must start at 0. The lines agree with each other, but <b>all miss the truth the same way</b>: too simple."],
+    [true,4,"HIGH BIAS · HIGH VARIANCE","Wrong assumption <b>and</b> tiny samples: the lines miss the truth and swing around. The worst case."]];
+  let c=0, L=[], pts=[], t0=0;
+  const set=tabs($("bvlTabs"),k=>show(+k,Math.random));
+  function sample(n,r){ return Array.from({length:n},()=>{ const x=1+r()*8; return [x,tr(x)+gauss(r)*1.3]; }); }
+  function fit(P,origin){ if(origin){ const k=P.reduce((s,[x,y])=>s+x*y,0)/P.reduce((s,[x])=>s+x*x,0); return [k,0]; } return ols(P); }
+  function show(i,r){ c=i; set(String(i)); const [o,n,k,txt]=CASES[i]; L=[]; for(let j=0;j<8;j++){ const P=sample(n,r); L.push(fit(P,o)); if(j===7) pts=P; }
+    $("bvlK").textContent=k; $("bvlK").style.color=i===0?"var(--green)":i===3?"var(--red)":"var(--y)"; $("bvlTxt").innerHTML=txt; t0=performance.now(); }
+  $("bvlNew").onclick=()=>show(c,Math.random);
+  A.bvlines={ enter(d){ show(d<0?3:0,srand(70)); },
+    step(){ if(c>=3) return false; show(c+1,srand(71+c)); return true; },
+    back(){ if(c<=0) return false; show(c-1,srand(70+c)); return true; },
+    tick(dt,now){ const x=ctxOf(cv), P=plot(cv,[0,10],[0,12],[70,30,30,64]); x.clearRect(0,0,P.W,P.H);
+      frame(x,P,[0,2,4,6,8,10],[0,3,6,9,12],"x (input)","y (output)");
+      x.save(); x.beginPath(); x.rect(P.L,P.T,P.R-P.L,P.B-P.T); x.clip();
+      const shown=Math.min(L.length,Math.floor((now-t0)/90)+1);
+      L.slice(0,shown).forEach(([m,b])=>{ x.strokeStyle="rgba(255,194,14,.45)"; x.lineWidth=2; x.beginPath(); x.moveTo(P.px(0),P.py(b)); x.lineTo(P.px(10),P.py(10*m+b)); x.stroke(); });
+      if(shown>=L.length){ const m=L.reduce((s,l)=>s+l[0],0)/L.length, b=L.reduce((s,l)=>s+l[1],0)/L.length;
+        x.strokeStyle=Y; x.lineWidth=5; x.beginPath(); x.moveTo(P.px(0),P.py(b)); x.lineTo(P.px(10),P.py(10*m+b)); x.stroke(); }
+      x.save(); x.setLineDash([10,7]); x.strokeStyle=INK; x.lineWidth=3; x.beginPath(); x.moveTo(P.px(0),P.py(tr(0))); x.lineTo(P.px(10),P.py(tr(10))); x.stroke(); x.restore(); x.restore();
+      pts.forEach(([a,y])=>dot(x,P.px(a),P.py(y),5,BLUE,"#0d0d0f"));
+      label(x,"- - truth",P.L+16,P.T+18,INK,15); label(x,"— 8 models, each from its own sample",P.L+16,P.T+40,Y,15); label(x,"● one sample's points",P.L+16,P.T+62,BLUE,15); }
+  };
+})();
+
+
 /* ---------- navigation ---------- */
 const countEl=$("count"), prog=$("progress");
 /*LIVE_CORE*/

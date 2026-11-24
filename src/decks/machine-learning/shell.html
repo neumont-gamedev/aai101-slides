@@ -1025,6 +1025,23 @@ X_train, X_test, y_train, y_test = <span class="fn">train_test_split</span>(X, y
     </div>
   </section>
 
+  <!-- bias and variance on one regression plot: four cases -->
+  <section class="slide" data-id="bvlines">
+    <div class="two" style="grid-template-columns:.8fr 1.2fr;gap:44px">
+      <div class="stack" style="gap:16px">
+        <h2 class="rise" style="--i:0;font-size:50px"><span class="n">BIAS AND VARIANCE ON A GRAPH</span>Same idea, <span class="y">real lines</span></h2>
+        <p class="rise" style="--i:1;font-size:20px">The dashed line is the <b>truth</b>. Each <b class="y">yellow line</b> is a linear regression trained on a <b>different sample</b> of data (a dart). The bold line is their average.</p>
+        <div class="grid2 rise" style="--i:2;gap:10px" id="bvlTabs">
+          <button class="btn" data-k="0">Low bias · low variance</button><button class="btn" data-k="1">Low bias · high variance</button>
+          <button class="btn" data-k="2">High bias · low variance</button><button class="btn" data-k="3">High bias · high variance</button>
+        </div>
+        <div class="card pad rise" style="--i:3;height:150px;overflow:hidden"><div class="k" id="bvlK"></div><p id="bvlTxt" style="font-size:19px;margin-top:6px;line-height:1.45"></p></div>
+        <div class="row rise" style="--i:4"><button class="btn on" id="bvlNew">New samples</button><span class="hint">→ steps through the four cases</span></div>
+      </div>
+      <div class="stage-box rise" style="--i:2;height:660px"><canvas id="bvlCv"></canvas></div>
+    </div>
+  </section>
+
   <!-- term: bias -->
   <section class="slide" data-id="t-bias">
     <div class="termS">
