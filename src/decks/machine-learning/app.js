@@ -761,7 +761,7 @@ let kmGuess=null;   // the student's centers from "guess the centers"; k-means s
 
 /* ---------- underfit / overfit: polynomial degree ---------- */
 (() => {
-  const cv=$("ftCv"), r=srand(15), f=v=>1.1*v*v-.35*v-.25;
+  const cv=$("ftCv"), r=srand(15), f=v=>.6*Math.sin(3.6*v+.9)+.3*v;   // wavy: needs a few bends, so degrees 1-3 are all too simple
   const TR=Array.from({length:12},(_,i)=>{ const v=-1+i/11*2+(r()-.5)*.08; return [v,f(v)+gauss(r)*.14]; });
   const TE=Array.from({length:12},(_,i)=>{ const v=-.96+i/11*1.92+(r()-.5)*.06; return [v,f(v)+gauss(r)*.14]; });
   let d=1, coef=[];
@@ -775,14 +775,14 @@ let kmGuess=null;   // the student's centers from "guess the centers"; k-means s
   const rmse=S=>Math.sqrt(S.reduce((s,[v,y])=>s+(y-pred(v))**2,0)/S.length);
   function set(n){ d=n; coef=fit(d); $("ftD").value=d; $("ftDv").textContent=d; const tr=rmse(TR), te=rmse(TE);
     $("ftTr").textContent=tr.toFixed(3); $("ftTe").textContent=te.toFixed(3);
-    const v=d===1?["Underfit: too simple",AMBER]:d<=4?["Balanced: generalizes",GREEN]:d<=8?["Starting to overfit",Y]:["Overfit: memorized the noise",RED];
+    const v=d===1?["Underfit: too simple",AMBER]:d===2?["Still underfit",AMBER]:d===3?["Almost: a little too simple",Y]:d<=6?["Balanced: generalizes",GREEN]:d<=8?["Starting to overfit",Y]:["Overfit: memorized the noise",RED];
     $("ftVerdict").textContent=v[0]; $("ftVerdict").style.color=v[1];
     document.querySelectorAll('[data-id="fit"] [data-d]').forEach(b=>b.classList.toggle("on",+b.dataset.d===d)); }
   $("ftD").oninput=e=>set(+e.target.value);
   document.querySelectorAll('[data-id="fit"] [data-d]').forEach(b=>b.onclick=()=>set(+b.dataset.d));
   A.fit={ enter(){ set(1); },
-    tick(){ const x=ctxOf(cv), P=plot(cv,[-1.08,1.08],[-.8,1.6],[60,30,30,60]); x.clearRect(0,0,P.W,P.H);
-      frame(x,P,[-1,-.5,0,.5,1],[-.5,0,.5,1,1.5],"x (input)","y (output)",v=>v,v=>v);
+    tick(){ const x=ctxOf(cv), P=plot(cv,[-1.08,1.08],[-1.3,1.3],[60,30,30,60]); x.clearRect(0,0,P.W,P.H);
+      frame(x,P,[-1,-.5,0,.5,1],[-1,-.5,0,.5,1],"x (input)","y (output)",v=>v,v=>v);
       x.save(); x.beginPath(); x.rect(P.L,P.T,P.R-P.L,P.B-P.T); x.clip();
       for(const [v,y] of TE) dashed(x,P.px(v),P.py(y),P.px(v),P.py(pred(v)),"rgba(255,138,31,.6)",1.5,[4,4]);
       x.strokeStyle=Y; x.lineWidth=3.5; x.beginPath(); for(let v=-1.08;v<=1.081;v+=.005){ const q=[P.px(v),P.py(pred(v))]; v===-1.08?x.moveTo(...q):x.lineTo(...q); } x.stroke(); x.restore();
