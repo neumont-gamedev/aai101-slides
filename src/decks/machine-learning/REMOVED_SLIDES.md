@@ -9,6 +9,7 @@ revert the commit by hand.
 |---|---|---|---|---|
 | `slope` | From two points: Find the line (rise ÷ run worked example, score = 15 × hours + 35) | 14 of 47 | y = mx + b → How linear regression works | `bf7ed53` |
 | `tree` | Classification: Decision trees (grow the tree one split at a time, route a student) | 21 of 47 | Finding the nearest neighbors (k-NN steps) → Unsupervised learning (term) | `0667207` |
+| `seed` | In code: Splitting with scikit-learn (train_test_split, test_size, random_state=42 / Hitchhiker's note) | 33 of 48 | Test (term) → Error (term) | `d913d9d` |
 
 ## Notes for putting them back
 
@@ -19,3 +20,4 @@ revert the commit by hand.
 - **`tree`**: hidden because it isn't being covered yet. The removal also dropped the
   "decision tree" recap chip; add it back between "k-NN" and "unsupervised". Decision trees are
   still *named* on the Traditional ML slide, the ML map and the models catalog (as an overview).
+- **`seed`**: postponed to cover later. Static code slide (no app.js module), so restoring is just the HTML.
